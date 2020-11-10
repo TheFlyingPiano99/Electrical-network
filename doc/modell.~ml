@@ -2462,10 +2462,10 @@
 <XPD:REF name="Model">fvSfxKvOUUmfVeaRcYEdXgAA</XPD:REF>
 </XPD:OBJ>
 <XPD:OBJ name="TailRoleNameLabel" type="EdgeLabelView" guid="UvQOcmgJUUGWCfRHl/7vsQAA">
-<XPD:ATTR name="Alpha" type="real">-1,022246951786</XPD:ATTR>
-<XPD:ATTR name="Distance" type="real">42,190046219458</XPD:ATTR>
+<XPD:ATTR name="Visible" type="boolean">False</XPD:ATTR>
+<XPD:ATTR name="Alpha" type="real">0,523598775598299</XPD:ATTR>
+<XPD:ATTR name="Distance" type="real">30</XPD:ATTR>
 <XPD:ATTR name="EdgePosition" type="EdgePositionKind">epTail</XPD:ATTR>
-<XPD:ATTR name="Text" type="string">-linearSystem</XPD:ATTR>
 <XPD:REF name="Model">TRkTOuPXEUemEnyYoBqaEgAA</XPD:REF>
 </XPD:OBJ>
 <XPD:OBJ name="HeadMultiplicityLabel" type="EdgeLabelView" guid="g6dUfgfSMkKTFUiexTq41wAA">
@@ -2955,8 +2955,6 @@
 <XPD:REF name="Views[3]">LR1Lf3O1pUSyPLvBMVpJnAAA</XPD:REF>
 <XPD:ATTR name="#Connections" type="integer">2</XPD:ATTR>
 <XPD:OBJ name="Connections[0]" type="UMLAssociationEnd" guid="TRkTOuPXEUemEnyYoBqaEgAA">
-<XPD:ATTR name="Name" type="string">linearSystem</XPD:ATTR>
-<XPD:ATTR name="Visibility" type="UMLVisibilityKind">vkPrivate</XPD:ATTR>
 <XPD:REF name="Association">6cI7APWeg0CleoZsq1I0ogAA</XPD:REF>
 <XPD:REF name="Participant">uRgqoqMRvkSTbzWUKcajcQAA</XPD:REF>
 <XPD:ATTR name="#Views" type="integer">4</XPD:ATTR>
