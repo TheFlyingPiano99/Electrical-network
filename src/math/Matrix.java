@@ -1,7 +1,39 @@
 package math;
 
 public class Matrix {
-    float n[];
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + column;
+		result = prime * result + row;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Matrix other = (Matrix) obj;
+		if (column != other.column)
+			return false;
+		if (row != other.row)
+			return false;
+		for (int c = 0; c < column; c++) {
+			for (int r = 0; r < row; r++) {
+				if (n[c * row + r] != other.at(r, c)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	float n[];
     public int row;
     public int column;
 

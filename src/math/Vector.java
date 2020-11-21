@@ -1,7 +1,34 @@
 package math;
 
 public class Vector {
-    private float n[];
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + dimension;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Vector other = (Vector) obj;
+		if (dimension != other.dimension)
+			return false;
+		for (int i = 0; i < n.length; i++) {
+			if (n[i] != other.at(i)) {
+				return false;
+			}			
+		}
+		return true;
+	}
+
+	private float n[];
     public int dimension;
 
     public Vector(int d) {

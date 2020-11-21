@@ -80,7 +80,7 @@ public class MyMath {
 	}
 
 	///Addition / Subtraction
-	public Matrix add(Matrix A, Matrix B) {
+	public static Matrix add(Matrix A, Matrix B) {
 	    Matrix retM = new Matrix(A.row, A.column);
 	    for (int c = 0; c < A.column; c++) {
 	        for (int r = 0; r < A.row; r++) {
