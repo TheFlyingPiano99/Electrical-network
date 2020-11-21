@@ -1,4 +1,4 @@
-package network;
+package math;
 
 import java.util.*;
 
@@ -142,7 +142,7 @@ public class MyMath {
 	 * Removes columns given by they index in List.
 	 * @param toRemoveIndexes - indexes to remove
 	 */
-	public static Matrix RemoveColumns(Matrix M, List<Integer> toRemoveIndexes) {
+	public static Matrix RemoveColumns(Matrix M, ArrayList<Integer> toRemoveIndexes) {
 	    Matrix tempM = new Matrix(M.row, M.column - toRemoveIndexes.size());
 	    
 	    toRemoveIndexes.sort(null);
