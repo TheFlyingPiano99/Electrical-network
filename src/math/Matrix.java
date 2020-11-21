@@ -1,4 +1,4 @@
-package network;
+package math;
 
 public class Matrix {
     float n[];
