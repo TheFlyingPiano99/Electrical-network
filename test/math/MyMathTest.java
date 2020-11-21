@@ -117,7 +117,7 @@ public class MyMathTest {
 		exp.setAt(0, 0, 1);
 		exp.setAt(1, 1, 2);
 		exp.setAt(2, 2, 3);
-		m.setAt(1, 0, 4);	//!
+		exp.setAt(1, 0, 4);	//!
 		
 		assertEquals(exp, MyMath.Transpose(m));
 	}
@@ -178,8 +178,8 @@ public class MyMathTest {
 	public void testDiagonal() {
 		Vector v = new Vector(3);
 		v.setAt(0, 1);
-		v.setAt(0, 3);
-		v.setAt(0, 6);
+		v.setAt(1, 3);
+		v.setAt(2, 6);
 		
 		Matrix exp = new Matrix (3,3);
 		exp.fill(0);
@@ -198,9 +198,10 @@ public class MyMathTest {
 		Matrix M = new Matrix(3,6);
 		M.fill(2);
 		
-		ArrayList<Integer> toRemove = new ArrayList<>();
-		toRemove.add(1);
+		ArrayList<Integer> toRemove = new ArrayList<Integer>();
+	    
 		toRemove.add(3);
+		toRemove.add(1);
 		
 		Matrix exp = new Matrix(3,4);
 		exp.fill(2);
@@ -217,13 +218,13 @@ public class MyMathTest {
 		M.fill(2);
 		
 		ArrayList<Integer> toRemove = new ArrayList<>();
-		toRemove.add(1);
 		toRemove.add(3);
+		toRemove.add(1);
 		
 		Matrix exp = new Matrix(4,3);
 		exp.fill(2);
 		
-		assertEquals(exp, MyMath.RemoveColumns(M, toRemove));		
+		assertEquals(exp, MyMath.RemoveRows(M, toRemove));		
 	}
 
 	/**
@@ -367,13 +368,20 @@ public class MyMathTest {
 	@Test
 	public void testNormalize() {
 		Vector v = new Vector(3);
-		v.fill(3);
+		v.fill(0);
 		
-		float mag = (float) Math.sqrt(v.at(0)*v.at(0) + v.at(1)*v.at(1) + v.at(2)*v.at(2));
 		Vector exp = new Vector(3);
-		exp.setAt(0, v.at(0) / mag);
-		exp.setAt(1, v.at(1) / mag);
-		exp.setAt(2, v.at(2) / mag);
+
+		float mag = (float) Math.sqrt(v.at(0)*v.at(0) + v.at(1)*v.at(1) + v.at(2)*v.at(2));
+		if (mag != 0) {
+			exp.setAt(0, v.at(0) / mag);
+			exp.setAt(1, v.at(1) / mag);
+			exp.setAt(2, v.at(2) / mag);
+		}
+		else {
+			exp.copy(v);
+		}
+		
 		
 		assertEquals(exp, MyMath.Normalize(v));
 	}

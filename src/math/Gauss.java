@@ -18,7 +18,7 @@ class Gauss {
      * 0. index variable.
      * @throws GaussException - if the matrix has no solution or has infinite solutions.
      */
-    static Vector Eliminate (Matrix M) {
+    public static Vector Eliminate (Matrix M) throws GaussException {
         SingularityFlag flag = Reduce(M);
         switch (flag) {
             case noSolution: {
@@ -51,18 +51,24 @@ class Gauss {
     }
 
     /**
- * function to reduce matrix to r.e.f.
- * @param M - Matrix to reduce. Will be modified!
- * @return SingularityFlag: {
- *                              noSolution,
- *                              cleanSolution,
- *                              infiniteSolutions
- *                          }
- */
-    static SingularityFlag Reduce(Matrix M) {
+	 * function to reduce matrix to r.e.f.
+	 * @param M - Matrix to reduce. Will be modified!
+	 * @return SingularityFlag: {
+	 *                              noSolution,
+	 *                              cleanSolution,
+	 *                              infiniteSolutions
+	 *                          }
+	 */
+    public static SingularityFlag Reduce(Matrix M) {
+    	
+    	if (M.column < M.row - 1) {
+            return SingularityFlag.infiniteSolutions;
+        }
+    	
+
         int c = 0;
         int r = 0;
-
+        
         while (true) {
             if (0 != M.at(r,c)) {
                 //Divide column[c] by M(r,c).
@@ -111,10 +117,10 @@ class Gauss {
             }
         }
 
-        if (M.column < M.row - 1) {
-            return SingularityFlag.infiniteSolutions;
-        }
 
+        if (c == -1) {
+        	return SingularityFlag.infiniteSolutions;
+        }
 
         //Final steps of Reduce:
         if (c < M.column-1) {
