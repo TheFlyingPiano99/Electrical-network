@@ -142,22 +142,21 @@ public class MyMath {
 	 * Removes columns given by they index in List.
 	 * @param toRemoveIndexes - indexes to remove
 	 */
-	public static Matrix RemoveColumns(Matrix M, ArrayList<Integer> toRemoveIndexes) {
+	public static Matrix RemoveColumns(Matrix M, List<Integer> toRemoveIndexes) {
 	    Matrix tempM = new Matrix(M.row, M.column - toRemoveIndexes.size());
 	    
 	    toRemoveIndexes.sort(null);
 	    int indexOfcurrentRemov = 0;
-	    
 	    int ct = 0; //Index of the temporary matrix.
 	    for (int c = 0; c < M.column; c++) {
-	        if (toRemoveIndexes.get(indexOfcurrentRemov).equals(c)) {
-	            for (int i = 0; i < M.row; i++) {
-	                tempM.setAt(i, ct, M.at(i, c));
-	            }
-	            ct++;
+	        if (indexOfcurrentRemov < toRemoveIndexes.size() && toRemoveIndexes.get(indexOfcurrentRemov).equals(c)) {
+	        	indexOfcurrentRemov++;
 	        }
 	        else {
-	        	indexOfcurrentRemov++;
+	            for (int r = 0; r < M.row; r++) {
+	                tempM.setAt(r, ct, M.at(r, c));
+	            }
+	            ct++;
 	        }
 	    }
 	    return tempM;
@@ -175,7 +174,10 @@ public class MyMath {
 
 	    int rt = 0; //Index of the temporary matrix.
 	    for (int r = 0; r < M.row; r++) {
-	        if (toRemoveIndexes.get(indexOfcurrentRemov).equals(r)) {
+	        if (indexOfcurrentRemov < toRemoveIndexes.size() && toRemoveIndexes.get(indexOfcurrentRemov).equals(r)) {
+	        	indexOfcurrentRemov++;
+	        }
+	        else {
 	            for (int i = 0; i < M.column; i++) {
 	                tempM.setAt(rt, i, M.at(r, i));
 	            }
@@ -191,6 +193,7 @@ public class MyMath {
 	 */
 	public static Matrix MultiplyRow(Matrix M, int row, float val) {
 	    Matrix retM = new Matrix(M.row, M.column);
+	    retM.copy(M);
 	    for (int c = 0; c < M.column; c++) {
 	        retM.setAt(row, c, M.at(row, c) * val);
 	    }
@@ -203,6 +206,7 @@ public class MyMath {
 	 */
 	public static Matrix MultipyColumn(Matrix M, int column, float val) {
 	    Matrix retM = new Matrix(M.row, M.column);
+	    retM.copy(M);
 	    for (int r = 0; r < M.row; r++) {
 	        retM.setAt(r, column, M.at(r, column) * val);
 	    }
@@ -278,7 +282,11 @@ public class MyMath {
 
 
 	public static Vector Normalize(Vector v) {
-	    return  divide(v, Magnitude(v));
+		float mag = Magnitude(v);
+		if (mag != 0) {
+		    return  divide(v, mag);
+		}
+		return v;
 	}
 
 	///Addition / Subtraction
