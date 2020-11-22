@@ -6,11 +6,24 @@ public abstract class Component {
 	
 	float resistance;
 	float current;
+	float sourceVoltage;
 	
 	public Component() {
 		resistance = 1;
 		current = 0;
+		sourceVoltage = 0;
 	}
+
+	
+	public float getSourceVoltage() {
+		return sourceVoltage;
+	}
+
+
+	public void setSourceVoltage(float sourceVoltage) {
+		this.sourceVoltage = sourceVoltage;
+	}
+
 
 	public float getVoltage() {
 		return current * resistance;
@@ -37,7 +50,9 @@ public abstract class Component {
 	}
 
 	public void setResistance(float resistance) {
-		this.resistance = resistance;
+		if (resistance > 0) {
+			this.resistance = resistance;			
+		}		
 	}
 
 	public float getCurrent() {
@@ -47,6 +62,7 @@ public abstract class Component {
 	public void setCurrent(float current) {
 		this.current = current;
 	}
+	
 	
 	
 }
