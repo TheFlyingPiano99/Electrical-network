@@ -121,5 +121,5 @@ public class Matrix {
 
 	//Other
 	//float Determinant (Matrix M);
-
+    
 }

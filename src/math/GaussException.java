@@ -1,5 +1,5 @@
 package math;
 
-class GaussException extends RuntimeException {
+public class GaussException extends RuntimeException {
 	
 }

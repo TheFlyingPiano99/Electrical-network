@@ -322,4 +322,85 @@ public class MyMath {
 	}
 	 */
 	
+	public Matrix ConcatenateRight (Matrix A, Matrix B) {
+		if (A.row != B.row) {
+			throw new RuntimeException("Concatenation of matrices with nonequal number of rows.");
+		}
+		Matrix retM = new Matrix(A.row, A.column + B.column);
+		
+		for (int c = 0; c < retM.column; c++) {
+			for (int r = 0; r < retM.row; r++) {
+				if (c < A.column) {
+					retM.setAt(r, c, A.at(r, c));
+				}
+				else {
+					retM.setAt(r, c, B.at(r, c - A.column));					
+				}
+			}
+		}
+		
+		return retM; 
+	}
+	
+	public Matrix ConcatenateRight (Matrix A, Vector v) {
+		if (A.row != v.dimension) {
+			throw new RuntimeException("Concatenation of matrix and vector with nonequal number of rows.");
+		}
+		Matrix retM = new Matrix(A.row, A.column + 1);
+		
+		for (int c = 0; c < retM.column; c++) {
+			for (int r = 0; r < retM.row; r++) {
+				if (c < A.column) {
+					retM.setAt(r, c, A.at(r, c));
+				}
+				else {
+					retM.setAt(r, c, v.at(r));					
+				}
+			}
+		}
+		
+		return retM; 
+	}
+	
+
+	public Matrix ConcatenateBottom (Matrix A, Matrix B) {
+		if (A.column != B.column) {
+			throw new RuntimeException("Concatenation of matrices with nonequal number of columns.");
+		}
+		Matrix retM = new Matrix(A.row + B.row, A.column);
+		
+		for (int r = 0; r < retM.column; r++) {
+			for (int c = 0; c < retM.row; c++) {
+				if (r < A.row) {
+					retM.setAt(r, c, A.at(r, c));
+				}
+				else {
+					retM.setAt(r, c, B.at(r - A.row, c));					
+				}
+			}
+		}
+		
+		return retM; 
+	}
+
+	public Matrix ConcatenateBottom (Matrix A, Vector v) {
+		if (A.column != v.dimension) {
+			throw new RuntimeException("Concatenation of matrix and vector with nonequal number of columns.");
+		}
+		Matrix retM = new Matrix(A.row + 1, A.column);
+		
+		for (int r = 0; r < retM.column; r++) {
+			for (int c = 0; c < retM.row; c++) {
+				if (r < A.row) {
+					retM.setAt(r, c, A.at(r, c));
+				}
+				else {
+					retM.setAt(r, c, v.at(c));					
+				}
+			}
+		}
+		
+		return retM; 
+	}
+
 }

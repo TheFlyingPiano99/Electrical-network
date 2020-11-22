@@ -7,8 +7,6 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
-import javax.sql.rowset.spi.TransactionalWriter;
-
 import org.junit.Test;
 
 
