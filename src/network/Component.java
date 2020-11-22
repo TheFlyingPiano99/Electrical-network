@@ -8,6 +8,18 @@ public abstract class Component {
 	float current;
 	float sourceVoltage;
 	
+	boolean grabbed;
+	
+	public boolean isGrabbed() {
+		return grabbed;
+	}
+
+
+	public void setGrabbed(boolean grabbed) {
+		this.grabbed = grabbed;
+	}
+
+
 	public Component() {
 		resistance = 1;
 		current = 0;
