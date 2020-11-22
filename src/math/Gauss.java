@@ -8,7 +8,7 @@ enum SingularityFlag {
     infiniteSolutions
 };
 
-class Gauss {
+public class Gauss {
 
     /**
      * Gauss elimination for column major matrix.
