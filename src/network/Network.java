@@ -16,7 +16,8 @@ public class Network {
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
 	
-
+	int mergeProximity = 10;
+	
 	public Network() {
 		nodes = new ArrayList<Node>();
 		components = new ArrayList<Component>();
@@ -42,19 +43,13 @@ public class Network {
     	return sourceVoltages;
 	}
 	
-	public boolean CalculateCurrent() {
+	public Vector CalculateCurrent() {
 		try {
-			Vector current = Gauss.Eliminate(linSystem);			
-
-			for (int i = 0; i < components.size(); i++) {
-				components.get(i).setCurrent(current.at(i));
-			}
+			return Gauss.Eliminate(linSystem);			
 		}
 		catch (GaussException e) {
-			return false;
+			return null;
 		}
-		
-		return true;
 	}
 	
 	public void simulate () {
@@ -64,7 +59,8 @@ public class Network {
 	    	updateGraph = false;
 	    	
 	    	//Graph representations:
-	    	Matrix incidence = null, cycle = null;
+	    	Matrix incidence = new Matrix(0,0);
+	    	Matrix cycle = new Matrix(0,0);
 	    	try {
 		    	DFS(incidence, cycle);
 	    	
@@ -91,8 +87,11 @@ public class Network {
 	    //----------------------------------------------
 	    if (updateCurrent) {
 			updateCurrent = false;
-			CalculateCurrent();		
-		}
+			Vector current = CalculateCurrent();		
+			for (int i = 0; i < components.size(); i++) {
+				components.get(i).setCurrent(current.at(i));
+			}
+}
 
 	}
 	
@@ -166,7 +165,7 @@ public class Network {
 	            }
 	        }
 	    }
-	    incidence = new Matrix(components.size(), nodes.size());
+	    incidence.copyWithResize(new Matrix(components.size(), nodes.size()));
 	    incidence.fill(0);
 	    for (int i = 0; i < nodes.size(); i++) {
 	        if (null != previous.get(nodes.get(i))) {
@@ -183,7 +182,7 @@ public class Network {
 	        }
 	    }
 	    
-	    cycle = new Matrix(components.size(), noOfCycles);
+	    cycle.copyWithResize(new Matrix(components.size(), noOfCycles));
 	    cycle.fill(0);
 	    for (int i = 0; i < nodes.size(); i++) {     //Then fill cycle matrix
 	        if (null == previous.get(nodes.get(i))) {
@@ -198,6 +197,8 @@ public class Network {
 	    }
 	}
 	
+	//Manipulating components:---------------------------------------
+	
 	public void addComponent(Component component) {
 		Node input = new Node();
 		Node output = new Node();
@@ -205,15 +206,156 @@ public class Network {
 		component.setInput(input);
 		component.setOutput(output);
 		
+		input.addOutgoing(component);
+		output.addIncoming(component);
 		components.add(component);
 		nodes.add(input);
 		nodes.add(output);
 		
 	}
+
 	
 	public void removeComponent(Component component) {
+		if (component.getInput().getNoOfIncoming() == 0 && component.getInput().getNoOfOutgoing() == 1) {
+			nodes.remove(component.getInput());
+		}
+		if (component.getOutput().getNoOfIncoming() == 1 && component.getOutput().getNoOfOutgoing() == 0) {
+			nodes.remove(component.getOutput());
+		}
+		
+		if (component.getInput().isMerge() ||  component.getOutput().isMerge()) {
+			updateAll();
+		}
+		
 		components.remove(component);
 	}
+	
+	public void grabNode(Node node) {
+		if (!nodes.contains(node)) {
+			throw new RuntimeException("Invalid node grabbed.");
+		}
+		
+		node.setMerge(true);
+		node.setGrabbed(true);
+			
+	}
+	
+	public void moveNode(Node node, Coordinate pos) {
+		if (!nodes.contains(node)) {
+			throw new RuntimeException("Invalid node moved.");
+		}
+		
+		node.setPos(pos);
+		
+	}
+	
+	public void releaseNode(Node node) {
+		if (!nodes.contains(node)) {
+			throw new RuntimeException("Invalid node released.");
+		}
+		
+		node.setGrabbed(false);
+		tryToMergeNode(node);
+		
+	}
+	
+	public void grabComponent(Component component) {
+		if (!components.contains(component)) {
+			throw new RuntimeException("Invalid component grabbed.");
+		}
+		
+		Node input = component.getInput();
+		Node output = component.getOutput();
+		
+		input.setMerge(true);
+		output.setMerge(true);
+		component.setGrabbed(true);
+		
+		if (input.getNoOfIncoming() > 0 || input.getNoOfOutgoing() > 1) {
+			//Duplicate node;
+			Node temp = new Node();
+			temp.setMerge(true);
+			temp.setPos(input.getPos());
+			temp.addOutgoing(component);
+			component.setInput(temp);
+			nodes.add(temp);			
+			updateAll();
+		}
+		if (output.getNoOfIncoming() > 1 || output.getNoOfOutgoing() > 0) {
+			//Duplicate node;
+			Node temp = new Node();
+			temp.setMerge(true);
+			temp.setPos(output.getPos());
+			temp.addIncoming(component);
+			component.setOutput(temp);
+			nodes.add(temp);			
+			updateAll();
+		}		
+		
+	}
+	
+	public void moveComponent(Component component, Coordinate pos) {
+		if (!components.contains(component)) {
+			throw new RuntimeException("Invalid component moved.");
+		}
+		
+		Coordinate Offset = new Coordinate(MyMath.subtrackt(component.getOutput().getPos(), component.getInput().getPos()));
+		
+		component.getInput().setPos(pos);
+		component.getOutput().setPos(MyMath.add(pos, Offset));
+		
+		
+	}
+
+	public void releaseComponent(Component component) {
+		if (!components.contains(component)) {
+			throw new RuntimeException("Invalid component released.");
+		}
+		
+		component.setGrabbed(false);
+
+	}
+	
+	
+	//---------------------------------------------------------------
+	
+	public void updateAll() {
+		updateGraph = true;
+		updateVoltage = true;
+		updateResistance = true;
+		updateCurrent = true;	
+	}
+	
+	public boolean tryToMergeNode(Node node) {
+		for (Node iter : nodes) {
+			if (iter != node) {
+				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(node.getPos(), iter.getPos()))) { //Merge needed
+					for (Component incoming : node.getIncoming()) {
+						incoming.setOutput(iter);
+						iter.addIncoming(incoming);
+					}
+					for (Component outgoing : node.getOutgoing()) {
+						outgoing.setInput(iter);
+						iter.addOutgoing(outgoing);
+					}
+					nodes.remove(node);
+					updateAll();
+				
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public ArrayList<Component> getComponents() {
+		return components;
+	}
+	
+	public ArrayList<Node> getNodes() {
+		return nodes;
+	}
+
 }
 
 

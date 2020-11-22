@@ -403,4 +403,19 @@ public class MyMath {
 		return retM; 
 	}
 
+	//Coordinate related:------------------------------------------------------------------------------------
+	public static double Magnitude(Coordinate c) {
+		return Math.sqrt(c.x * c.x + c.y * c.y);
+	}
+	
+	public static Coordinate add(Coordinate a, Coordinate b) {
+		return new Coordinate(a.x + b.x, a.y + b.y);
+	}
+
+	public static Coordinate subtrackt(Coordinate a, Coordinate b) {
+		return new Coordinate(a.x - b.x, a.y - b.y);
+	}
+	
+	
+	
 }
