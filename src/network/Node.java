@@ -5,7 +5,6 @@ import java.util.ArrayList;
 public class Node {
 	private ArrayList<Component> incoming;
 	private ArrayList<Component> outgoing;
-	float sourceVoltage = 0;
 	
 	Node () {
 		setIncoming(new ArrayList<Component>());
@@ -28,14 +27,5 @@ public class Node {
 	public void setOutgoing(ArrayList<Component> outgoing) {
 		this.outgoing = outgoing;
 	}
-	
-	public float getSourceVoltage() {
-		return sourceVoltage;
-	}
-	
-	public void setSourceVoltage(float sourceVoltage) {
-		this.sourceVoltage = sourceVoltage;
-	}
-	
 	
 }

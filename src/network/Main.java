@@ -6,7 +6,7 @@ public class Main {
 		System.out.println("Hello Electrical networks");
 		Simulator sim = new Simulator();
 		
-		sim.simulate();
+		sim.run();
 		
 	}
 	// TODO Auto-generated method stub
