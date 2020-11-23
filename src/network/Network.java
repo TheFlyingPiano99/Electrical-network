@@ -8,6 +8,9 @@ import math.*;
 
 public class Network {
 	private ArrayList<Node> nodes;
+	private ArrayList<Edge> edges;
+	
+	private ArrayList<ComponentNode> componentNodes;
 	private ArrayList<Component> components;
 	
 	private LinearSystemForCurrent linSystem;
@@ -20,25 +23,27 @@ public class Network {
 	
 	public Network() {
 		nodes = new ArrayList<Node>();
+		edges = new ArrayList<Edge>();
+		
+		componentNodes = new ArrayList<ComponentNode>();
 		components = new ArrayList<Component>();
-		
+
 		linSystem = null;
-		
 		
 	}
 
 	private Vector gatherResistances() {
-    	Vector resistances = new Vector(components.size());
-    	for (int i = 0; i < components.size(); i++) {
-    		resistances.setAt(i, components.get(i).getResistance());
+    	Vector resistances = new Vector(edges.size());
+    	for (int i = 0; i < edges.size(); i++) {
+    		resistances.setAt(i, edges.get(i).getResistance());
     	}		
     	return resistances;
 	}
 	
 	public Vector gatherSourceVoltages() {
-    	Vector sourceVoltages = new Vector(components.size());
-    	for (int i = 0; i < components.size(); i++) {
-    		sourceVoltages.setAt(i, components.get(i).getSourceVoltage());
+    	Vector sourceVoltages = new Vector(edges.size());
+    	for (int i = 0; i < edges.size(); i++) {
+    		sourceVoltages.setAt(i, edges.get(i).getSourceVoltage());
     	}
     	return sourceVoltages;
 	}
@@ -88,8 +93,8 @@ public class Network {
 	    if (updateCurrent) {
 			updateCurrent = false;
 			Vector current = CalculateCurrent();		
-			for (int i = 0; i < components.size(); i++) {
-				components.get(i).setCurrent(current.at(i));
+			for (int i = 0; i < edges.size(); i++) {
+				edges.get(i).setCurrent(current.at(i));
 			}
 }
 
@@ -132,7 +137,7 @@ public class Network {
 	    while (run) {
 	        ///Finding adjacent vertex with (*) depth:
 	        Node v = current;
-	        for (Component iter : current.getOutgoing()) {
+	        for (Edge iter : current.getOutgoing()) {
 	            if (-1 == depth.get(iter.getOutput())) {
 	                v = iter.getOutput();
 	                break;
@@ -166,11 +171,11 @@ public class Network {
 	        }
 	    }
 	    
-	    incidence.copyWithResize(new Matrix(components.size(), nodes.size()));
+	    incidence.copyWithResize(new Matrix(edges.size(), nodes.size()));
 	    incidence.fill(0);
 	    int noOfCycles = 0;             //First count the cycles:
-	    for (int i = 0; i < components.size(); i++) {
-	    	Component edge = components.get(i);
+	    for (int i = 0; i < edges.size(); i++) {
+	    	Edge edge = edges.get(i);
         	Node in = edge.getInput();
         	Node out = edge.getOutput();
 	        if (in == previous.get(out)) {
@@ -182,11 +187,11 @@ public class Network {
 	        }
 	    }
 	    
-	    cycle.copyWithResize(new Matrix(components.size(), noOfCycles));
+	    cycle.copyWithResize(new Matrix(edges.size(), noOfCycles));
 	    cycle.fill(0);
 	    int currentCycle = 0;
-	    for (int i = 0; i < components.size(); i++) {
-	    	Component edge = components.get(i);
+	    for (int i = 0; i < edges.size(); i++) {
+	    	Edge edge = edges.get(i);
         	Node in = edge.getInput();
         	Node out = edge.getOutput();
 	        if (in != previous.get(out)) {
@@ -197,9 +202,9 @@ public class Network {
         			cycle.setAt(i, currentCycle, 1);
 	        		Node step = in;
 	        		while (true) {
-	        			for (Component iter : step.getIncoming()) {
+	        			for (Edge iter : step.getIncoming()) {
 	        				if (iter.getInput() == previous.get(step)) {
-			        			cycle.setAt(components.indexOf(iter), currentCycle, 1);
+			        			cycle.setAt(edges.indexOf(iter), currentCycle, 1);
 	        				}	        				
 	        			}
         				step = previous.get(step);
@@ -213,9 +218,9 @@ public class Network {
         			cycle.setAt(i, currentCycle, -1);
 	        		Node step = out;
 	        		while (true) {
-	        			for (Component iter : step.getIncoming()) {
+	        			for (Edge iter : step.getIncoming()) {
 	        				if (iter.getInput() == previous.get(step)) {
-			        			cycle.setAt(components.indexOf(iter), currentCycle, 1);
+			        			cycle.setAt(edges.indexOf(iter), currentCycle, 1);
 	        				}	        				
 	        			}
         				step = previous.get(step);
@@ -230,14 +235,14 @@ public class Network {
 	        		Node step1 = in;
 	        		Node step2 = out;
 	        		while (true) {
-	        			for (Component iter : step1.getIncoming()) {
+	        			for (Edge iter : step1.getIncoming()) {
 	        				if (iter.getInput() == previous.get(step1)) {
-			        			cycle.setAt(components.indexOf(iter), currentCycle, 1);
+			        			cycle.setAt(edges.indexOf(iter), currentCycle, 1);
 	        				}	        				
 	        			}
-	        			for (Component iter : step2.getIncoming()) {
+	        			for (Edge iter : step2.getIncoming()) {
 	        				if (iter.getInput() == previous.get(step2)) {
-			        			cycle.setAt(components.indexOf(iter), currentCycle, -1);
+			        			cycle.setAt(edges.indexOf(iter), currentCycle, -1);
 	        				}	        				
 	        			}
         				step1 = previous.get(step1);
@@ -258,64 +263,64 @@ public class Network {
 	
 	//Manipulating components:---------------------------------------
 	
-	public void addComponent(Component component) {
+	public void addEdge(Edge edge) {
 		Node input = new Node();
 		Node output = new Node();
 		
-		component.setInput(input);
-		component.setOutput(output);
+		edge.setInput(input);
+		edge.setOutput(output);
 		
-		input.addOutgoing(component);
-		output.addIncoming(component);
-		components.add(component);
+		input.addOutgoing(edge);
+		output.addIncoming(edge);
+		edges.add(edge);
 		nodes.add(input);
 		nodes.add(output);
 		
 	}
 
 	
-	public void removeComponent(Component component) {
-		if (component.getInput().getNoOfIncoming() == 0 && component.getInput().getNoOfOutgoing() == 1) {
-			nodes.remove(component.getInput());
+	public void removeEdge(Edge edge) {
+		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1) {
+			nodes.remove(edge.getInput());
 		}
-		if (component.getOutput().getNoOfIncoming() == 1 && component.getOutput().getNoOfOutgoing() == 0) {
-			nodes.remove(component.getOutput());
-		}
-		
-		if (component.getInput().isMerge() ||  component.getOutput().isMerge()) {
-			updateAll();
+		if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0) {
+			nodes.remove(edge.getOutput());
 		}
 		
-		components.remove(component);
+		updateAll();
+		
+		edges.remove(edge);
 	}
 	
-	public void grabNode(Node node) {
-		if (!nodes.contains(node)) {
+	public void addComponent (Component component) {
+		component.setParent(this);
+		component.build();
+		components.add(component);
+	}
+
+	
+	
+	public void grabComponentNode(ComponentNode componentNode) {
+		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
-		
-		node.setMerge(true);
-		node.setGrabbed(true);
+		componentNode.grab();
 			
 	}
 	
-	public void moveNode(Node node, Coordinate pos) {
-		if (!nodes.contains(node)) {
+	public void moveComponentNode(ComponentNode componentNode, Coordinate pos) {
+		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node moved.");
 		}
-		
-		node.setPos(pos);
-		
+		componentNode.move(pos);
 	}
 	
-	public void releaseNode(Node node) {
-		if (!nodes.contains(node)) {
+	public void releaseComponentNode(ComponentNode componentNode) {
+		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node released.");
 		}
-		
-		node.setGrabbed(false);
-		tryToMergeNode(node);
-		
+		componentNode.release();
+		tryToMergeComponentNode(componentNode);
 	}
 	
 	public void grabComponent(Component component) {
@@ -323,8 +328,8 @@ public class Network {
 			throw new RuntimeException("Invalid component grabbed.");
 		}
 		
-		Node input = component.getInput();
-		Node output = component.getOutput();
+		ComponentNode input = component.getInput();
+		ComponentNode output = component.getOutput();
 		
 		input.setMerge(true);
 		output.setMerge(true);
@@ -332,22 +337,22 @@ public class Network {
 		
 		if (input.getNoOfIncoming() > 0 || input.getNoOfOutgoing() > 1) {
 			//Duplicate node;
-			Node temp = new Node();
+			ComponentNode temp = new ComponentNode(this);
 			temp.setMerge(true);
 			temp.setPos(input.getPos());
 			temp.addOutgoing(component);
 			component.setInput(temp);
-			nodes.add(temp);			
+			componentNodes.add(temp);			
 			updateAll();
 		}
 		if (output.getNoOfIncoming() > 1 || output.getNoOfOutgoing() > 0) {
 			//Duplicate node;
-			Node temp = new Node();
+			ComponentNode temp = new ComponentNode(this);
 			temp.setMerge(true);
 			temp.setPos(output.getPos());
 			temp.addIncoming(component);
 			component.setOutput(temp);
-			nodes.add(temp);			
+			componentNodes.add(temp);		
 			updateAll();
 		}		
 		
@@ -366,13 +371,13 @@ public class Network {
 		
 	}
 
-	public void releaseComponent(Component component) {
-		if (!components.contains(component)) {
+	public void releaseComponent(Edge component) {
+		if (!edges.contains(component)) {
 			throw new RuntimeException("Invalid component released.");
 		}
 		
 		component.setGrabbed(false);
-
+		
 	}
 	
 	
@@ -385,19 +390,37 @@ public class Network {
 		updateCurrent = true;	
 	}
 	
-	public boolean tryToMergeNode(Node node) {
-		for (Node iter : nodes) {
-			if (iter != node) {
-				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(node.getPos(), iter.getPos()))) { //Merge needed
-					for (Component incoming : node.getIncoming()) {
+	public void mergeNodes(Node persistant, Node merge)  {
+		for (Edge incoming : merge.getIncoming()) {
+			incoming.setOutput(persistant);
+			persistant.addIncoming(incoming);
+		}
+		for (Edge outgoing : merge.getOutgoing()) {
+			outgoing.setInput(persistant);
+			persistant.addOutgoing(outgoing);
+		}
+		nodes.remove(merge);
+		updateAll();
+	}
+
+	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
+		for (ComponentNode iter : componentNodes) {
+			if (iter != componentNode) {
+				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) { //Merge needed
+					for (Component incoming : componentNode.getIncoming()) {
 						incoming.setOutput(iter);
 						iter.addIncoming(incoming);
 					}
-					for (Component outgoing : node.getOutgoing()) {
+					for (Component outgoing : componentNode.getOutgoing()) {
 						outgoing.setInput(iter);
 						iter.addOutgoing(outgoing);
 					}
-					nodes.remove(node);
+					
+					componentNode.destroy();
+					if (componentNode.getNode() != null && iter.getNode() != null) {
+						mergeNodes(iter.getNode(), componentNode.getNode());
+					}
+					componentNodes.remove(componentNode);
 					updateAll();
 				
 					return true;
@@ -407,14 +430,21 @@ public class Network {
 		return false;
 	}
 
-	public ArrayList<Component> getComponents() {
-		return components;
+	public ArrayList<Edge> getEdges() {
+		return edges;
 	}
 	
 	public ArrayList<Node> getNodes() {
 		return nodes;
 	}
 
+	public ArrayList<Component> getComponents() {
+		return components;
+	}
+	
+	public ArrayList<ComponentNode> getComponentNodes() {
+		return componentNodes;
+	}
 }
 
 

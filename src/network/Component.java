@@ -1,86 +1,63 @@
 package network;
 
-public abstract class Component {
-	private Node input;
-	private Node output;
+public abstract class Component {	
+	public Network getParent() {
+		return parent;
+	}
+
+	public void setParent(Network parent) {
+		this.parent = parent;
+	}
+
+	Network parent;
+
+	private ComponentNode input;
+	private ComponentNode output;
+
+	private boolean grabbed;
 	
-	float resistance;
-	float current;
-	float sourceVoltage;
+
+	public Component() {
+	}
 	
-	boolean grabbed;
+	public Component(Network parent) {
+		this.parent = parent;
+	}
+	
+	public void build () {		
+	}
+	
+	public void destroy () {
+		
+	}
 	
 	public boolean isGrabbed() {
 		return grabbed;
 	}
 
-
 	public void setGrabbed(boolean grabbed) {
 		this.grabbed = grabbed;
 	}
-
-
-	public Component() {
-		resistance = 1;
-		current = 0;
-		sourceVoltage = 0;
-	}
 	
-	public Component(float r, float i, float u) {
-		resistance = r;
-		current = i;
-		sourceVoltage = u;
-	}
-
-	
-	public float getSourceVoltage() {
-		return sourceVoltage;
-	}
-
-
-	public void setSourceVoltage(float sourceVoltage) {
-		this.sourceVoltage = sourceVoltage;
-	}
-
-
-	public float getVoltage() {
-		return current * resistance;
-	}
-	
-	public Node getInput() {
+	public ComponentNode getInput() {
 		return input;
 	}
 
-	public void setInput(Node input) {
+	public void setInput(ComponentNode input) {
 		this.input = input;
 	}
 
-	public Node getOutput() {
+	public ComponentNode getOutput() {
 		return output;
 	}
 
-	public void setOutput(Node output) {
+	public void setOutput(ComponentNode output) {
 		this.output = output;
 	}
 
-	public float getResistance() {
-		return resistance;
+	public Component(float r, float i, float u) {
+		;
 	}
-
-	public void setResistance(float resistance) {
-		if (resistance > 0) {
-			this.resistance = resistance;			
-		}		
-	}
-
-	public float getCurrent() {
-		return current;
-	}
-
-	public void setCurrent(float current) {
-		this.current = current;
-	}
-	
 	
 	
 }

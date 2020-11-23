@@ -1,6 +1,6 @@
 package network;
 
-public class Wire extends Component {
+public class Wire extends Edge {
 	public Wire() {
 		resistance = 0.001F;
 		current = 0.0F;

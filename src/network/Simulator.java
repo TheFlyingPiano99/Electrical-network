@@ -11,7 +11,7 @@ public class Simulator {
 
 	
 	public void run () {
-		network.addComponent(new Wire());
+		network.addEdge(new Wire());
 		
 		if (simulating) {
 			network.simulate();
