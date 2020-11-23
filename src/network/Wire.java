@@ -7,5 +7,7 @@ public class Wire extends Component {
 		sourceVoltage = 0.0F;
 	}
 	
-	
+	public Wire(float r, float i, float u) {
+		super(r, i ,u);
+	}
 }

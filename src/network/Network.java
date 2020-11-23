@@ -165,37 +165,96 @@ public class Network {
 	            }
 	        }
 	    }
+	    
 	    incidence.copyWithResize(new Matrix(components.size(), nodes.size()));
 	    incidence.fill(0);
-	    for (int i = 0; i < nodes.size(); i++) {
-	        if (null != previous.get(nodes.get(i))) {
-	            incidence.setAt(i, nodes.indexOf(previous.get(nodes.get(i))), 1);
-	            incidence.setAt(i, i, -1);
-	        }
-	    }
-
-	    //Getting fundamental base cycles:
 	    int noOfCycles = 0;             //First count the cycles:
-	    for (Node iter : nodes) {
-	        if (null == previous.get(iter)) {
-	            noOfCycles++;
+	    for (int i = 0; i < components.size(); i++) {
+	    	Component edge = components.get(i);
+        	Node in = edge.getInput();
+        	Node out = edge.getOutput();
+	        if (in == previous.get(out)) {
+	            incidence.setAt(i, nodes.indexOf(in), 1);
+	            incidence.setAt(i, nodes.indexOf(out), -1);
+	        }
+	        else {
+	            noOfCycles++;       	
 	        }
 	    }
 	    
 	    cycle.copyWithResize(new Matrix(components.size(), noOfCycles));
 	    cycle.fill(0);
-	    for (int i = 0; i < nodes.size(); i++) {     //Then fill cycle matrix
-	        if (null == previous.get(nodes.get(i))) {
-	            cycle.setAt(i, i, 1);
-	            for (int j = 0; j < nodes.size(); j++) {
-	                if (null != previous.get(nodes.get(j))) {
-	                    cycle.setAt(j, i, 1);
-	                }
-	            }
+	    int currentCycle = 0;
+	    for (int i = 0; i < components.size(); i++) {
+	    	Component edge = components.get(i);
+        	Node in = edge.getInput();
+        	Node out = edge.getOutput();
+	        if (in != previous.get(out)) {
+	        	int dIn = depth.get(in);
+	        	int dOut = depth.get(out);
+	        	if (dIn > dOut) {
+	        		//Backward edge
+        			cycle.setAt(i, currentCycle, 1);
+	        		Node step = in;
+	        		while (true) {
+	        			for (Component iter : step.getIncoming()) {
+	        				if (iter.getInput() == previous.get(step)) {
+			        			cycle.setAt(components.indexOf(iter), currentCycle, 1);
+	        				}	        				
+	        			}
+        				step = previous.get(step);
+	        			if (step == out) {
+	        				break;
+	        			}
+	        		}
+	        	}
+	        	else if (dIn < dOut) {
+	        		//Forward edge
+        			cycle.setAt(i, currentCycle, -1);
+	        		Node step = out;
+	        		while (true) {
+	        			for (Component iter : step.getIncoming()) {
+	        				if (iter.getInput() == previous.get(step)) {
+			        			cycle.setAt(components.indexOf(iter), currentCycle, 1);
+	        				}	        				
+	        			}
+        				step = previous.get(step);
+	        			if (step == in) {
+	        				break;
+	        			}
+	        		}
+	        	}
+	        	else {
+	        		//Cross edge
+        			cycle.setAt(i, currentCycle, 1);
+	        		Node step1 = in;
+	        		Node step2 = out;
+	        		while (true) {
+	        			for (Component iter : step1.getIncoming()) {
+	        				if (iter.getInput() == previous.get(step1)) {
+			        			cycle.setAt(components.indexOf(iter), currentCycle, 1);
+	        				}	        				
+	        			}
+	        			for (Component iter : step2.getIncoming()) {
+	        				if (iter.getInput() == previous.get(step2)) {
+			        			cycle.setAt(components.indexOf(iter), currentCycle, -1);
+	        				}	        				
+	        			}
+        				step1 = previous.get(step1);
+        				step2 = previous.get(step2);
+	        			if (step1 == step2) {
+	        				break;
+	        			}
+	        		}	        		
+	        	}
+	        	currentCycle++;
+		    	if (currentCycle >= noOfCycles) {
+		    		break;
+		    	}
 	        }
-	        //TODO
-	    }
+	    }     	    
 	}
+
 	
 	//Manipulating components:---------------------------------------
 	

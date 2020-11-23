@@ -14,6 +14,55 @@ public class Node {
 	
 	
 	boolean merge = false;		//Weather it should merge with other nodes, if in close proximity.
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((grabOffset == null) ? 0 : grabOffset.hashCode());
+		result = prime * result + (grabbed ? 1231 : 1237);
+		result = prime * result + ((incoming == null) ? 0 : incoming.hashCode());
+		result = prime * result + (merge ? 1231 : 1237);
+		result = prime * result + ((outgoing == null) ? 0 : outgoing.hashCode());
+		result = prime * result + ((pos == null) ? 0 : pos.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Node other = (Node) obj;
+		if (grabOffset == null) {
+			if (other.grabOffset != null)
+				return false;
+		} else if (!grabOffset.equals(other.grabOffset))
+			return false;
+		if (grabbed != other.grabbed)
+			return false;
+		if (incoming == null) {
+			if (other.incoming != null)
+				return false;
+		} else if (!incoming.equals(other.incoming))
+			return false;
+		if (merge != other.merge)
+			return false;
+		if (outgoing == null) {
+			if (other.outgoing != null)
+				return false;
+		} else if (!outgoing.equals(other.outgoing))
+			return false;
+		if (pos == null) {
+			if (other.pos != null)
+				return false;
+		} else if (!pos.equals(other.pos))
+			return false;
+		return true;
+	}
+
 	boolean grabbed = false;	//Weather the node is held by user.
 	
 	public boolean isGrabbed() {

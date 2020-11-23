@@ -14,4 +14,8 @@ public class VoltageSource extends Component {
 		sourceVoltage = u;
 	}
 	
+	public VoltageSource(float r, float i, float u) {
+		super(r, i ,u);
+	}
+	
 }
