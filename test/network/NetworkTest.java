@@ -24,9 +24,9 @@ public class NetworkTest {
 
 	private	Network network;
 
-	Component v;
-	Component w;
-	Component r;
+	Edge v;
+	Edge w;
+	Edge r;
 
 	/**
 	 * @throws java.lang.Exception
@@ -42,32 +42,32 @@ public class NetworkTest {
 		w = new Wire(10, 0, 0);
 		r = new Resistance(10, 0, 0);
 			
-		network.addComponent(v);
-		network.addComponent(w);
-		network.addComponent(r);
+		network.addEdge(v);
+		network.addEdge(w);
+		network.addEdge(r);
 		
-		network.grabNode(v.getInput());
-		network.moveNode(v.getInput(), new Coordinate(10,10));
+		network.grabComponentNode(v.getInput());
+		network.moveComponentNode(v.getInput(), new Coordinate(10,10));
 		network.releaseNode(v.getInput());
 
-		network.grabNode(v.getOutput());
-		network.moveNode(v.getOutput(), new Coordinate(30,10));
+		network.grabComponentNode(v.getOutput());
+		network.moveComponentNode(v.getOutput(), new Coordinate(30,10));
 		network.releaseNode(v.getOutput());
 
-		network.grabNode(w.getInput());
-		network.moveNode(w.getInput(), new Coordinate(30,10));
+		network.grabComponentNode(w.getInput());
+		network.moveComponentNode(w.getInput(), new Coordinate(30,10));
 		network.releaseNode(w.getInput());
 		
-		network.grabNode(w.getOutput());
-		network.moveNode(w.getOutput(), new Coordinate(30,30));
+		network.grabComponentNode(w.getOutput());
+		network.moveComponentNode(w.getOutput(), new Coordinate(30,30));
 		network.releaseNode(w.getOutput());
 
-		network.grabNode(r.getInput());
-		network.moveNode(r.getInput(), new Coordinate(30,30));
+		network.grabComponentNode(r.getInput());
+		network.moveComponentNode(r.getInput(), new Coordinate(30,30));
 		network.releaseNode(r.getInput());
 
-		network.grabNode(r.getOutput());
-		network.moveNode(r.getOutput(), new Coordinate(10,10));
+		network.grabComponentNode(r.getOutput());
+		network.moveComponentNode(r.getOutput(), new Coordinate(10,10));
 		network.releaseNode(r.getOutput());
 
 	}
@@ -222,62 +222,62 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#addComponent(network.Component)}.
+	 * Test method for {@link network.Network#addEdge(network.Edge)}.
 	 */
 	@Test
 	public void testAddComponent() {
-		Component added = new Wire();
-		network.addComponent(added);
+		Edge added = new Wire();
+		network.addEdge(added);
 		
-		assertTrue(1 == network.getComponents().size());
-		assertEquals(added, network.getComponents().get(0));
+		assertTrue(1 == network.getEdges().size());
+		assertEquals(added, network.getEdges().get(0));
 		
 		assertTrue(2 == network.getNodes().size());
 		
 	}
 
 	/**
-	 * Test method for {@link network.Network#removeComponent(network.Component)}.
+	 * Test method for {@link network.Network#removeEdge(network.Edge)}.
 	 */
 	@Test
 	public void testRemoveComponent() {
-		Component added = new Wire();
-		network.addComponent(added);
+		Edge added = new Wire();
+		network.addEdge(added);
 		
-		assertEquals(added, network.getComponents().get(0));
+		assertEquals(added, network.getEdges().get(0));
 		
-		network.removeComponent(added);
+		network.removeEdge(added);
 		
-		assertFalse(network.getComponents().contains(added));
+		assertFalse(network.getEdges().contains(added));
 		assertTrue(network.getNodes().isEmpty());
 	}
 
 	/**
-	 * Test method for {@link network.Network#grabNode(network.Node)}.
+	 * Test method for {@link network.Network#grabComponentNode(network.Node)}.
 	 */
 	@Test
 	public void testGrabNode() {
-		Component comp = new Resistance();
-		network.addComponent(comp);
+		Edge comp = new Resistance();
+		network.addEdge(comp);
 		Node node = network.getNodes().get(0);
-		network.grabNode(node);
+		network.grabComponentNode(node);
 		
 		assertTrue(node.isMerge());
 		assertTrue(node.isGrabbed());		
 	}
 
 	/**
-	 * Test method for {@link network.Network#moveNode(network.Node, math.Coordinate)}.
+	 * Test method for {@link network.Network#moveComponentNode(ComponentNode, math.Coordinate)}.
 	 */
 	@Test
 	public void testMoveNode() {
-		Component comp = new Resistance();
-		network.addComponent(comp);
+		Edge comp = new Resistance();
+		network.addEdge(comp);
 		Node node = network.getNodes().get(0);
-		network.grabNode(node);
+		network.grabComponentNode(node);
 		Coordinate pos = new Coordinate(15, 11);
 		
-		network.moveNode(node, pos);
+		network.moveComponentNode(node, pos);
 		
 		assertTrue(node.isMerge());
 		assertTrue(node.isGrabbed());
@@ -287,12 +287,12 @@ public class NetworkTest {
 	@Test
 	public void testbuildSympleNetwork() {
 		buildSympleNetwork();
-		ArrayList<Component> components = network.getComponents();
+		ArrayList<Edge> components = network.getEdges();
 		assertEquals(components.get(0).getInput(), components.get(2).getOutput());
 		assertEquals(components.get(1).getInput(), components.get(0).getOutput());
 		assertEquals(components.get(2).getInput(), components.get(1).getOutput());
 		
-		assertTrue(3 == network.getComponents().size());
+		assertTrue(3 == network.getEdges().size());
 		assertTrue(3 == network.getNodes().size());
 		
 	}
@@ -302,13 +302,13 @@ public class NetworkTest {
 	 */
 	@Test
 	public void testReleaseNode() {
-		Component comp = new Resistance();
-		network.addComponent(comp);
+		Edge comp = new Resistance();
+		network.addEdge(comp);
 		Node node = network.getNodes().get(0);
-		network.grabNode(node);
+		network.grabComponentNode(node);
 		Coordinate pos = new Coordinate(15, 11);
 		
-		network.moveNode(node, pos);
+		network.moveComponentNode(node, pos);
 		
 		network.releaseNode(node);
 		
@@ -318,12 +318,12 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#grabComponent(network.Component)}.
+	 * Test method for {@link network.Network#grabComponent(Component)}.
 	 */
 	@Test
 	public void testGrabComponent() {
-		Component comp = new Resistance();
-		network.addComponent(comp);
+		Edge comp = new Resistance();
+		network.addEdge(comp);
 		
 		network.grabComponent(comp);
 		
@@ -334,12 +334,12 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#moveComponent(network.Component, math.Coordinate)}.
+	 * Test method for {@link network.Network#moveComponent(network.Edge, math.Coordinate)}.
 	 */
 	@Test
 	public void testMoveComponent() {
-		Component comp = new Resistance();
-		network.addComponent(comp);
+		Edge comp = new Resistance();
+		network.addEdge(comp);
 		
 		network.grabComponent(comp);
 		Coordinate pos = new Coordinate(16, 12);
@@ -351,12 +351,12 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#releaseComponent(network.Component)}.
+	 * Test method for {@link network.Network#releaseComponent(network.Edge)}.
 	 */
 	@Test
 	public void testReleaseComponent() {
-		Component comp = new Resistance();
-		network.addComponent(comp);
+		Edge comp = new Resistance();
+		network.addEdge(comp);
 		
 		network.grabComponent(comp);
 		Coordinate pos = new Coordinate(16, 12);
