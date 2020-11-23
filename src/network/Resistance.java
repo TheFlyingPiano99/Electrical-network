@@ -13,4 +13,8 @@ public class Resistance extends Component {
 		sourceVoltage = 0.0F;
 	}
 	
+	public Resistance(float r, float i, float u) {
+		super(r, i ,u);
+	}
+
 }

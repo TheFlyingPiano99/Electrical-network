@@ -38,9 +38,9 @@ public class NetworkTest {
 	}
 
 	public void buildSympleNetwork() {
-		Component v = new VoltageSource(10.0F);
-		Component w = new Wire();
-		Component r = new Resistance(10);
+		v = new VoltageSource(20.0F, 0.0F, 10.0F);
+		w = new Wire(10, 0, 0);
+		r = new Resistance(10, 0, 0);
 			
 		network.addComponent(v);
 		network.addComponent(w);
@@ -147,6 +147,12 @@ public class NetworkTest {
 		
 		System.out.println(current.at(0) + ", " + current.at(1) + ", " + current.at(2));
 		
+		Vector expected = new Vector(3);
+		expected.setAt(0, 0.25F);
+		expected.setAt(1, 0.25F);
+		expected.setAt(2, 0.25F);
+		assertEquals(expected, current);
+		
 	}
 
 	/**
@@ -158,7 +164,11 @@ public class NetworkTest {
 		
 		network.simulate();
 		
-		assertTrue(1 == v.getCurrent());
+		System.out.println(v.getCurrent());
+		System.out.println(r.getCurrent());
+		System.out.println(w.getCurrent());
+		
+		assertTrue(0 == v.getCurrent());
 		assertTrue(1 == r.getCurrent());
 		
 	}
@@ -174,7 +184,8 @@ public class NetworkTest {
 		Matrix cycle = new Matrix(0,0);
 		
 		network.DFS(incidence, cycle);
-		
+
+		//Print:
 		for (int r = 0; r < incidence.row; r++) {
 			for (int c = 0; c < incidence.column; c++) {
 				System.out.print(incidence.at(r, c) + ", ");
@@ -193,20 +204,20 @@ public class NetworkTest {
 		Matrix exp = new Matrix(3,3);
 		exp.fill(0);
 
-		exp.setAt(0, 0, -1.0F);
-		exp.setAt(0, 2, 1.0F);
 		
-		exp.setAt(1, 0, 1.0F);
-		exp.setAt(1, 1, -1.0F);
+		exp.setAt(0, 0, 1.0F);
+		exp.setAt(0, 1, -1.0F);
 
-		exp.setAt(2, 1, 1.0F);
-		exp.setAt(2, 2, -1.0F);
+		exp.setAt(1, 1, 1.0F);
+		exp.setAt(1, 2, -1.0F);
 
 		assertEquals(exp, incidence);
 
 		exp = new Matrix(3, 1);
-		exp.fill(1);
-		assertEquals(exp, incidence);
+		exp.fill(1.0F);
+		assertEquals(exp, cycle);
+		
+		
 		
 	}
 

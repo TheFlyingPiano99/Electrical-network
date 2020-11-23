@@ -25,6 +25,12 @@ public abstract class Component {
 		current = 0;
 		sourceVoltage = 0;
 	}
+	
+	public Component(float r, float i, float u) {
+		resistance = r;
+		current = i;
+		sourceVoltage = u;
+	}
 
 	
 	public float getSourceVoltage() {

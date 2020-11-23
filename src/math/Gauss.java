@@ -18,7 +18,10 @@ public class Gauss {
      * 0. index variable.
      * @throws GaussException - if the matrix has no solution or has infinite solutions.
      */
-    public static Vector Eliminate (Matrix M) throws GaussException {
+    public static Vector Eliminate (Matrix system) throws GaussException {
+    	Matrix M = new Matrix(0,0);		//Create a clone of the original to prevent from modifications.
+    	M.copyWithResize(system);
+    	
         SingularityFlag flag = Reduce(M);
         switch (flag) {
             case noSolution: {
@@ -30,7 +33,7 @@ public class Gauss {
             case cleanSolution: {
     //Second fase of Gauss eliminaton after reducton:----------------------------
                 int r = M.row-2;
-                int rightSideRow = M.row-1;     //The right side of the equation.
+                int rightSideRow = M.row-1;     //The right side of the equations.
                 for (int c = M.column-1; c > 0; c--) {    //Reverse iteration on columns
                     for (int ci = c-1; ci >= 0; ci--) {
                             M.setAt(rightSideRow, ci, M.at(rightSideRow, ci) - M.at(rightSideRow, c) * M.at(r, ci));
@@ -38,7 +41,7 @@ public class Gauss {
                     }
                     r--;
                 }
-                Vector ret = new Vector(M.column);
+                Vector ret = new Vector(M.row-1);
                 for (int c = 0; c < M.column; c++) {
                     ret.setAt(c, M.at(rightSideRow, c));
                 }
@@ -142,7 +145,7 @@ public class Gauss {
             }
 
             //Shrink matrix by removing zero columns:-----------------------
-            M = MyMath.RemoveColumns(M, toRemoveIndexes);
+            M.copyWithResize(MyMath.RemoveColumns(M, toRemoveIndexes));
 
             if (M.column < M.row - 1) {
                 return SingularityFlag.infiniteSolutions;
