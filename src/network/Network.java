@@ -19,7 +19,7 @@ public class Network {
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
 	
-	int mergeProximity = 10;
+	int mergeProximity = 8;
 	
 	public Network() {
 		nodes = new ArrayList<Node>();
@@ -105,11 +105,11 @@ public class Network {
 			throw new RuntimeException("No nodes to work with.");
 		}
 		
-	    Node s = nodes.get(0);  //Starting vertex
+	    Node s = nodes.iterator().next();  //Starting vertex
 
 	    Map<Node, Integer> depth = new HashMap<Node, Integer>();
 	    Map<Node, Integer> finish = new HashMap<Node, Integer>();
-	    Map<Node, Node> previous = new HashMap<Node, Node>();
+	    Map<Node, Edge> previous = new HashMap<Node, Edge>();
 	    Node current;
 	    int GreatestDepth;
 	    int GreatestFinish;
@@ -137,22 +137,22 @@ public class Network {
 	    while (run) {
 	        ///Finding adjacent vertex with (*) depth:
 	        Node v = current;
-	        for (Edge iter : current.getOutgoing()) {
-	            if (-1 == depth.get(iter.getOutput())) {
-	                v = iter.getOutput();
-	                break;
+	        for (Node iter : current.getOutgoing().keySet()) {
+	            if (depth.get(iter) != null && -1 == depth.get(iter)) {
+	                v = iter;
+	        		break;
 	            }
 	        }
 	        if (current != v) { //Found adjacent vertex with (*) depth
 	            GreatestDepth++;
 	            depth.put(v, GreatestDepth);
-	            previous.put(v, current);
+	            previous.put(v, v.getIncoming().get(current));
 	            current = v;
 	        } else {
 	            GreatestFinish++;
 	            finish.put(current, GreatestFinish);
-	            if (null != previous.get(current)) {
-	                current = previous.get(current);
+	            if (null != previous.get(current)) {	//Backtracking
+	                current = previous.get(current).getInput();
 	            } else {
 	                ///Finding vertex with (*) depth:
 	                v = current;
@@ -176,11 +176,9 @@ public class Network {
 	    int noOfCycles = 0;             //First count the cycles:
 	    for (int i = 0; i < edges.size(); i++) {
 	    	Edge edge = edges.get(i);
-        	Node in = edge.getInput();
-        	Node out = edge.getOutput();
-	        if (in == previous.get(out)) {
-	            incidence.setAt(i, nodes.indexOf(in), 1);
-	            incidence.setAt(i, nodes.indexOf(out), -1);
+	        if (previous.containsValue(edge)) {
+	            incidence.setAt(i, nodes.indexOf(edge.getInput()), 1);
+	            incidence.setAt(i, nodes.indexOf(edge.getOutput()), -1);
 	        }
 	        else {
 	            noOfCycles++;       	
@@ -189,44 +187,31 @@ public class Network {
 	    
 	    cycle.copyWithResize(new Matrix(edges.size(), noOfCycles));
 	    cycle.fill(0);
-	    int currentCycle = 0;
-	    for (int i = 0; i < edges.size(); i++) {
+	    for (int i = 0, currentCycle = 0; i < edges.size() && currentCycle < noOfCycles; i++, currentCycle++) {
+
 	    	Edge edge = edges.get(i);
         	Node in = edge.getInput();
         	Node out = edge.getOutput();
-	        if (in != previous.get(out)) {
+
+        	if (!previous.containsValue(edge)) {
 	        	int dIn = depth.get(in);
 	        	int dOut = depth.get(out);
 	        	if (dIn > dOut) {
 	        		//Backward edge
         			cycle.setAt(i, currentCycle, 1);
 	        		Node step = in;
-	        		while (true) {
-	        			for (Edge iter : step.getIncoming()) {
-	        				if (iter.getInput() == previous.get(step)) {
-			        			cycle.setAt(edges.indexOf(iter), currentCycle, 1);
-	        				}	        				
-	        			}
-        				step = previous.get(step);
-	        			if (step == out) {
-	        				break;
-	        			}
+	        		while (step != out) {
+	        			cycle.setAt(edges.indexOf(previous.get(step)), currentCycle, 1);	        				
+        				step = previous.get(step).getInput();
 	        		}
 	        	}
 	        	else if (dIn < dOut) {
 	        		//Forward edge
         			cycle.setAt(i, currentCycle, -1);
 	        		Node step = out;
-	        		while (true) {
-	        			for (Edge iter : step.getIncoming()) {
-	        				if (iter.getInput() == previous.get(step)) {
-			        			cycle.setAt(edges.indexOf(iter), currentCycle, 1);
-	        				}	        				
-	        			}
-        				step = previous.get(step);
-	        			if (step == in) {
-	        				break;
-	        			}
+	        		while (step != in) {
+	        			cycle.setAt(edges.indexOf(previous.get(step)), currentCycle, 1);
+        				step = previous.get(step).getInput();
 	        		}
 	        	}
 	        	else {
@@ -234,28 +219,13 @@ public class Network {
         			cycle.setAt(i, currentCycle, 1);
 	        		Node step1 = in;
 	        		Node step2 = out;
-	        		while (true) {
-	        			for (Edge iter : step1.getIncoming()) {
-	        				if (iter.getInput() == previous.get(step1)) {
-			        			cycle.setAt(edges.indexOf(iter), currentCycle, 1);
-	        				}	        				
-	        			}
-	        			for (Edge iter : step2.getIncoming()) {
-	        				if (iter.getInput() == previous.get(step2)) {
-			        			cycle.setAt(edges.indexOf(iter), currentCycle, -1);
-	        				}	        				
-	        			}
-        				step1 = previous.get(step1);
-        				step2 = previous.get(step2);
-	        			if (step1 == step2) {
-	        				break;
-	        			}
+	        		while (step1 != step2) {
+	        			cycle.setAt(edges.indexOf(previous.get(step1)), currentCycle, 1);
+	        			cycle.setAt(edges.indexOf(previous.get(step2)), currentCycle, -1);
+        				step1 = previous.get(step1).getInput();
+        				step2 = previous.get(step2).getInput();
 	        		}	        		
 	        	}
-	        	currentCycle++;
-		    	if (currentCycle >= noOfCycles) {
-		    		break;
-		    	}
 	        }
 	    }     	    
 	}
@@ -270,8 +240,9 @@ public class Network {
 		edge.setInput(input);
 		edge.setOutput(output);
 		
-		input.addOutgoing(edge);
-		output.addIncoming(edge);
+		input.addOutgoing(output, edge);
+		output.addIncoming(input, edge);
+		
 		edges.add(edge);
 		nodes.add(input);
 		nodes.add(output);
@@ -283,21 +254,32 @@ public class Network {
 		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1) {
 			nodes.remove(edge.getInput());
 		}
+		else {
+			edge.getInput().removeOutgoing(edge.getOutput());
+		}
 		if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0) {
 			nodes.remove(edge.getOutput());
+		}
+		else {
+			edge.getOutput().removeIncoming(edge.getInput());
 		}
 		
 		updateAll();
 		
 		edges.remove(edge);
 	}
+		
 	
 	public void addComponent (Component component) {
 		component.setParent(this);
-		component.build();
+		component.create();
 		components.add(component);
 	}
 
+	public void removeComponent (Component component) {
+		component.destroy();
+		components.remove(component);
+	}
 	
 	
 	public void grabComponentNode(ComponentNode componentNode) {
@@ -323,6 +305,7 @@ public class Network {
 		tryToMergeComponentNode(componentNode);
 	}
 	
+	/*
 	public void grabComponent(Component component) {
 		if (!components.contains(component)) {
 			throw new RuntimeException("Invalid component grabbed.");
@@ -357,7 +340,9 @@ public class Network {
 		}		
 		
 	}
+	*/
 	
+	/*
 	public void moveComponent(Component component, Coordinate pos) {
 		if (!components.contains(component)) {
 			throw new RuntimeException("Invalid component moved.");
@@ -370,7 +355,9 @@ public class Network {
 		
 		
 	}
-
+*/
+	
+	/*
 	public void releaseComponent(Edge component) {
 		if (!edges.contains(component)) {
 			throw new RuntimeException("Invalid component released.");
@@ -379,7 +366,7 @@ public class Network {
 		component.setGrabbed(false);
 		
 	}
-	
+	*/
 	
 	//---------------------------------------------------------------
 	
@@ -391,22 +378,31 @@ public class Network {
 	}
 	
 	public void mergeNodes(Node persistant, Node merge)  {
-		for (Edge incoming : merge.getIncoming()) {
-			incoming.setOutput(persistant);
-			persistant.addIncoming(incoming);
+		if (persistant != merge) {
+			for (Map.Entry<Node, Edge> incoming : merge.getIncoming().entrySet()) {
+				incoming.getKey().removeOutgoing(merge);
+				incoming.getKey().addOutgoing(persistant, incoming.getValue());				
+				
+				incoming.getValue().setOutput(persistant);
+				persistant.addIncoming(incoming.getKey(), incoming.getValue());
+			}
+			for (Map.Entry<Node, Edge> outgoing : merge.getOutgoing().entrySet()) {
+				outgoing.getKey().removeIncoming(merge);
+				outgoing.getKey().addIncoming(persistant, outgoing.getValue());
+				
+				outgoing.getValue().setInput(persistant);
+				persistant.addOutgoing(outgoing.getKey(), outgoing.getValue());
+			}
+			nodes.remove(merge);
+			updateAll();
 		}
-		for (Edge outgoing : merge.getOutgoing()) {
-			outgoing.setInput(persistant);
-			persistant.addOutgoing(outgoing);
-		}
-		nodes.remove(merge);
-		updateAll();
 	}
 
 	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
-				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) { //Merge needed
+				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {
+					//Merge needed:
 					for (Component incoming : componentNode.getIncoming()) {
 						incoming.setOutput(iter);
 						iter.addIncoming(incoming);
@@ -416,10 +412,14 @@ public class Network {
 						iter.addOutgoing(outgoing);
 					}
 					
-					componentNode.destroy();
 					if (componentNode.getNode() != null && iter.getNode() != null) {
 						mergeNodes(iter.getNode(), componentNode.getNode());
 					}
+					else {
+						throw new RuntimeException("ComponentNode does not contain reference to actual node.");
+					}
+					componentNode.destroy();
+
 					componentNodes.remove(componentNode);
 					updateAll();
 				

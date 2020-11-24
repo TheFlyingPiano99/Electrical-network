@@ -1,12 +1,14 @@
 package network;
 
 public class Edge {
+	static int gen = 0;
+	private int id;
+	
 	private Node input;
 	private Node output;
 	
-	float resistance;
-	float current;
-	float sourceVoltage;
+	float resistance = 1000;
+	float current = 0;
 	
 	boolean grabbed = false;
 
@@ -21,27 +23,53 @@ public class Edge {
 
 
 	public Edge() {
-		resistance = 1;
-		current = 0;
-		sourceVoltage = 0;
+		gen++;
+		id = gen;
 	}
 	
-	public Edge(float r, float i, float u) {
+	public Edge(float r, float i) {
+		gen++;
+		id = gen;
 		resistance = r;
 		current = i;
-		sourceVoltage = u;
 	}
 
-	
+	public int getId() {
+		return id;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Edge other = (Edge) obj;
+		if (id != other.getId())
+			return false;
+		return true;
+	}
+
+
 	public float getSourceVoltage() {
-		return sourceVoltage;
+		return input.getSourceVoltage();
 	}
 
 
 	public void setSourceVoltage(float sourceVoltage) {
-		this.sourceVoltage = sourceVoltage;
+		input.setSourceVoltage(sourceVoltage);
 	}
-
 
 	public float getVoltage() {
 		return current * resistance;
