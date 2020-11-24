@@ -24,9 +24,9 @@ public class NetworkTest {
 
 	private	Network network;
 
-	Edge v;
-	Edge w;
-	Edge r;
+	Component v;
+	Component w;
+	Component r;
 
 	/**
 	 * @throws java.lang.Exception
@@ -38,37 +38,38 @@ public class NetworkTest {
 	}
 
 	public void buildSympleNetwork() {
-		v = new VoltageSource(20.0F, 0.0F, 10.0F);
-		w = new Wire(10, 0, 0);
-		r = new Resistance(10, 0, 0);
+		v = new VoltageSource(10.0F);
+		w = new Resistance(10);
+		r = new Resistance(10);
 			
-		network.addEdge(v);
-		network.addEdge(w);
-		network.addEdge(r);
+		network.addComponent(v);
+		network.addComponent(w);
+		network.addComponent(r);
 		
-		network.grabComponentNode(v.getInput());
-		network.moveComponentNode(v.getInput(), new Coordinate(10,10));
-		network.releaseNode(v.getInput());
-
-		network.grabComponentNode(v.getOutput());
-		network.moveComponentNode(v.getOutput(), new Coordinate(30,10));
-		network.releaseNode(v.getOutput());
 
 		network.grabComponentNode(w.getInput());
 		network.moveComponentNode(w.getInput(), new Coordinate(30,10));
-		network.releaseNode(w.getInput());
+		network.releaseComponentNode(w.getInput());
 		
 		network.grabComponentNode(w.getOutput());
 		network.moveComponentNode(w.getOutput(), new Coordinate(30,30));
-		network.releaseNode(w.getOutput());
+		network.releaseComponentNode(w.getOutput());
 
+		network.grabComponentNode(v.getInput());
+		network.moveComponentNode(v.getInput(), new Coordinate(60,60));
+		network.releaseComponentNode(v.getInput());
+
+		network.grabComponentNode(v.getOutput());
+		network.moveComponentNode(v.getOutput(), new Coordinate(30,10));
+		network.releaseComponentNode(v.getOutput());
+		
 		network.grabComponentNode(r.getInput());
 		network.moveComponentNode(r.getInput(), new Coordinate(30,30));
-		network.releaseNode(r.getInput());
+		network.releaseComponentNode(r.getInput());
 
 		network.grabComponentNode(r.getOutput());
-		network.moveComponentNode(r.getOutput(), new Coordinate(10,10));
-		network.releaseNode(r.getOutput());
+		network.moveComponentNode(r.getOutput(), new Coordinate(60,60));
+		network.releaseComponentNode(r.getOutput());
 
 	}
 	
@@ -78,9 +79,14 @@ public class NetworkTest {
 	@Test
 	public void testGatherSourceVoltages() {
 		
-		network.addComponent(new VoltageSource(10.0F));
-		network.addComponent(new VoltageSource(20.0F));
+		Edge e1 = new Edge();
+		network.addEdge(e1);
+		e1.setSourceVoltage(10);
 		
+		Edge e2 = new Edge();
+		network.addEdge(e2);
+		e2.setSourceVoltage(20);
+
 		Vector exp = new Vector(2);
 		exp.setAt(0, 10);
 		exp.setAt(1, 20);
@@ -168,9 +174,8 @@ public class NetworkTest {
 		System.out.println(r.getCurrent());
 		System.out.println(w.getCurrent());
 		
-		assertTrue(0 == v.getCurrent());
-		assertTrue(1 == r.getCurrent());
-		
+		fail("Not implemented yet!");
+
 	}
 
 	/**
@@ -186,6 +191,7 @@ public class NetworkTest {
 		network.DFS(incidence, cycle);
 
 		//Print:
+		System.out.println("DFS test:");
 		for (int r = 0; r < incidence.row; r++) {
 			for (int c = 0; c < incidence.column; c++) {
 				System.out.print(incidence.at(r, c) + ", ");
@@ -210,6 +216,8 @@ public class NetworkTest {
 
 		exp.setAt(1, 1, 1.0F);
 		exp.setAt(1, 2, -1.0F);
+
+		fail("Not implemented yet!");
 
 		assertEquals(exp, incidence);
 
@@ -251,149 +259,53 @@ public class NetworkTest {
 		assertFalse(network.getEdges().contains(added));
 		assertTrue(network.getNodes().isEmpty());
 	}
-
-	/**
-	 * Test method for {@link network.Network#grabComponentNode(network.Node)}.
-	 */
-	@Test
-	public void testGrabNode() {
-		Edge comp = new Resistance();
-		network.addEdge(comp);
-		Node node = network.getNodes().get(0);
-		network.grabComponentNode(node);
-		
-		assertTrue(node.isMerge());
-		assertTrue(node.isGrabbed());		
-	}
-
-	/**
-	 * Test method for {@link network.Network#moveComponentNode(ComponentNode, math.Coordinate)}.
-	 */
-	@Test
-	public void testMoveNode() {
-		Edge comp = new Resistance();
-		network.addEdge(comp);
-		Node node = network.getNodes().get(0);
-		network.grabComponentNode(node);
-		Coordinate pos = new Coordinate(15, 11);
-		
-		network.moveComponentNode(node, pos);
-		
-		assertTrue(node.isMerge());
-		assertTrue(node.isGrabbed());
-		assertEquals(pos, node.getPos());
-	}
 	
 	@Test
 	public void testbuildSympleNetwork() {
 		buildSympleNetwork();
-		ArrayList<Edge> components = network.getEdges();
-		assertEquals(components.get(0).getInput(), components.get(2).getOutput());
-		assertEquals(components.get(1).getInput(), components.get(0).getOutput());
-		assertEquals(components.get(2).getInput(), components.get(1).getOutput());
-		
-		assertTrue(3 == network.getEdges().size());
-		assertTrue(3 == network.getNodes().size());
+		assertTrue(3 == network.getComponents().size());
+		assertTrue(3 == network.getComponentNodes().size());
 		
 	}
+
 	
-	/**
-	 * Test method for {@link network.Network#releaseNode(network.Node)}.
-	 */
-	@Test
-	public void testReleaseNode() {
-		Edge comp = new Resistance();
-		network.addEdge(comp);
-		Node node = network.getNodes().get(0);
-		network.grabComponentNode(node);
-		Coordinate pos = new Coordinate(15, 11);
-		
-		network.moveComponentNode(node, pos);
-		
-		network.releaseNode(node);
-		
-		assertTrue(node.isMerge());
-		assertFalse(node.isGrabbed());	//!
-		assertEquals(pos, node.getPos());
-	}
-
-	/**
-	 * Test method for {@link network.Network#grabComponent(Component)}.
-	 */
-	@Test
-	public void testGrabComponent() {
-		Edge comp = new Resistance();
-		network.addEdge(comp);
-		
-		network.grabComponent(comp);
-		
-		assertTrue(comp.isGrabbed());
-		assertTrue(comp.getInput().isMerge());
-		assertTrue(comp.getOutput().isMerge());
-		
-	}
-
-	/**
-	 * Test method for {@link network.Network#moveComponent(network.Edge, math.Coordinate)}.
-	 */
-	@Test
-	public void testMoveComponent() {
-		Edge comp = new Resistance();
-		network.addEdge(comp);
-		
-		network.grabComponent(comp);
-		Coordinate pos = new Coordinate(16, 12);
-		network.moveComponent(comp, pos);
-		
-		assertEquals(pos, comp.getInput().getPos());
-		assertEquals(pos, comp.getOutput().getPos());
-		
-	}
-
-	/**
-	 * Test method for {@link network.Network#releaseComponent(network.Edge)}.
-	 */
-	@Test
-	public void testReleaseComponent() {
-		Edge comp = new Resistance();
-		network.addEdge(comp);
-		
-		network.grabComponent(comp);
-		Coordinate pos = new Coordinate(16, 12);
-		network.moveComponent(comp, pos);
-		network.releaseComponent(comp);
-		
-		assertFalse(comp.isGrabbed());
-		assertTrue(comp.getInput().isMerge());
-		assertTrue(comp.getOutput().isMerge());
-	}
-
 	/**
 	 * Test method for {@link network.Network#tryToMergeNode(network.Node)}.
 	 */
 	@Test
 	public void testTryToMergeNode() {
-		ArrayList<Node> nodes = network.getNodes();
-		Node n1 = new Node();
-		Node n2 = new Node();
-		Node n3 = new Node();
-		nodes.add(n1);
-		nodes.add(n2);
-		nodes.add(n3);
+		Component c1 = new Resistance(10);
+		Component c2 = new Resistance(10);
 		
-		n1.setPos(new Coordinate(10, 10));
-		n2.setPos(new Coordinate(0, 0));
+		network.addComponent(c1);
+		network.addComponent(c2);
+
+		assertTrue(4 == network.getNodes().size());
+		assertTrue(4 == network.getComponentNodes().size());
 		
-		network.tryToMergeNode(n1);
+		network.grabComponentNode(c1.getOutput());
+		network.moveComponentNode(c1.getOutput(), new Coordinate(30,30));
+		network.releaseComponentNode(c1.getOutput());
+		
+		network.grabComponentNode(c2.getOutput());
+		network.moveComponentNode(c2.getOutput(), new Coordinate(28,32));
+		network.releaseComponentNode(c2.getOutput());
 		
 		assertTrue(3 == network.getNodes().size());
+		assertTrue(3 == network.getComponentNodes().size());		
+	}
+	
+	@Test
+	public void testRemoveComponents() {
+		buildSympleNetwork();
+		network.removeComponent(v);
+		network.removeComponent(r);
+		network.removeComponent(w);
 		
-		n2.setPos(new Coordinate(11, 8));
-		
-		network.tryToMergeNode(n1);
-		
-		assertTrue(2 == network.getNodes().size());
-		
+		assertTrue(network.getNodes().isEmpty());
+		assertTrue(network.getEdges().isEmpty());
+		assertTrue(network.getComponents().isEmpty());
+		assertTrue(network.getComponentNodes().isEmpty());
 	}
 
 }

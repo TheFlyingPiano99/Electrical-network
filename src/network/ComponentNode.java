@@ -60,20 +60,19 @@ public class ComponentNode {
 	boolean grabbed = false;	//Weather the node is held by user.
 
 	public ComponentNode() {
-		
+		this.pos = new Coordinate(10,10);
+		incoming = new ArrayList<Component>();
+		outgoing = new ArrayList<Component>();
 	}
 	
 	public ComponentNode(Network parent) {
 		this.parent = parent;
-		this.create();
-	}
-
-	private void create () {
-		
+		this.pos = new Coordinate(10,10);
+		incoming = new ArrayList<Component>();
+		outgoing = new ArrayList<Component>();
 	}
 	
 	public void destroy () {
-		
 	}
 
 	
@@ -137,5 +136,5 @@ public class ComponentNode {
 	public void release() {
 		setGrabbed(false);
 	}
-	
+		
 }
