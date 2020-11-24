@@ -187,7 +187,8 @@ public class Network {
 	    
 	    cycle.copyWithResize(new Matrix(edges.size(), noOfCycles));
 	    cycle.fill(0);
-	    for (int i = 0, currentCycle = 0; i < edges.size() && currentCycle < noOfCycles; i++, currentCycle++) {
+	    int currentCycle = 0;
+	    for (int i = 0; i < edges.size() && currentCycle < noOfCycles; i++) {
 
 	    	Edge edge = edges.get(i);
         	Node in = edge.getInput();
@@ -226,6 +227,7 @@ public class Network {
         				step2 = previous.get(step2).getInput();
 	        		}	        		
 	        	}
+	        	currentCycle++;
 	        }
 	    }     	    
 	}
