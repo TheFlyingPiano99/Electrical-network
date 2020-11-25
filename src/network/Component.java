@@ -76,9 +76,7 @@ public abstract class Component {
 		}
 	}
 	
-	public float getCurrent() {
-		return 0;
-	}
+	abstract public float getCurrent();
 	
 	//To override:
 	

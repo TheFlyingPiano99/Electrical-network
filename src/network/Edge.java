@@ -4,11 +4,12 @@ public class Edge {
 	static int gen = 0;
 	private int id;
 	
-	private Node input;
-	private Node output;
+	private Vertex input;
+	private Vertex output;
 	
 	float resistance = 1000;
 	float current = 0;
+	float sourceVoltage = 0;
 	
 	boolean grabbed = false;
 
@@ -63,31 +64,30 @@ public class Edge {
 
 
 	public float getSourceVoltage() {
-		return input.getSourceVoltage();
+		return sourceVoltage;
 	}
 
-
 	public void setSourceVoltage(float sourceVoltage) {
-		input.setSourceVoltage(sourceVoltage);
+		this.sourceVoltage = sourceVoltage;
 	}
 
 	public float getVoltage() {
 		return current * resistance;
 	}
 	
-	public Node getInput() {
+	public Vertex getInput() {
 		return input;
 	}
 
-	public void setInput(Node input) {
+	public void setInput(Vertex input) {
 		this.input = input;
 	}
 
-	public Node getOutput() {
+	public Vertex getOutput() {
 		return output;
 	}
 
-	public void setOutput(Node output) {
+	public void setOutput(Vertex output) {
 		this.output = output;
 	}
 
