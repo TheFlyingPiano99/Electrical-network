@@ -170,9 +170,12 @@ public class NetworkTest {
 		
 		network.simulate();
 		
-		System.out.println(v.getCurrent());
-		System.out.println(r.getCurrent());
-		System.out.println(w.getCurrent());
+		System.out.println("Test Simulate:");
+
+		System.out.println("I[v] = " + v.getCurrent());
+		System.out.println("I[r] = " + r.getCurrent());
+		System.out.println("I[w] = " + w.getCurrent());
+		System.out.println("--------------------------");
 		
 		fail("Not implemented yet!");
 
@@ -206,6 +209,7 @@ public class NetworkTest {
 			}
 			System.out.print("\n");
 		}
+		System.out.println("-----------------------------------");
 		
 		Matrix exp = new Matrix(3,3);
 		exp.fill(0);
@@ -235,13 +239,7 @@ public class NetworkTest {
 	@Test
 	public void testAddComponent() {
 		Edge added = new Wire();
-		network.addEdge(added);
-		
-		assertTrue(1 == network.getEdges().size());
-		assertEquals(added, network.getEdges().get(0));
-		
-		assertTrue(2 == network.getNodes().size());
-		
+		network.addEdge(added);		
 	}
 
 	/**
@@ -252,12 +250,9 @@ public class NetworkTest {
 		Edge added = new Wire();
 		network.addEdge(added);
 		
-		assertEquals(added, network.getEdges().get(0));
 		
 		network.removeEdge(added);
 		
-		assertFalse(network.getEdges().contains(added));
-		assertTrue(network.getNodes().isEmpty());
 	}
 	
 	@Test
@@ -280,7 +275,6 @@ public class NetworkTest {
 		network.addComponent(c1);
 		network.addComponent(c2);
 
-		assertTrue(4 == network.getNodes().size());
 		assertTrue(4 == network.getComponentNodes().size());
 		
 		network.grabComponentNode(c1.getOutput());
@@ -291,7 +285,6 @@ public class NetworkTest {
 		network.moveComponentNode(c2.getOutput(), new Coordinate(28,32));
 		network.releaseComponentNode(c2.getOutput());
 		
-		assertTrue(3 == network.getNodes().size());
 		assertTrue(3 == network.getComponentNodes().size());		
 	}
 	
@@ -302,8 +295,6 @@ public class NetworkTest {
 		network.removeComponent(r);
 		network.removeComponent(w);
 		
-		assertTrue(network.getNodes().isEmpty());
-		assertTrue(network.getEdges().isEmpty());
 		assertTrue(network.getComponents().isEmpty());
 		assertTrue(network.getComponentNodes().isEmpty());
 	}

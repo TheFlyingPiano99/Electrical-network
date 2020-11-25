@@ -26,7 +26,7 @@ public class VoltageSource extends Component {
 		getInput().setNode(e.getInput());
 		getOutput().setNode(e.getOutput());
 		
-		e.getOutput().setSourceVoltage(sourceVoltage);	//!		
+		e.setSourceVoltage(sourceVoltage);	//!		
 
 	}
 

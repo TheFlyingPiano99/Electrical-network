@@ -7,7 +7,7 @@ import math.Coordinate;
 public class ComponentNode {
 	private Network parent;
 	
-	Node node = null;	//Bound node of graph.
+	Vertex node = null;	//Bound node of graph.
 	
 	public Network getParent() {
 		return parent;
@@ -19,12 +19,12 @@ public class ComponentNode {
 	}
 
 
-	public Node getNode() {
+	public Vertex getNode() {
 		return node;
 	}
 
 
-	public void setNode(Node node) {
+	public void setNode(Vertex node) {
 		this.node = node;
 	}
 

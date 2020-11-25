@@ -1,7 +1,7 @@
 package network;
 
 public class Wire extends Edge {
-	Node n;
+	Vertex n;
 	public Wire() {
 	}
 	
