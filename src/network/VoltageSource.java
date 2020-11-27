@@ -1,5 +1,10 @@
 package network;
 
+/**
+ * Ideal voltage source, with 0 resistance.
+ * @author simon
+ *
+ */
 public class VoltageSource extends Component {
 	Edge e;
 	float sourceVoltage = 10;

@@ -70,10 +70,13 @@ public class Vertex {
 		return true;
 	}
 
-	
-	
 	public int getId() {
 		return id;
 	}
-	
+
+	public boolean isNeighbouring (Vertex v) {
+		return ((v != null) && 
+				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));
+	}
+
 }

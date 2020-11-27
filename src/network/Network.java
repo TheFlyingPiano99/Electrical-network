@@ -7,7 +7,7 @@ import java.util.Map;
 import math.*;
 
 public class Network {
-	private ArrayList<Vertex> nodes;
+	private ArrayList<Vertex> vertices;
 	private ArrayList<Edge> edges;
 	
 	private ArrayList<ComponentNode> componentNodes;
@@ -22,7 +22,7 @@ public class Network {
 	int mergeProximity = 8;
 	
 	public Network() {
-		nodes = new ArrayList<Vertex>();
+		vertices = new ArrayList<Vertex>();
 		edges = new ArrayList<Edge>();
 		
 		componentNodes = new ArrayList<ComponentNode>();
@@ -101,15 +101,15 @@ public class Network {
 	}
 	
 	public void DFS (Matrix incidence, Matrix cycle) {
-		if (nodes.isEmpty()) {
+		if (vertices.isEmpty()) {
 			throw new RuntimeException("No nodes to work with.");
 		}
 		
-	    Vertex s = nodes.iterator().next();  //Starting vertex
+	    Vertex s = vertices.iterator().next();  //Starting vertex
 
 	    Map<Vertex, Integer> depth = new HashMap<Vertex, Integer>();
 	    Map<Vertex, Integer> finish = new HashMap<Vertex, Integer>();
-	    Map<Vertex, Edge> previous = new HashMap<Vertex, Edge>();
+	    Map<Vertex, Vertex> previous = new HashMap<Vertex, Vertex>();
 	    Vertex current;
 	    int GreatestDepth;
 	    int GreatestFinish;
@@ -121,7 +121,7 @@ public class Network {
 
 	    ///Using -1 as undefined value:
 	    previous.put(s, null);
-	    for (Vertex iter : nodes) {
+	    for (Vertex iter : vertices) {
 	        if (iter != s) {
 	            depth.put(iter, -1);
 		        previous.put(iter, null);
@@ -136,27 +136,38 @@ public class Network {
 	    boolean run = true;
 	    while (run) {
 	        ///Finding adjacent vertex with (*) depth:
-	        Vertex v = current;
+	        Vertex v = current;	 
+	        boolean reverse = false;	//To compensate for directed graph.
 	        for (Vertex iter : current.getOutgoing().keySet()) {
 	            if (depth.get(iter) != null && -1 == depth.get(iter)) {
 	                v = iter;
 	        		break;
 	            }
 	        }
-	        if (current != v) { //Found adjacent vertex with (*) depth
+			if (current == v) {
+				//Also search in reversed edges:
+		        for (Vertex iter : current.getIncoming().keySet()) {
+		            if (depth.get(iter) != null && -1 == depth.get(iter)) {
+		                v = iter;
+		                reverse = true;
+		        		break;
+		            }
+		        }
+			}
+	        if (current != v) {		//Found adjacent vertex with (*) depth
 	            GreatestDepth++;
 	            depth.put(v, GreatestDepth);
-	            previous.put(v, v.getIncoming().get(current));
+	            previous.put(v, current);	            		            	
 	            current = v;
 	        } else {
 	            GreatestFinish++;
 	            finish.put(current, GreatestFinish);
 	            if (null != previous.get(current)) {	//Backtracking
-	                current = previous.get(current).getInput();
+	                current = previous.get(current);
 	            } else {
 	                ///Finding vertex with (*) depth:
 	                v = current;
-	                for (Vertex iter : nodes) {
+	                for (Vertex iter : vertices) {
 	                    if (-1 == depth.get(iter)) {
 	                        v = iter;
 	                        break;
@@ -171,15 +182,16 @@ public class Network {
 	        }
 	    }
 	    
-	    incidence.copyWithResize(new Matrix(edges.size(), nodes.size()));
+	    incidence.copyWithResize(new Matrix(edges.size(), vertices.size()));
 	    incidence.fill(0);
 	    int noOfCycles = 0;             //First count the cycles:
 	    for (int i = 0; i < edges.size(); i++) {
 	    	Edge edge = edges.get(i);
-            incidence.setAt(i, nodes.indexOf(edge.getInput()), 1);
-            incidence.setAt(i, nodes.indexOf(edge.getOutput()), -1);
-	        if (!previous.containsValue(edge)) {
-	            noOfCycles++;       	
+            incidence.setAt(i, vertices.indexOf(edge.getInput()), 1);
+            incidence.setAt(i, vertices.indexOf(edge.getOutput()), -1);
+	        if (edge.getOutput() != previous.get(edge.getInput()) &&
+	        		edge.getInput() != previous.get(edge.getOutput())) {
+            	noOfCycles++;       	
 	        }
 	    }
 	    
@@ -190,19 +202,30 @@ public class Network {
 	    for (int i = 0; i < edges.size() && currentCycle < noOfCycles; i++) {
 
 	    	Edge edge = edges.get(i);
-        	Vertex in = edge.getInput();
-        	Vertex out = edge.getOutput();
-
-        	if (!previous.containsValue(edge)) {
-	        	int dIn = depth.get(in);
+	        if (edge.getOutput() != previous.get(edge.getInput()) &&
+	        		edge.getInput() != previous.get(edge.getOutput())) {
+            	Vertex in = edge.getInput();
+            	Vertex out = edge.getOutput();
+            	int dIn = depth.get(in);
 	        	int dOut = depth.get(out);
 	        	if (dIn > dOut) {
 	        		//Backward edge
         			cycle.setAt(i, currentCycle, 1);
 	        		Vertex step = in;
 	        		while (step != out) {
-	        			cycle.setAt(edges.indexOf(previous.get(step)), currentCycle, 1);	        				
-        				step = previous.get(step).getInput();
+	        			if (previous.get(step) == null) {
+	        				System.out.println("Null.");
+	        			}
+	        			Edge e = step.getIncoming().get(previous.get(step));
+	        			if (e != null) {
+		        			cycle.setAt(edges.indexOf(e), currentCycle, 1);	        				
+	        			}
+	        			else {
+	        				e = step.getOutgoing().get(previous.get(step));
+		        			cycle.setAt(edges.indexOf(e), currentCycle, -1);	        					        				
+	        			}
+	        				        			
+        				step = previous.get(step);
 	        		}
 	        	}
 	        	else if (dIn < dOut) {
@@ -210,21 +233,33 @@ public class Network {
         			cycle.setAt(i, currentCycle, -1);
 	        		Vertex step = out;
 	        		while (step != in) {
-	        			cycle.setAt(edges.indexOf(previous.get(step)), currentCycle, 1);
-        				step = previous.get(step).getInput();
+	        			Edge e = step.getIncoming().get(previous.get(step));
+	        			if (e != null) {
+		        			cycle.setAt(edges.indexOf(e), currentCycle, 1);	        				
+	        			}
+	        			else {
+	        				e = step.getOutgoing().get(previous.get(step));
+		        			cycle.setAt(edges.indexOf(e), currentCycle, -1);	        					        				
+	        			}
+
+	        			step = previous.get(step);
 	        		}
 	        	}
 	        	else {
 	        		//Cross edge
-        			cycle.setAt(i, currentCycle, 1);
+	        		throw new RuntimeException("Cross found despite of DFS on undirected graph!");
+	        		
+	        		/*
+	        		cycle.setAt(i, currentCycle, 1);
 	        		Vertex step1 = in;
 	        		Vertex step2 = out;
 	        		while (step1 != step2) {
 	        			cycle.setAt(edges.indexOf(previous.get(step1)), currentCycle, 1);
 	        			cycle.setAt(edges.indexOf(previous.get(step2)), currentCycle, -1);
-        				step1 = previous.get(step1).getInput();
-        				step2 = previous.get(step2).getInput();
-	        		}	        		
+        				step1 = previous.get(step1);
+        				step2 = previous.get(step2);
+	        		}
+	        		*/	        		
 	        	}
 	        	currentCycle++;
 	        }
@@ -246,20 +281,20 @@ public class Network {
 		output.addIncoming(input, edge);
 		
 		edges.add(edge);
-		nodes.add(input);
-		nodes.add(output);
+		vertices.add(input);
+		vertices.add(output);
 		
 	}
 	
 	public void removeEdge(Edge edge) {
 		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1) {
-			nodes.remove(edge.getInput());
+			vertices.remove(edge.getInput());
 		}
 		else {
 			edge.getInput().removeOutgoing(edge.getOutput());
 		}
 		if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0) {
-			nodes.remove(edge.getOutput());
+			vertices.remove(edge.getOutput());
 		}
 		else {
 			edge.getOutput().removeIncoming(edge.getInput());
@@ -286,7 +321,7 @@ public class Network {
 				outgoing.getValue().setInput(persistant);
 				persistant.addOutgoing(outgoing.getKey(), outgoing.getValue());
 			}
-			nodes.remove(merge);
+			vertices.remove(merge);
 			updateAll();
 		}
 	}
@@ -341,32 +376,39 @@ public class Network {
 		updateCurrent = true;	
 	}
 	
+	
+	
 	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
-				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {
-					//Merge needed:
-					for (Component incoming : componentNode.getIncoming()) {
-						incoming.setOutput(iter);
-						iter.addIncoming(incoming);
-					}
-					for (Component outgoing : componentNode.getOutgoing()) {
-						outgoing.setInput(iter);
-						iter.addOutgoing(outgoing);
-					}
+				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
+					if (!componentNode.isNeighbouring(iter)) {
+						//Merge needed:
+						for (Component incoming : componentNode.getIncoming()) {
+							incoming.setOutput(iter);
+							iter.addIncoming(incoming);
+						}
+						for (Component outgoing : componentNode.getOutgoing()) {
+							outgoing.setInput(iter);
+							iter.addOutgoing(outgoing);
+						}
+						
+						if (componentNode.getVertexBinding() != null && iter.getVertexBinding() != null) {
+							mergeVertices(iter.getVertexBinding(), componentNode.getVertexBinding());
+						}
+						else {
+							throw new RuntimeException("ComponentNode does not contain reference to actual node.");
+						}
+						componentNode.destroy();
+
+						componentNodes.remove(componentNode);
+						updateAll();
 					
-					if (componentNode.getVertexBinding() != null && iter.getVertexBinding() != null) {
-						mergeVertices(iter.getVertexBinding(), componentNode.getVertexBinding());
+						return true;						
 					}
 					else {
-						throw new RuntimeException("ComponentNode does not contain reference to actual node.");
+						throw new RuntimeException("Neighbours!");
 					}
-					componentNode.destroy();
-
-					componentNodes.remove(componentNode);
-					updateAll();
-				
-					return true;
 				}
 			}
 		}
