@@ -23,8 +23,8 @@ public class Resistance extends Component {
 		e.setSourceVoltage(0);
 		
 		
-		getInput().setNode(e.getInput());
-		getOutput().setNode(e.getOutput());
+		getInput().setVertexBinding(e.getInput());
+		getOutput().setVertexBinding(e.getOutput());
 		
 	}
 

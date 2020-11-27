@@ -270,7 +270,7 @@ public class Network {
 		edges.remove(edge);
 	}
 		
-	public void mergeNodes(Vertex persistant, Vertex merge)  {
+	public void mergeVertices(Vertex persistant, Vertex merge)  {
 		if (persistant != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
 				incoming.getKey().removeOutgoing(merge);
@@ -328,69 +328,9 @@ public class Network {
 		componentNode.release();
 		tryToMergeComponentNode(componentNode);
 	}
-	
-	/*
-	public void grabComponent(Component component) {
-		if (!components.contains(component)) {
-			throw new RuntimeException("Invalid component grabbed.");
-		}
-		
-		ComponentNode input = component.getInput();
-		ComponentNode output = component.getOutput();
-		
-		input.setMerge(true);
-		output.setMerge(true);
-		component.setGrabbed(true);
-		
-		if (input.getNoOfIncoming() > 0 || input.getNoOfOutgoing() > 1) {
-			//Duplicate node;
-			ComponentNode temp = new ComponentNode(this);
-			temp.setMerge(true);
-			temp.setPos(input.getPos());
-			temp.addOutgoing(component);
-			component.setInput(temp);
-			componentNodes.add(temp);			
-			updateAll();
-		}
-		if (output.getNoOfIncoming() > 1 || output.getNoOfOutgoing() > 0) {
-			//Duplicate node;
-			ComponentNode temp = new ComponentNode(this);
-			temp.setMerge(true);
-			temp.setPos(output.getPos());
-			temp.addIncoming(component);
-			component.setOutput(temp);
-			componentNodes.add(temp);		
-			updateAll();
-		}		
-		
-	}
-	*/
-	
-	/*
-	public void moveComponent(Component component, Coordinate pos) {
-		if (!components.contains(component)) {
-			throw new RuntimeException("Invalid component moved.");
-		}
-		
-		Coordinate Offset = new Coordinate(MyMath.subtrackt(component.getOutput().getPos(), component.getInput().getPos()));
-		
-		component.getInput().setPos(pos);
-		component.getOutput().setPos(MyMath.add(pos, Offset));
-		
-		
-	}
-*/
-	
-	/*
-	public void releaseComponent(Edge component) {
-		if (!edges.contains(component)) {
-			throw new RuntimeException("Invalid component released.");
-		}
-		
-		component.setGrabbed(false);
-		
-	}
-	*/
+
+	//---------------------------------------------------------------
+	//ToDo
 	
 	//---------------------------------------------------------------
 	
@@ -415,8 +355,8 @@ public class Network {
 						iter.addOutgoing(outgoing);
 					}
 					
-					if (componentNode.getNode() != null && iter.getNode() != null) {
-						mergeNodes(iter.getNode(), componentNode.getNode());
+					if (componentNode.getVertexBinding() != null && iter.getVertexBinding() != null) {
+						mergeVertices(iter.getVertexBinding(), componentNode.getVertexBinding());
 					}
 					else {
 						throw new RuntimeException("ComponentNode does not contain reference to actual node.");
