@@ -96,9 +96,7 @@ public class Edge {
 	}
 
 	public void setResistance(float resistance) {
-		if (resistance > 0) {
-			this.resistance = resistance;			
-		}		
+		this.resistance = resistance;			
 	}
 
 	public float getCurrent() {

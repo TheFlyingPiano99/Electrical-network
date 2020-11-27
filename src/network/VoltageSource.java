@@ -20,11 +20,11 @@ public class VoltageSource extends Component {
 		parent.addEdge(e);
 
 		e.setCurrent(0);
-		e.setResistance(20);
+		e.setResistance(0);
 		
 		
-		getInput().setNode(e.getInput());
-		getOutput().setNode(e.getOutput());
+		getInput().setVertexBinding(e.getInput());
+		getOutput().setVertexBinding(e.getOutput());
 		
 		e.setSourceVoltage(sourceVoltage);	//!		
 

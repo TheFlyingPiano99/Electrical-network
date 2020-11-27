@@ -27,6 +27,7 @@ public class NetworkTest {
 	Component v;
 	Component w;
 	Component r;
+	Component k;
 
 	/**
 	 * @throws java.lang.Exception
@@ -41,11 +42,12 @@ public class NetworkTest {
 		v = new VoltageSource(10.0F);
 		w = new Resistance(10);
 		r = new Resistance(10);
-			
+		k = new Wire();
+		
 		network.addComponent(v);
 		network.addComponent(w);
-		network.addComponent(r);
-		
+		network.addComponent(r);		
+		network.addComponent(k);
 
 		network.grabComponentNode(w.getInput());
 		network.moveComponentNode(w.getInput(), new Coordinate(30,10));
@@ -54,14 +56,6 @@ public class NetworkTest {
 		network.grabComponentNode(w.getOutput());
 		network.moveComponentNode(w.getOutput(), new Coordinate(30,30));
 		network.releaseComponentNode(w.getOutput());
-
-		network.grabComponentNode(v.getInput());
-		network.moveComponentNode(v.getInput(), new Coordinate(60,60));
-		network.releaseComponentNode(v.getInput());
-
-		network.grabComponentNode(v.getOutput());
-		network.moveComponentNode(v.getOutput(), new Coordinate(30,10));
-		network.releaseComponentNode(v.getOutput());
 		
 		network.grabComponentNode(r.getInput());
 		network.moveComponentNode(r.getInput(), new Coordinate(30,30));
@@ -71,6 +65,21 @@ public class NetworkTest {
 		network.moveComponentNode(r.getOutput(), new Coordinate(60,60));
 		network.releaseComponentNode(r.getOutput());
 
+		network.grabComponentNode(v.getInput());
+		network.moveComponentNode(v.getInput(), new Coordinate(60,60));
+		network.releaseComponentNode(v.getInput());
+
+		network.grabComponentNode(v.getOutput());
+		network.moveComponentNode(v.getOutput(), new Coordinate(80,90));
+		network.releaseComponentNode(v.getOutput());
+
+		network.grabComponentNode(k.getInput());
+		network.moveComponentNode(k.getInput(), new Coordinate(80,90));
+		network.releaseComponentNode(k.getInput());
+
+		network.grabComponentNode(k.getOutput());
+		network.moveComponentNode(k.getOutput(), new Coordinate(30,10));
+		network.releaseComponentNode(k.getOutput());
 	}
 	
 	/**
@@ -221,8 +230,9 @@ public class NetworkTest {
 		exp.setAt(1, 1, 1.0F);
 		exp.setAt(1, 2, -1.0F);
 
-		fail("Not implemented yet!");
-
+		exp.setAt(2, 0, -1.0F);
+		exp.setAt(2, 2, 1.0F);
+		
 		assertEquals(exp, incidence);
 
 		exp = new Matrix(3, 1);
@@ -238,7 +248,7 @@ public class NetworkTest {
 	 */
 	@Test
 	public void testAddComponent() {
-		Edge added = new Wire();
+		Edge added = new Edge();
 		network.addEdge(added);		
 	}
 
@@ -247,7 +257,7 @@ public class NetworkTest {
 	 */
 	@Test
 	public void testRemoveComponent() {
-		Edge added = new Wire();
+		Edge added = new Edge();
 		network.addEdge(added);
 		
 		

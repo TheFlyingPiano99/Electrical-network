@@ -15,6 +15,7 @@ import math.*;
 public class LinearSystemForCurrent extends Matrix {
 	int cycleOffset;
 	int noOfVariables;
+	Matrix cycle;
 	
 	public LinearSystemForCurrent(Matrix incidence, Matrix cycle, Vector resistances, Vector sourceVoltage) {
 		super(incidence.row + 1, incidence.column + cycle.column);
@@ -22,6 +23,8 @@ public class LinearSystemForCurrent extends Matrix {
 		if (incidence.row != cycle.row) {
 			throw new RuntimeException("Number of variables (unknown currents) not equal in given incidence and cycle matrices.");
 		}
+		
+		this.cycle = cycle;
 		
 		noOfVariables = incidence.row;
 		cycleOffset = incidence.column;
@@ -36,10 +39,10 @@ public class LinearSystemForCurrent extends Matrix {
 			}
 		}
 
-		for (int c = 0; c < cycle.column; c++) {
-			for (int r = 0; r < cycle.row + 1; r++) {
-				if (r < cycle.row) {
-					this.setAt(r, cycleOffset + c, cycle.at(r, c));					
+		for (int c = 0; c < this.cycle.column; c++) {
+			for (int r = 0; r < this.cycle.row + 1; r++) {
+				if (r < this.cycle.row) {
+					this.setAt(r, cycleOffset + c, this.cycle.at(r, c));					
 				} else {
 					this.setAt(r, c, 0);					
 				}
@@ -55,14 +58,14 @@ public class LinearSystemForCurrent extends Matrix {
 	}
 	
 	public void updateSourceVoltage(Vector sourceVoltages) {
-		for (int c = cycleOffset; c < this.column; c++) {
-			this.setAt(this.column-1, c, 0);
+		for (int c = 0; c < this.cycle.column; c++) {
+			this.setAt(this.column-1, cycleOffset + c, 0);
 			for (int r = 0; r < sourceVoltages.dimension; r++) {
-				if (this.at(r, c) > 0) {
-					this.setAt(this.column-1, c, this.at(this.column-1, c) + sourceVoltages.at(r));									
+				if (this.cycle.at(r, c) > 0) {
+					this.setAt(this.column-1, cycleOffset + c, this.at(this.column-1, cycleOffset + c) + sourceVoltages.at(r));									
 				}
-				else if (this.at(r, c) < 0) {
-					this.setAt(this.column-1, c, this.at(this.column-1, c) - sourceVoltages.at(r));														
+				else if (this.cycle.at(r, c) < 0) {
+					this.setAt(this.column-1, cycleOffset + c, this.at(this.column-1, cycleOffset + c) - sourceVoltages.at(r));														
 				}
 			}
 		}
@@ -70,12 +73,15 @@ public class LinearSystemForCurrent extends Matrix {
 	
 	public void updateResistances(Vector resistances) {
 		for (int r = 0; r < this.column - 1; r++) {
-			for (int c = cycleOffset; c < this.column; c++) {
-				if (this.at(r, c) > 0) {
-					this.setAt(r, c, resistances.at(r));									
+			for (int c = 0; c < this.cycle.column; c++) {
+				if (this.cycle.at(r, c) > 0) {
+					this.setAt(r, cycleOffset + c, resistances.at(r));									
 				}
-				else if (this.at(r, c) < 0) {
-					this.setAt(r, c, -resistances.at(r));														
+				else if (this.cycle.at(r, c) < 0) {
+					this.setAt(r, cycleOffset + c, -resistances.at(r));														
+				}
+				else {
+					this.setAt(r, cycleOffset + c, 0);																			
 				}
 			}
 		}		
