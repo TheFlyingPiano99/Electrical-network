@@ -28,6 +28,11 @@ public class NetworkTest {
 	Component w;
 	Component r;
 	Component k;
+	Component l;
+	Component m;
+	Component n;
+	Component o;
+	
 
 	/**
 	 * @throws java.lang.Exception
@@ -80,6 +85,102 @@ public class NetworkTest {
 		network.grabComponentNode(k.getOutput());
 		network.moveComponentNode(k.getOutput(), new Coordinate(30,10));
 		network.releaseComponentNode(k.getOutput());
+	}
+	
+	/**
+	 * 		----l-------
+	 * 		|			|
+	 * 		n			m
+	 * 		|			|
+	 * 		-----r------
+	 * 		|			|
+	 * 		k			w
+	 * 		|			|
+	 * 		-----|v|-----
+	 */
+	
+	public void buildParalelNetwork() {
+		v = new VoltageSource(10.0F);
+
+		w = new Resistance(10.0F);				
+		r = new Resistance(10.0F);				
+		k = new Resistance(10.0F);
+		l = new Resistance(10.0F);
+		
+		m = new Wire();
+		n = new Wire();
+		
+		network.addComponent(v);
+		network.addComponent(w);
+		network.addComponent(r);		
+		network.addComponent(k);
+		network.addComponent(l);
+		network.addComponent(m);
+		network.addComponent(n);
+		
+		//v:
+		network.grabComponentNode(v.getInput());
+		network.moveComponentNode(v.getInput(), new Coordinate(30, 100));
+		network.releaseComponentNode(v.getInput());
+		
+		network.grabComponentNode(v.getOutput());
+		network.moveComponentNode(v.getOutput(), new Coordinate(60, 100));
+		network.releaseComponentNode(v.getOutput());
+		
+		//w:
+		network.grabComponentNode(w.getInput());
+		network.moveComponentNode(w.getInput(), new Coordinate(60, 100));
+		network.releaseComponentNode(w.getInput());
+		
+		network.grabComponentNode(w.getOutput());
+		network.moveComponentNode(w.getOutput(), new Coordinate(60, 70));
+		network.releaseComponentNode(w.getOutput());
+		
+		//r:
+		network.grabComponentNode(r.getInput());
+		network.moveComponentNode(r.getInput(), new Coordinate(60, 70));
+		network.releaseComponentNode(r.getInput());
+		
+		network.grabComponentNode(r.getOutput());
+		network.moveComponentNode(r.getOutput(), new Coordinate(30, 70));
+		network.releaseComponentNode(r.getOutput());
+		
+		//k:
+		network.grabComponentNode(k.getInput());
+		network.moveComponentNode(k.getInput(), new Coordinate(30, 70));
+		network.releaseComponentNode(k.getInput());
+		
+		network.grabComponentNode(k.getOutput());
+		network.moveComponentNode(k.getOutput(), new Coordinate(30, 100));
+		network.releaseComponentNode(k.getOutput());
+
+		//l:
+		network.grabComponentNode(l.getInput());
+		network.moveComponentNode(l.getInput(), new Coordinate(60, 40));
+		network.releaseComponentNode(l.getInput());
+		
+		network.grabComponentNode(l.getOutput());
+		network.moveComponentNode(l.getOutput(), new Coordinate(30, 40));
+		network.releaseComponentNode(l.getOutput());
+		
+		//m:
+		network.grabComponentNode(m.getInput());
+		network.moveComponentNode(m.getInput(), new Coordinate(60, 70));
+		network.releaseComponentNode(m.getInput());
+		
+		network.grabComponentNode(m.getOutput());
+		network.moveComponentNode(m.getOutput(), new Coordinate(60, 40));
+		network.releaseComponentNode(m.getOutput());
+		
+		//n:
+		network.grabComponentNode(n.getInput());
+		network.moveComponentNode(n.getInput(), new Coordinate(30, 40));
+		network.releaseComponentNode(n.getInput());
+		
+		network.grabComponentNode(n.getOutput());
+		network.moveComponentNode(n.getOutput(), new Coordinate(30, 70));
+		network.releaseComponentNode(n.getOutput());
+
 	}
 	
 	/**
@@ -174,28 +275,62 @@ public class NetworkTest {
 	 * Test method for {@link network.Network#simulate()}.
 	 */
 	@Test
-	public void testSimulate() {
+	public void testSimulateOnSimpleNetwork() {
 		buildSympleNetwork();
 		
 		network.simulate();
 		
-		System.out.println("Test Simulate:");
+		System.out.println("Test Simple Simulate:");
 
 		System.out.println("I[v] = " + v.getCurrent());
 		System.out.println("I[r] = " + r.getCurrent());
 		System.out.println("I[w] = " + w.getCurrent());
+		System.out.println("I[k] = " + k.getCurrent());
 		System.out.println("--------------------------");
 		
-		fail("Not implemented yet!");
-
+		assertTrue(0.5F == v.getCurrent());
+		assertTrue(0.5F == r.getCurrent());
+		assertTrue(0.5F == w.getCurrent());
+		assertTrue(0.5F == k.getCurrent());
+		
 	}
 
+	/**
+	 * Test method for {@link network.Network#simulate()}.
+	 */
+	@Test
+	public void testSimulateOnParalelNetwork() {
+		buildParalelNetwork();
+		
+		network.simulate();
+		
+		System.out.println("Test Paralel Simulate:");
+
+		System.out.println("I[v] = " + v.getCurrent());
+		System.out.println("I[r] = " + r.getCurrent());
+		System.out.println("I[w] = " + w.getCurrent());
+		System.out.println("I[k] = " + k.getCurrent());
+		System.out.println("I[l] = " + l.getCurrent());
+		System.out.println("I[m] = " + m.getCurrent());
+		System.out.println("I[n] = " + n.getCurrent());
+		System.out.println("--------------------------");
+		
+		assertTrue(0.5F == v.getCurrent());
+		assertTrue(0.5F == r.getCurrent());
+		assertTrue(0.5F == w.getCurrent());
+		assertTrue(0.5F == k.getCurrent());
+		assertTrue(0.5F == l.getCurrent());
+		assertTrue(0.5F == m.getCurrent());
+		assertTrue(0.5F == n.getCurrent());
+		
+	}
+	
 	/**
 	 * Test method for {@link network.Network#DFS(math.Matrix, math.Matrix)}.
 	 */
 	@Test
 	public void testDFS() {
-		buildSympleNetwork();
+		buildParalelNetwork();
 		
 		Matrix incidence = new Matrix(0,0);
 		Matrix cycle = new Matrix(0,0);
@@ -220,7 +355,7 @@ public class NetworkTest {
 		}
 		System.out.println("-----------------------------------");
 		
-		Matrix exp = new Matrix(3,3);
+		Matrix exp = new Matrix(4,3);
 		exp.fill(0);
 
 		
@@ -232,10 +367,13 @@ public class NetworkTest {
 
 		exp.setAt(2, 0, -1.0F);
 		exp.setAt(2, 2, 1.0F);
-		
+
+		exp.setAt(3, 0, -1.0F);
+		exp.setAt(3, 2, 1.0F);
+
 		assertEquals(exp, incidence);
 
-		exp = new Matrix(3, 1);
+		exp = new Matrix(4, 1);
 		exp.fill(1.0F);
 		assertEquals(exp, cycle);
 		
@@ -266,13 +404,20 @@ public class NetworkTest {
 	}
 	
 	@Test
-	public void testbuildSympleNetwork() {
+	public void testBuildSympleNetwork() {
 		buildSympleNetwork();
-		assertTrue(3 == network.getComponents().size());
-		assertTrue(3 == network.getComponentNodes().size());
+		assertTrue(4 == network.getComponents().size());
+		assertTrue(4 == network.getComponentNodes().size());
 		
 	}
 
+	@Test
+	public void testBuildParalelNetwork() {
+		buildParalelNetwork();
+		assertTrue(7 == network.getComponents().size());
+		assertTrue(6 == network.getComponentNodes().size());
+		
+	}
 	
 	/**
 	 * Test method for {@link network.Network#tryToMergeNode(network.Node)}.
@@ -304,6 +449,7 @@ public class NetworkTest {
 		network.removeComponent(v);
 		network.removeComponent(r);
 		network.removeComponent(w);
+		network.removeComponent(k);
 		
 		assertTrue(network.getComponents().isEmpty());
 		assertTrue(network.getComponentNodes().isEmpty());

@@ -1,12 +1,17 @@
 package network;
 
+
+/**
+ *	Ideal wire, with 0 resistance.
+ * @author simon
+ * 
+ */
 public class Wire extends Component {
 	Edge e;
 	
 	@Override
 	public float getCurrent() {
-		// TODO Auto-generated method stub
-		return 0;
+		return e.getCurrent();
 	}
 
 	@Override
@@ -26,8 +31,8 @@ public class Wire extends Component {
 
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
-		
+		removeEndNodes();
+		parent.removeEdge(e);
 	}
 	
 	

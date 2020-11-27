@@ -136,5 +136,8 @@ public class ComponentNode {
 	public void release() {
 		setGrabbed(false);
 	}
-		
+	
+	public boolean isNeighbouring (ComponentNode n) {
+		return this.vertexBinding.isNeighbouring(n.getVertexBinding());
+	}
 }
