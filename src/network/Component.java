@@ -1,21 +1,13 @@
 package network;
 
 public abstract class Component {	
-	public Network getParent() {
-		return parent;
-	}
 
-	public void setParent(Network parent) {
-		this.parent = parent;
-	}
+	private boolean grabbed;
 
-	Network parent;
+	private Network parent;
 
 	private ComponentNode input;
 	private ComponentNode output;
-
-	private boolean grabbed;
-	
 
 	public Component() {
 	}
@@ -23,7 +15,15 @@ public abstract class Component {
 	public Component(Network parent) {
 		this.parent = parent;
 	}
-		
+
+	public Network getParent() {
+		return parent;
+	}
+
+	public void setParent(Network parent) {
+		this.parent = parent;
+	}
+			
 	public boolean isGrabbed() {
 		return grabbed;
 	}
@@ -75,13 +75,12 @@ public abstract class Component {
 			output.getIncoming().remove(this);			
 		}
 	}
-	
-	abstract public float getCurrent();
-	
+		
 	//To override:
 	
 	abstract public void create ();
 	
 	abstract public void destroy ();
 	
+	abstract public float getCurrent();
 }

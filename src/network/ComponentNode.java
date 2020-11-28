@@ -6,7 +6,17 @@ import math.Coordinate;
 
 public class ComponentNode {
 	private Network parent;
+	private ArrayList<Component> incoming;
+	private ArrayList<Component> outgoing;
 	
+	//Position on the board:
+	Coordinate pos;
+	Coordinate grabOffset;
+	
+	
+	boolean merge = false;		//Weather it should merge with other nodes, if in close proximity.
+	boolean grabbed = false;	//Weather the node is held by user.
+
 	Vertex vertexBinding = null;	//Bound node of graph.
 	
 	public Network getParent() {
@@ -31,7 +41,7 @@ public class ComponentNode {
 
 	public Coordinate getPos() {
 		return pos;
-}
+	}
 
 
 	public void setPos(Coordinate pos) {
@@ -48,17 +58,6 @@ public class ComponentNode {
 		this.grabOffset = grabOffset;
 	}
 
-	private ArrayList<Component> incoming;
-	private ArrayList<Component> outgoing;
-	
-	//Position on the board:
-	Coordinate pos;
-	Coordinate grabOffset;
-	
-	
-	boolean merge = false;		//Weather it should merge with other nodes, if in close proximity.
-	boolean grabbed = false;	//Weather the node is held by user.
-
 	public ComponentNode() {
 		this.pos = new Coordinate(10,10);
 		incoming = new ArrayList<Component>();
@@ -74,7 +73,6 @@ public class ComponentNode {
 	
 	public void destroy () {
 	}
-
 	
 	public boolean isGrabbed() {
 		return grabbed;
