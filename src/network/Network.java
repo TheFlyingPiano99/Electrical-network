@@ -1,8 +1,20 @@
 package network;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.sun.tools.javac.util.StringUtils;
 
 import math.*;
 
@@ -137,7 +149,6 @@ public class Network {
 	    while (run) {
 	        ///Finding adjacent vertex with (*) depth:
 	        Vertex v = current;	 
-	        boolean reverse = false;	//To compensate for directed graph.
 	        for (Vertex iter : current.getOutgoing().keySet()) {
 	            if (depth.get(iter) != null && -1 == depth.get(iter)) {
 	                v = iter;
@@ -149,7 +160,6 @@ public class Network {
 		        for (Vertex iter : current.getIncoming().keySet()) {
 		            if (depth.get(iter) != null && -1 == depth.get(iter)) {
 		                v = iter;
-		                reverse = true;
 		        		break;
 		            }
 		        }
@@ -433,6 +443,58 @@ public class Network {
 		return null;
 	}
 	
+	public void save(String fileName) {
+		try {
+
+			StringBuilder builder = new StringBuilder();			
+			for (Component component : components) {
+				component.save(builder);
+			}
+			
+			FileOutputStream output = new FileOutputStream(fileName);
+			OutputStreamWriter writer = new OutputStreamWriter(output);
+			writer.write(builder.toString());
+			writer.close();
+		
+		} catch (Exception e) {
+			throw new RuntimeException("Save error!", e);
+		}
+	
+	}
+	
+	public void load(String fileName) {
+		try {
+			FileReader input = new FileReader(fileName);
+			
+			BufferedReader reader = new BufferedReader(input);
+			
+			Map<String, Class<?>> type = new HashMap<>();
+			type.put("VoltageSource", VoltageSource.class);
+			type.put("Wire", Wire.class);
+			type.put("Resistance", Resistance.class);
+			
+			String row;
+			while (null != (row = reader.readLine())) {
+				StringReader rowReader = new StringReader(row);
+				;
+				String str = row.substring(0, row.indexOf(' '));
+				Component comp = (Component) type.get(str).getConstructor().newInstance();				
+
+
+				this.addComponent(comp);				
+
+				comp.load(row);
+}
+			
+			
+			reader.close();
+			
+		} catch (Exception e) {
+			throw new RuntimeException("Load error!", e);
+		}
+			
+	}
+
 }
 
 
