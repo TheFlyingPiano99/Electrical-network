@@ -7,13 +7,8 @@ package network;
  * 
  */
 public class Wire extends Component {
-	Edge e;
+	private Edge e;
 	
-	@Override
-	public float getCurrent() {
-		return e.getCurrent();
-	}
-
 	@Override
 	public void create() {
 		generateEndNodes();
@@ -34,7 +29,34 @@ public class Wire extends Component {
 		removeEndNodes();
 		super.getParent().removeEdge(e);
 	}
+
+	@Override
+	public float getActualVoltage() {
+		return e.getVoltage();
+	}
+
+	@Override
+	public float getActualResistance() {
+		return e.getResistance();
+	}
 	
+	@Override
+	public float getActualCurrent() {
+		return e.getCurrent();
+	}
 	
-	
+	@Override
+	public void save(StringBuilder writer) {
+		writer.append(this.getClass().getSimpleName());
+		writer.append(" {");				
+		
+		writer.append("inputPos:");
+		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
+
+		writer.append(", outputPos:");
+		writer.append(String.format("[%d, %d]", getOutput().getPos().x, getOutput().getPos().y));
+
+		writer.append("}\n");
+	}
+
 }

@@ -1,8 +1,10 @@
 package network;
 
 public class Resistance extends Component {
-	float resistance = 1000;
-	Edge e;
+
+	private Edge e;
+	private float resistance = 0;
+
 	public Resistance() {
 	}
 
@@ -31,16 +33,40 @@ public class Resistance extends Component {
 	@Override
 	public void destroy() {
 		removeEndNodes();
-		super.getParent().removeEdge(e);
-		
-		
+		super.getParent().removeEdge(e);		
 	}
 
 	@Override
-	public float getCurrent() {
+	public float getActualCurrent() {
 		return e.getCurrent();
 	}
+
+	@Override
+	public float getActualVoltage() {
+		return e.getVoltage();
+	}
+
+	@Override
+	public float getActualResistance() {
+		e.getResistance();
+		return 0;
+	}
 	
-	
+	@Override
+	public void save(StringBuilder writer) {
+		writer.append(this.getClass().getSimpleName());
+		writer.append(" {");				
+		writer.append("resistance:");
+		writer.append(resistance);
+
+		writer.append(", inputPos:");
+		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
+
+		writer.append(", outputPos:");
+		writer.append(String.format("[%d, %d]", getOutput().getPos().x, getOutput().getPos().y));
+
+		writer.append("}\n");
+	}
+
 
 }

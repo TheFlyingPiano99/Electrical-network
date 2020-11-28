@@ -5,10 +5,10 @@ package network;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.StringWriter;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import math.Coordinate;
@@ -282,16 +282,16 @@ public class NetworkTest {
 		
 		System.out.println("Test Simple Simulate:");
 
-		System.out.println("I[v] = " + v.getCurrent());
-		System.out.println("I[r] = " + r.getCurrent());
-		System.out.println("I[w] = " + w.getCurrent());
-		System.out.println("I[k] = " + k.getCurrent());
+		System.out.println("I[v] = " + v.getActualCurrent());
+		System.out.println("I[r] = " + r.getActualCurrent());
+		System.out.println("I[w] = " + w.getActualCurrent());
+		System.out.println("I[k] = " + k.getActualCurrent());
 		System.out.println("--------------------------");
 		
-		assertTrue(0.5F == v.getCurrent());
-		assertTrue(0.5F == r.getCurrent());
-		assertTrue(0.5F == w.getCurrent());
-		assertTrue(0.5F == k.getCurrent());
+		assertTrue(0.5F == v.getActualCurrent());
+		assertTrue(0.5F == r.getActualCurrent());
+		assertTrue(0.5F == w.getActualCurrent());
+		assertTrue(0.5F == k.getActualCurrent());
 		
 	}
 
@@ -306,22 +306,22 @@ public class NetworkTest {
 		
 		System.out.println("Test Paralel Simulate:");
 
-		System.out.println("I[v] = " + v.getCurrent());
-		System.out.println("I[r] = " + r.getCurrent());
-		System.out.println("I[w] = " + w.getCurrent());
-		System.out.println("I[k] = " + k.getCurrent());
-		System.out.println("I[l] = " + l.getCurrent());
-		System.out.println("I[m] = " + m.getCurrent());
-		System.out.println("I[n] = " + n.getCurrent());
+		System.out.println("I[v] = " + v.getActualCurrent());
+		System.out.println("I[r] = " + r.getActualCurrent());
+		System.out.println("I[w] = " + w.getActualCurrent());
+		System.out.println("I[k] = " + k.getActualCurrent());
+		System.out.println("I[l] = " + l.getActualCurrent());
+		System.out.println("I[m] = " + m.getActualCurrent());
+		System.out.println("I[n] = " + n.getActualCurrent());
 		System.out.println("--------------------------");
 		
-		assertTrue(0.5F == v.getCurrent());
-		assertTrue(0.5F == r.getCurrent());
-		assertTrue(0.5F == w.getCurrent());
-		assertTrue(0.5F == k.getCurrent());
-		assertTrue(0.5F == l.getCurrent());
-		assertTrue(0.5F == m.getCurrent());
-		assertTrue(0.5F == n.getCurrent());
+		assertTrue(0.5F == v.getActualCurrent());
+		assertTrue(0.5F == r.getActualCurrent());
+		assertTrue(0.5F == w.getActualCurrent());
+		assertTrue(0.5F == k.getActualCurrent());
+		assertTrue(0.5F == l.getActualCurrent());
+		assertTrue(0.5F == m.getActualCurrent());
+		assertTrue(0.5F == n.getActualCurrent());
 		
 	}
 	
@@ -381,6 +381,21 @@ public class NetworkTest {
 		
 	}
 
+	@Test
+	public void testSave() {
+		buildParalelNetwork();
+		
+		StringBuilder writer = new StringBuilder();
+		for (Component component: network.getComponents()) {
+			component.save(writer);
+		}
+		
+		System.out.print(writer.toString());
+	
+		network.save("test01.txt");
+		
+	}
+	
 	/**
 	 * Test method for {@link network.Network#addEdge(network.Edge)}.
 	 */

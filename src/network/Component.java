@@ -1,14 +1,9 @@
 package network;
 
+import java.io.IOException;
+
 public abstract class Component {	
-
-	//persistent:
-	float resistance = 1000;
-	
-	float sourceVoltage = 0;
-	float sourceCurrent = 0;
-
-	
+		
 	private boolean grabbed;
 
 	private Network parent;
@@ -16,13 +11,15 @@ public abstract class Component {
 	private ComponentNode input;
 	private ComponentNode output;
 
+	
+	
 	public Component() {
 	}
 	
 	public Component(Network parent) {
 		this.parent = parent;
 	}
-
+	
 	public Network getParent() {
 		return parent;
 	}
@@ -88,6 +85,15 @@ public abstract class Component {
 	abstract public void create ();
 	
 	abstract public void destroy ();
+
+
+	abstract public float getActualCurrent();
 	
-	abstract public float getCurrent();
+	abstract public float getActualResistance();
+
+	abstract public float getActualVoltage();
+	
+	abstract public void save(StringBuilder writer);
+	abstract public void load(String row);
+	
 }
