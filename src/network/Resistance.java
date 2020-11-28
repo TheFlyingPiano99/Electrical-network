@@ -16,7 +16,7 @@ public class Resistance extends Component {
 		generateEndNodes();
 		
 		e = new Edge();
-		parent.addEdge(e);
+		super.getParent().addEdge(e);
 
 		e.setCurrent(0);
 		e.setResistance(resistance);	//!
@@ -31,7 +31,7 @@ public class Resistance extends Component {
 	@Override
 	public void destroy() {
 		removeEndNodes();
-		parent.removeEdge(e);
+		super.getParent().removeEdge(e);
 		
 		
 	}
@@ -40,5 +40,7 @@ public class Resistance extends Component {
 	public float getCurrent() {
 		return e.getCurrent();
 	}
+	
+	
 
 }

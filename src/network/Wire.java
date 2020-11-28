@@ -19,7 +19,7 @@ public class Wire extends Component {
 		generateEndNodes();
 
 		e = new Edge();
-		parent.addEdge(e);
+		super.getParent().addEdge(e);
 
 		e.setCurrent(0);
 		e.setResistance(0);
@@ -32,7 +32,7 @@ public class Wire extends Component {
 	@Override
 	public void destroy() {
 		removeEndNodes();
-		parent.removeEdge(e);
+		super.getParent().removeEdge(e);
 	}
 	
 	
