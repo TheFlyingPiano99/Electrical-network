@@ -2,6 +2,13 @@ package network;
 
 public abstract class Component {	
 
+	//persistent:
+	float resistance = 1000;
+	
+	float sourceVoltage = 0;
+	float sourceCurrent = 0;
+
+	
 	private boolean grabbed;
 
 	private Network parent;

@@ -7,7 +7,6 @@ package network;
  */
 public class VoltageSource extends Component {
 	Edge e;
-	float sourceVoltage = 10;
 	
 	public VoltageSource() {
 	}
