@@ -1,4 +1,4 @@
-package network;
+package main.java.network;
 
 import java.io.IOException;
 import java.time.Duration;

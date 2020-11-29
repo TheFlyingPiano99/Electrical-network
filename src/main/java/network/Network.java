@@ -1,22 +1,21 @@
-package network;
+package main.java.network;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import math.*;
+import main.java.math.Coordinate;
+import main.java.math.Gauss;
+import main.java.math.GaussException;
+import main.java.math.Matrix;
+import main.java.math.MyMath;
+import main.java.math.Vector;
 
 public class Network {
 	private ArrayList<Vertex> vertices;

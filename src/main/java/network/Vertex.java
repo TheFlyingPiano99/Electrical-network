@@ -1,4 +1,4 @@
-package network;
+package main.java.network;
 
 import java.util.HashMap;
 

@@ -1,4 +1,4 @@
-package network;
+package main.java.network;
 
 import javafx.application.Application;
 import javafx.scene.Scene;

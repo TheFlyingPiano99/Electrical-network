@@ -1,7 +1,7 @@
 /**
  * 
  */
-package network;
+package test.java.network;
 
 import static org.junit.Assert.*;
 
@@ -12,10 +12,17 @@ import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 
-import math.Coordinate;
-import math.Gauss;
-import math.Matrix;
-import math.Vector;
+import main.java.math.Coordinate;
+import main.java.math.Gauss;
+import main.java.math.Matrix;
+import main.java.math.Vector;
+import main.java.network.Component;
+import main.java.network.Edge;
+import main.java.network.LinearSystemForCurrent;
+import main.java.network.Network;
+import main.java.network.Resistance;
+import main.java.network.VoltageSource;
+import main.java.network.Wire;
 
 /**
  * @author simon
@@ -185,7 +192,7 @@ public class NetworkTest {
 	}
 	
 	/**
-	 * Test method for {@link network.Network#gatherSourceVoltages()}.
+	 * Test method for {@link main.java.network.Network#gatherSourceVoltages()}.
 	 */
 	@Test
 	public void testGatherSourceVoltages() {
@@ -207,7 +214,7 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#CalculateCurrent()}.
+	 * Test method for {@link main.java.network.Network#CalculateCurrent()}.
 	 */
 	@Test
 	public void testCalculateCurrent() {
@@ -273,7 +280,7 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#simulate(Duration)}.
+	 * Test method for {@link main.java.network.Network#simulate(Duration)}.
 	 */
 	@Test
 	public void testSimulateOnSimpleNetwork() {
@@ -297,7 +304,7 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#simulate(Duration)}.
+	 * Test method for {@link main.java.network.Network#simulate(Duration)}.
 	 */
 	@Test
 	public void testSimulateOnParalelNetwork() {
@@ -327,7 +334,7 @@ public class NetworkTest {
 	}
 	
 	/**
-	 * Test method for {@link network.Network#DFS(math.Matrix, math.Matrix)}.
+	 * Test method for {@link main.java.network.Network#DFS(main.java.math.Matrix, main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testDFS() {
@@ -398,7 +405,7 @@ public class NetworkTest {
 	}
 	
 	/**
-	 * Test method for {@link network.Network#addEdge(network.Edge)}.
+	 * Test method for {@link main.java.network.Network#addEdge(main.java.network.Edge)}.
 	 */
 	@Test
 	public void testAddComponent() {
@@ -407,7 +414,7 @@ public class NetworkTest {
 	}
 
 	/**
-	 * Test method for {@link network.Network#removeEdge(network.Edge)}.
+	 * Test method for {@link main.java.network.Network#removeEdge(main.java.network.Edge)}.
 	 */
 	@Test
 	public void testRemoveComponent() {
@@ -436,7 +443,7 @@ public class NetworkTest {
 	}
 	
 	/**
-	 * Test method for {@link network.Network#tryToMergeNode(network.Node)}.
+	 * Test method for {@link main.java.network.Network#tryToMergeNode(network.Node)}.
 	 */
 	@Test
 	public void testTryToMergeNode() {

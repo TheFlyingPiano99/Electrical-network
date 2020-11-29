@@ -1,4 +1,4 @@
-package math;
+package main.java.math;
 
 public class Vector {
     @Override
@@ -52,7 +52,7 @@ public class Vector {
 		n[i] = val;		
 	}
 	
-    void fill (float val) {
+    public void fill (float val) {
         for (int i = 0; i < dimension; i++) {
             n[i] = val;
         }

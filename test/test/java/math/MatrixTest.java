@@ -1,7 +1,7 @@
 /**
  * 
  */
-package math;
+package test.java.math;
 
 import static org.junit.Assert.*;
 
@@ -14,7 +14,7 @@ import org.junit.Test;
 public class MatrixTest {
 
 	/**
-	 * Test method for {@link math.Matrix#Matrix(int, int)}.
+	 * Test method for {@link main.java.math.Matrix#Matrix(int, int)}.
 	 */
 	@Test
 	public void testMatrixIntInt() {
@@ -22,7 +22,7 @@ public class MatrixTest {
 	}
 
 	/**
-	 * Test method for {@link math.Matrix#Matrix(math.Matrix)}.
+	 * Test method for {@link main.java.math.Matrix#Matrix(main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testMatrixMatrix() {
@@ -30,7 +30,7 @@ public class MatrixTest {
 	}
 
 	/**
-	 * Test method for {@link math.Matrix#at(int, int)}.
+	 * Test method for {@link main.java.math.Matrix#at(int, int)}.
 	 */
 	@Test
 	public void testAt() {
@@ -38,7 +38,7 @@ public class MatrixTest {
 	}
 
 	/**
-	 * Test method for {@link math.Matrix#setAt(int, int, float)}.
+	 * Test method for {@link main.java.math.Matrix#setAt(int, int, float)}.
 	 */
 	@Test
 	public void testSetAt() {
@@ -46,7 +46,7 @@ public class MatrixTest {
 	}
 
 	/**
-	 * Test method for {@link math.Matrix#fill(float)}.
+	 * Test method for {@link main.java.math.Matrix#fill(float)}.
 	 */
 	@Test
 	public void testFill() {
@@ -54,7 +54,7 @@ public class MatrixTest {
 	}
 
 	/**
-	 * Test method for {@link math.Matrix#copy(math.Matrix)}.
+	 * Test method for {@link main.java.math.Matrix#copy(main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testCopy() {
@@ -62,7 +62,7 @@ public class MatrixTest {
 	}
 
 	/**
-	 * Test method for {@link math.Matrix#copyWithResize(math.Matrix)}.
+	 * Test method for {@link main.java.math.Matrix#copyWithResize(main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testCopyWithResize() {

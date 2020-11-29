@@ -1,6 +1,7 @@
-package network;
+package main.java.network;
 
-import math.*;
+import main.java.math.Matrix;
+import main.java.math.Vector;
 
 
 //The left  side of the system: (First e columns are the columns of the incidence matrix.

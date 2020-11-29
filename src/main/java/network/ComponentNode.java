@@ -1,8 +1,8 @@
-package network;
+package main.java.network;
 
 import java.util.ArrayList;
 
-import math.Coordinate;
+import main.java.math.Coordinate;
 
 public class ComponentNode {
 	private Network parent;

@@ -1,8 +1,15 @@
-package math;
+package test.java.math;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import main.java.math.Gauss;
+import main.java.math.GaussException;
+import main.java.math.InfiniteSolutions;
+import main.java.math.Matrix;
+import main.java.math.NoSolution;
+import main.java.math.Vector;
 
 public class GaussTest {
 
