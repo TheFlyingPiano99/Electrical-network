@@ -1,9 +1,14 @@
 package network;
 
+import java.time.Duration;
+import java.util.Scanner;
+
 public class Resistance extends Component {
 
 	private Edge e;
 	private float resistance = 0;
+
+	//Constructors:---------------------------------------------------------------------------------------
 
 	public Resistance() {
 	}
@@ -12,9 +17,34 @@ public class Resistance extends Component {
 		resistance = r;
 	}
 	
+	//Getters/Setters:------------------------------------------------------------------------------------
 	
 	@Override
-	public void create() {
+	public float getCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public float getVoltage() {
+		return e.getVoltage();
+	}
+
+	@Override
+	public float getResistance() {
+		e.getResistance();
+		return 0;
+	}
+	
+	public float setResistance(float resistance) {
+		this.resistance = resistance;
+		e.setResistance(resistance);
+		return 0;
+	}
+	
+	//Build/Destroy:------------------------------------------------------------------------------------
+	
+	@Override
+	public void build() {
 		generateEndNodes();
 		
 		e = new Edge();
@@ -36,26 +66,20 @@ public class Resistance extends Component {
 		super.getParent().removeEdge(e);		
 	}
 
-	@Override
-	public float getActualCurrent() {
-		return e.getCurrent();
-	}
-
-	@Override
-	public float getActualVoltage() {
-		return e.getVoltage();
-	}
-
-	@Override
-	public float getActualResistance() {
-		e.getResistance();
-		return 0;
-	}
+	//Update:-------------------------------------------------------------------------------------------
 	
+	@Override
+	public void update(Duration duration) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	//Persistence:-----------------------------------------------------------------------------------
+
 	@Override
 	public void save(StringBuilder writer) {
 		writer.append(this.getClass().getSimpleName());
-		writer.append(" {");				
+		writer.append(": {");				
 		writer.append("resistance:");
 		writer.append(resistance);
 
@@ -68,5 +92,10 @@ public class Resistance extends Component {
 		writer.append("}\n");
 	}
 
+	@Override
+	public void load(Scanner scanner) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

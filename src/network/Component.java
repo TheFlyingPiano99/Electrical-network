@@ -1,6 +1,8 @@
 package network;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Scanner;
 
 public abstract class Component {	
 		
@@ -10,8 +12,6 @@ public abstract class Component {
 
 	private ComponentNode input;
 	private ComponentNode output;
-
-	
 	
 	public Component() {
 	}
@@ -82,18 +82,17 @@ public abstract class Component {
 		
 	//To override:
 	
-	abstract public void create ();
+	abstract public void build ();
 	
 	abstract public void destroy ();
-
-
-	abstract public float getActualCurrent();
 	
-	abstract public float getActualResistance();
-
-	abstract public float getActualVoltage();
+	abstract public void update(Duration duration);
 	
 	abstract public void save(StringBuilder writer);
-	abstract public void load(String row);
+	abstract public void load(Scanner scanner);
+	
+	abstract public float getCurrent();
+	abstract public float getVoltage();
+	abstract public float getResistance();
 	
 }

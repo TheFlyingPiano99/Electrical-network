@@ -10,11 +10,11 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.tools.javac.util.StringUtils;
+import java.util.Scanner;
 
 import math.*;
 
@@ -29,7 +29,7 @@ public class Network {
 	boolean updateGraph = true;
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
-	boolean updateCurrent = true;
+	boolean updateNetwork = true;
 	
 	int mergeProximity = 8;
 	
@@ -69,7 +69,7 @@ public class Network {
 		}
 	}
 	
-	public void simulate () {
+	public void simulate (Duration duration) {
 		//ManageLinearSystem----------------------------------
 		
 	    if (updateGraph || linSystem == null) {
@@ -88,7 +88,7 @@ public class Network {
 		    	//Create system:
 		    	linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage);
 			} catch (RuntimeException e) {
-				updateCurrent = false;				
+				updateNetwork = false;				
 			}
 	    }
 	    else {
@@ -102,13 +102,19 @@ public class Network {
 		    }
 	    }
 	    //----------------------------------------------
-	    if (updateCurrent) {
-			updateCurrent = false;
+	    if (updateNetwork) {
+			updateNetwork = false;
 			Vector current = CalculateCurrent();		
 			for (int i = 0; i < edges.size(); i++) {
 				edges.get(i).setCurrent(current.at(i));
+
 			}
-}
+			
+			for (Component component : components) {
+				component.update(duration);
+			}
+			
+	    }
 
 	}
 	
@@ -310,7 +316,7 @@ public class Network {
 			edge.getOutput().removeIncoming(edge.getInput());
 		}
 		
-		updateAll();
+		setUpdateAll();
 		
 		edges.remove(edge);
 	}
@@ -332,7 +338,7 @@ public class Network {
 				persistant.addOutgoing(outgoing.getKey(), outgoing.getValue());
 			}
 			vertices.remove(merge);
-			updateAll();
+			setUpdateAll();
 		}
 	}
 
@@ -341,7 +347,7 @@ public class Network {
 
 	public void addComponent (Component component) {
 		component.setParent(this);
-		component.create();
+		component.build();
 		components.add(component);
 	}
 
@@ -379,11 +385,14 @@ public class Network {
 	
 	//---------------------------------------------------------------
 	
-	public void updateAll() {
+	/**
+	 * When everything need's to be updated.   
+	 */
+	public void setUpdateAll() {
 		updateGraph = true;
 		updateVoltage = true;
 		updateResistance = true;
-		updateCurrent = true;	
+		updateNetwork = true;	
 	}
 	
 	
@@ -412,7 +421,7 @@ public class Network {
 						componentNode.destroy();
 
 						componentNodes.remove(componentNode);
-						updateAll();
+						setUpdateAll();
 					
 						return true;						
 					}
@@ -475,19 +484,20 @@ public class Network {
 			
 			String row;
 			while (null != (row = reader.readLine())) {
-				StringReader rowReader = new StringReader(row);
-				;
-				String str = row.substring(0, row.indexOf(' '));
-				Component comp = (Component) type.get(str).getConstructor().newInstance();				
+				Scanner scanner = new Scanner(row);
+				if (scanner.hasNext("[]+")) {
+					String t = "";
+					Component comp = (Component) type.get(t).getConstructor().newInstance();				
 
+					this.addComponent(comp);				
 
-				this.addComponent(comp);				
-
-				comp.load(row);
-}
-			
-			
+					comp.load(scanner);
+					
+				}
+			}
 			reader.close();
+
+			setUpdateAll();	
 			
 		} catch (Exception e) {
 			throw new RuntimeException("Load error!", e);

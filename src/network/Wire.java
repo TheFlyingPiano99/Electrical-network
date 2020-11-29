@@ -1,5 +1,7 @@
 package network;
 
+import java.time.Duration;
+import java.util.Scanner;
 
 /**
  *	Ideal wire, with 0 resistance.
@@ -8,9 +10,28 @@ package network;
  */
 public class Wire extends Component {
 	private Edge e;
+
+	//Getters/Setters:------------------------------------------------------------------------------------
+
+	@Override
+	public float getVoltage() {
+		return e.getVoltage();
+	}
+
+	@Override
+	public float getResistance() {
+		return e.getResistance();
+	}
 	
 	@Override
-	public void create() {
+	public float getCurrent() {
+		return e.getCurrent();
+	}
+	
+	//Build/Destroy:------------------------------------------------------------------------------------
+
+	@Override
+	public void build() {
 		generateEndNodes();
 
 		e = new Edge();
@@ -29,26 +50,20 @@ public class Wire extends Component {
 		removeEndNodes();
 		super.getParent().removeEdge(e);
 	}
-
-	@Override
-	public float getActualVoltage() {
-		return e.getVoltage();
-	}
-
-	@Override
-	public float getActualResistance() {
-		return e.getResistance();
-	}
+	
+	//Update:---------------------------------------------------------------------------------------------
 	
 	@Override
-	public float getActualCurrent() {
-		return e.getCurrent();
+	public void update(Duration duration) {
+		;	//Do nothing.
 	}
-	
+
+	//Persistence:-----------------------------------------------------------------------------------
+
 	@Override
 	public void save(StringBuilder writer) {
 		writer.append(this.getClass().getSimpleName());
-		writer.append(" {");				
+		writer.append(": {");				
 		
 		writer.append("inputPos:");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -57,6 +72,12 @@ public class Wire extends Component {
 		writer.append(String.format("[%d, %d]", getOutput().getPos().x, getOutput().getPos().y));
 
 		writer.append("}\n");
+	}
+
+	@Override
+	public void load(Scanner scanner) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
