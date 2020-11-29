@@ -1,18 +1,21 @@
 package network;
 
 public class Edge {
+	
 	static int gen = 0;
 	private int id;
 	
 	private Vertex input;
 	private Vertex output;
 	
-	float resistance = 1000;
+	float resistance = 0;
 	float current = 0;
 	float sourceVoltage = 0;
 	
 	boolean grabbed = false;
 
+	//Getters/Setters:----------------------------------------------------------
+	
 	public boolean isGrabbed() {
 		return grabbed;
 	}

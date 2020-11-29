@@ -1,6 +1,7 @@
 package network;
 
-import java.io.IOException;
+import java.time.Duration;
+import java.util.Scanner;
 
 /**
  * Ideal voltage source, with 0 resistance.
@@ -11,6 +12,8 @@ public class VoltageSource extends Component {
 	private Edge e;
 	private float sourceVoltage = 0;
 	
+	//Constructors:---------------------------------------------------------------------------------------
+	
 	public VoltageSource() {
 	}
 	
@@ -19,8 +22,35 @@ public class VoltageSource extends Component {
 		sourceVoltage = u;
 	}
 		
+	//Getters/Setters:------------------------------------------------------------------------------------
+	
+	public float getSourceVoltage() {
+		return sourceVoltage;
+	}
+
+	public void setSourceVoltage(float sourceVoltage) {
+		this.sourceVoltage = sourceVoltage;
+	}
+
 	@Override
-	public void create() {
+	public float getCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public float getVoltage() {
+		return getSourceVoltage();
+	}
+
+	@Override
+	public float getResistance() {
+		return sourceVoltage / e.getCurrent();
+	}
+
+	//Build/Destroy:------------------------------------------------------------------------------------
+	
+	@Override
+	public void build() {
 		super.generateEndNodes();
 		
 		e = new Edge();
@@ -36,8 +66,6 @@ public class VoltageSource extends Component {
 		e.setSourceVoltage(sourceVoltage);	//!		
 
 	}
-
-
 	
 	@Override
 	public void destroy() {		
@@ -46,35 +74,20 @@ public class VoltageSource extends Component {
 		super.getParent().removeEdge(e);
 	}
 
-	public float getSourceVoltage() {
-		return sourceVoltage;
-	}
-
-	public void setSourceVoltage(float sourceVoltage) {
-		this.sourceVoltage = sourceVoltage;
-	}
-
+	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public float getActualCurrent() {
-		return e.getCurrent();
-	}
-
-	@Override
-	public float getActualVoltage() {
-		return getSourceVoltage();
-	}
-
-	@Override
-	public float getActualResistance() {
-		return sourceVoltage / e.getCurrent();
+	public void update(Duration duration) {
+		
 	}
 
 
+	//Persistence:-----------------------------------------------------------------------------------
+	
 	@Override
 	public void save(StringBuilder writer) {
-		writer.append(this.getClass().getSimpleName());
-		writer.append(" {");				
+		writer.append(this.getClass().getCanonicalName());
+		writer.append(": {");				
 		writer.append("voltage:");
 		writer.append(sourceVoltage);
 
@@ -87,9 +100,8 @@ public class VoltageSource extends Component {
 		writer.append("}\n");
 	}
 
-
 	@Override
-	public void load(String row) {
+	public void load(Scanner scanner) {
 		;
 	}
 	
