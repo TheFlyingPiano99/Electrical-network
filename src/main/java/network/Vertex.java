@@ -2,12 +2,19 @@ package main.java.network;
 
 import java.util.HashMap;
 
+/**
+ * Vertex of the graph representation of the network.
+ * @author Simon Zoltán
+ *
+ */
 public class Vertex {
 	private HashMap<Vertex, Edge> incoming;	//Key - The node on the other end of the edge.
 	private HashMap<Vertex, Edge> outgoing;	
 	
 	static int gen = 0;
 	private int id;
+
+	//Constructor:-----------------------------------------------------
 	
 	Vertex () {
 		gen++;
@@ -16,6 +23,8 @@ public class Vertex {
 		outgoing = new HashMap<Vertex, Edge>();
 	}
 
+	//Getters/Setters:-------------------------------------------------
+	
 	public HashMap<Vertex, Edge> getIncoming() {
 		return incoming;
 	}
@@ -48,6 +57,12 @@ public class Vertex {
 		return outgoing.size();
 	}
 
+	public int getId() {
+		return id;
+	}
+
+	//HashCode/Equals:--------------------------------------------------------------
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -70,10 +85,13 @@ public class Vertex {
 		return true;
 	}
 
-	public int getId() {
-		return id;
-	}
-
+	//Other:-----------------------------------------------------------------
+	
+	/**
+	 * Whether this and the given vertex is vertex of the same {@link Edge}.
+	 * @param v	The {@link Vertex} examined.
+	 * @return <code>true</code> when this and the given vertex is vertex of the same {@link Edge}.
+	 */
 	public boolean isNeighbouring (Vertex v) {
 		return ((v != null) && 
 				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));

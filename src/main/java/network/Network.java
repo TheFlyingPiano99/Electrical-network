@@ -8,7 +8,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
@@ -18,6 +17,12 @@ import main.java.math.Matrix;
 import main.java.math.MyMath;
 import main.java.math.Vector;
 
+
+/**
+ * The model of the electric network.
+ * @author Simon Zoltán
+ *
+ */
 public class Network {
 	private ArrayList<Vertex> vertices;
 	private ArrayList<Edge> edges;
@@ -29,7 +34,7 @@ public class Network {
 	boolean updateGraph = true;
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
-	boolean updateNetwork = true;
+	boolean updateCurrent = true;
 	
 	int mergeProximity = 8;
 	
@@ -44,6 +49,10 @@ public class Network {
 		
 	}
 
+	/**
+	 * Returns the resistance of all the edges.
+	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
+	 */
 	private Vector gatherResistances() {
     	Vector resistances = new Vector(edges.size());
     	for (int i = 0; i < edges.size(); i++) {
@@ -52,7 +61,11 @@ public class Network {
     	return resistances;
 	}
 	
-	public Vector gatherSourceVoltages() {
+	/**
+	 * Returns the source voltages of all the edges.
+	 * @return Vector of source voltages. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
+	 */
+	private Vector gatherSourceVoltages() {
     	Vector sourceVoltages = new Vector(edges.size());
     	for (int i = 0; i < edges.size(); i++) {
     		sourceVoltages.setAt(i, edges.get(i).getSourceVoltage());
@@ -60,6 +73,10 @@ public class Network {
     	return sourceVoltages;
 	}
 	
+	/**
+	 * Uses Gauss elimination, to get the current in all edges.
+	 * @return Vector of currents. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
+	 */
 	public Vector CalculateCurrent() {
 		try {
 			return Gauss.Eliminate(linSystem);			
@@ -69,12 +86,15 @@ public class Network {
 		}
 	}
 	
-	public void simulate (Duration duration) {
+	/**
+	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels. 
+	 * @param deltaTime	The time spent since the last call of this method.
+	 */
+	public void simulate (Duration deltaTime) {
 		//ManageLinearSystem----------------------------------
 		
 	    if (updateGraph || linSystem == null) {
-	    	updateGraph = false;
-	    	
+	    	    	
 	    	//Graph representations:
 	    	Matrix incidence = new Matrix(0,0);
 	    	Matrix cycle = new Matrix(0,0);
@@ -87,37 +107,55 @@ public class Network {
 			    
 		    	//Create system:
 		    	linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage);
+
+		    	//Disable flags:
+		    	updateGraph = false;
+		    	updateResistance = false;
+		    	updateVoltage = false;
+		    	
+		    	//Set flag:
+		    	updateCurrent = true;
+
 			} catch (RuntimeException e) {
-				updateNetwork = false;				
+				updateCurrent = false;				
 			}
 	    }
 	    else {
 	    	if (updateResistance) {
 	    		updateResistance = false;
 		    	linSystem.updateResistances(gatherResistances());
+		    	updateCurrent = true;
 	    	}
 	    	if (updateVoltage) {	    
 	    		updateVoltage = false;
 		    	linSystem.updateSourceVoltage(gatherSourceVoltages());
+		    	updateCurrent = true;
 		    }
 	    }
+	    
 	    //----------------------------------------------
-	    if (updateNetwork) {
-			updateNetwork = false;
+	    
+	    if (updateCurrent) {
+			updateCurrent = false;
 			Vector current = CalculateCurrent();		
 			for (int i = 0; i < edges.size(); i++) {
 				edges.get(i).setCurrent(current.at(i));
 
-			}
-			
-			for (Component component : components) {
-				component.update(duration);
-			}
-			
+			}						
 	    }
+
+		for (Component component : components) {
+			component.update(deltaTime);
+		}
 
 	}
 	
+	
+	/**
+	 * Depth First Search algorithm.
+	 * @param incidence	Incidence matrix to fill up. Will be filled with incidence representation of the network as a graph.
+	 * @param cycle	Cycle matrix to fill up. Will be filled with cycle representation of the network as a graph.
+	 */
 	public void DFS (Matrix incidence, Matrix cycle) {
 		if (vertices.isEmpty()) {
 			throw new RuntimeException("No nodes to work with.");
@@ -286,6 +324,10 @@ public class Network {
 	//Access edges and nodes:-----------------------------------------------------------------------------------
 	//No other method allowed to manipulate edges nor nodes from outside the network. 
 	
+	/**
+	 * Adds a new Edge to the network's graph representation. Generates two vertices to the new edge.
+	 * @param edge	Edge to be added.
+	 */
 	public void addEdge(Edge edge) {
 		Vertex input = new Vertex();
 		Vertex output = new Vertex();
@@ -302,6 +344,10 @@ public class Network {
 		
 	}
 	
+	/**
+	 * Removes an edge from the network's graph representation. Removes two vertices of this edge, if the vertices connect only to the removed edge.
+	 * @param edge	Edge to be removed.
+	 */
 	public void removeEdge(Edge edge) {
 		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1) {
 			vertices.remove(edge.getInput());
@@ -321,6 +367,11 @@ public class Network {
 		edges.remove(edge);
 	}
 		
+	/**
+	 * Merges two vertices. After this only one vertex will remain. This, persistent vertex obtains the information held in the now obsolete vertex, such as the incoming and outgoing edges.
+	 * @param persistant	The vertex, which obtains the other's role.
+	 * @param merge			The vertex, which is merged into the other. 
+	 */
 	public void mergeVertices(Vertex persistant, Vertex merge)  {
 		if (persistant != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
@@ -345,18 +396,30 @@ public class Network {
 	//-------------------------------------------------------------------------------------------------
 	//Manipulating components:---------------------------------------
 
+	/**
+	 * Adds a new component to the network.
+	 * @param component The component to be added.
+	 */
 	public void addComponent (Component component) {
 		component.setParent(this);
 		component.build();
 		components.add(component);
 	}
 
+	/**
+	 * Removes a component from the network.
+	 * @param component	The component to be removed.
+	 */
 	public void removeComponent (Component component) {
 		component.destroy();
 		components.remove(component);
 	}
 	
 	
+	/**
+	 * Grab a component's end node to move it. 
+	 * @param componentNode	The node to grab.
+	 */
 	public void grabComponentNode(ComponentNode componentNode) {
 		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node grabbed.");
@@ -365,6 +428,10 @@ public class Network {
 			
 	}
 	
+	/**
+	 * Move a component's end node.
+	 * @param componentNode	The node to be moved.
+	 */	
 	public void moveComponentNode(ComponentNode componentNode, Coordinate pos) {
 		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node moved.");
@@ -372,6 +439,10 @@ public class Network {
 		componentNode.move(pos);
 	}
 	
+	/**
+	 * Release a component's end node. (When the node is already grabbed.)
+	 * @param componentNode The node to release.
+	 */
 	public void releaseComponentNode(ComponentNode componentNode) {
 		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node released.");
@@ -386,17 +457,28 @@ public class Network {
 	//---------------------------------------------------------------
 	
 	/**
-	 * When everything need's to be updated.   
+	 * When everything needs to be updated in the network. Sets all update flags:
+	 * updateGraph,
+	 * updateVoltage,
+	 * updateResistance,
+	 * updateCurrent
 	 */
 	public void setUpdateAll() {
 		updateGraph = true;
 		updateVoltage = true;
 		updateResistance = true;
-		updateNetwork = true;	
+		updateCurrent = true;	
 	}
 	
 	
-	
+	/**
+	 * Tries to merge a given node to any of the other nodes.
+	 * Conditions of a successful merge are, that the other node must be in the close proximity of this node and
+	 * there can't be a Component between the other and this node. 
+	 * 
+	 * @param componentNode	The node, that is tried to be merged with other nodes.
+	 * @return	True, when the merging attempt was successful.
+	 */
 	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
@@ -418,7 +500,6 @@ public class Network {
 						else {
 							throw new RuntimeException("ComponentNode does not contain reference to actual node.");
 						}
-						componentNode.destroy();
 
 						componentNodes.remove(componentNode);
 						setUpdateAll();
@@ -442,6 +523,11 @@ public class Network {
 		return componentNodes;
 	}
 	
+	/**
+	 * Gives a ComponentNode, in close proximity to the given Coordinate.
+	 * @param pos	The position.
+	 * @return	ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
+	 */
 	public ComponentNode getNodeAtPos(Coordinate pos) {
 		for (ComponentNode iter : componentNodes) {
 			if (MyMath.Magnitude(MyMath.subtrackt(iter.getPos(), pos)) < 10) {
@@ -452,6 +538,10 @@ public class Network {
 		return null;
 	}
 	
+	/**
+	 * Saves the current layout of the network. The method overwrites content of the file!
+	 * @param fileName	The name of file, where the persistent information gets saved. 
+	 */
 	public void save(String fileName) {
 		try {
 
@@ -471,6 +561,10 @@ public class Network {
 	
 	}
 	
+	/**
+	 * Loads network layout from the given file. Discards previous layout.
+	 * @param fileName {@link String} The name of file, from which the persistent information gets loaded.
+	 */
 	public void load(String fileName) {
 		try {
 			clear();			//Clear current state.
@@ -511,6 +605,9 @@ public class Network {
 			
 	}
 	
+	/**
+	 * Clears network layout. The model will be lost! 
+	 */
 	public void clear() {
 		components.clear();
 		componentNodes.clear();
@@ -521,6 +618,10 @@ public class Network {
 		setUpdateAll();
 	}
 
+	/**
+	 * Calls the draw method on each component.
+	 * @param ctx	{@link GraphicsContext}, where the network should be drawn.
+	 */
 	public void draw(GraphicsContext ctx) {
 		for (Component component : components) {
 			component.draw(ctx);

@@ -6,8 +6,8 @@ import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 
 /**
- * Ideal voltage source, with 0 resistance.
- * @author simon
+ * Ideal voltage source, with adjustable value and zero resistance.
+ * @author Simon Zoltán
  *
  */
 public class VoltageSource extends Component {
