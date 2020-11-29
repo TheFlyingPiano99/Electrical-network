@@ -22,7 +22,7 @@ public class App extends Application {
 		final URL url = Paths.get("windowlayout.fxml").toUri().toURL(); 
 		Parent content = new FXMLLoader().load(url);
 		stage.setScene(new Scene(content));
-		stage.show();		
+		stage.show();
 	}	
 
 }
