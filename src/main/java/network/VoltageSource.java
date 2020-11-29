@@ -1,7 +1,9 @@
 package main.java.network;
 
 import java.time.Duration;
-import java.util.Scanner;
+
+import javafx.scene.canvas.GraphicsContext;
+import main.java.math.Coordinate;
 
 /**
  * Ideal voltage source, with 0 resistance.
@@ -30,6 +32,9 @@ public class VoltageSource extends Component {
 
 	public void setSourceVoltage(float sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
+		if (e != null) {
+			e.setSourceVoltage(sourceVoltage);
+		}
 	}
 
 	@Override
@@ -86,23 +91,58 @@ public class VoltageSource extends Component {
 	
 	@Override
 	public void save(StringBuilder writer) {
+		writer.append("class: ");				
 		writer.append(this.getClass().getCanonicalName());
-		writer.append(": {");				
-		writer.append("voltage:");
+		writer.append("; voltage: ");
 		writer.append(sourceVoltage);
 
-		writer.append(", inputPos:");
+		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
 
-		writer.append(", outputPos:");
+		writer.append("; outputPos: ");
 		writer.append(String.format("[%d, %d]", getOutput().getPos().x, getOutput().getPos().y));
 
-		writer.append("}\n");
+		writer.append("\n");
 	}
 
 	@Override
-	public void load(Scanner scanner) {
-		;
+	public void load(String[] pairs) {
+		setSourceVoltage(Float.valueOf(pairs[1].split(":")[1]));
+		
+		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
+		
+		
+		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 	}
+
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("VoltageSource [");
+		builder.append("sourceVoltage=");
+		builder.append(sourceVoltage);
+		builder.append(", inputPos= [");
+		builder.append(getInput().getPos().x);
+		builder.append(",");		
+		builder.append(getInput().getPos().y);
+		builder.append("]");		
+		builder.append(", outputPos= [");
+		builder.append(getOutput().getPos().x);
+		builder.append(",");		
+		builder.append(getOutput().getPos().y);
+		builder.append("]");		
+		builder.append("]");
+		return builder.toString();
+	}
+
+
+	@Override
+	public void draw(GraphicsContext ctx) {
+		
+	}
+
 	
 }

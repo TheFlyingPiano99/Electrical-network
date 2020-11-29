@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 import main.java.math.Gauss;
 import main.java.math.GaussException;
@@ -472,6 +473,9 @@ public class Network {
 	
 	public void load(String fileName) {
 		try {
+			clear();			//Clear current state.
+			setUpdateAll();	
+
 			FileReader input = new FileReader(fileName);
 			
 			BufferedReader reader = new BufferedReader(input);
@@ -483,27 +487,46 @@ public class Network {
 			
 			String row;
 			while (null != (row = reader.readLine())) {
-				Scanner scanner = new Scanner(row);
-				if (scanner.hasNext("[]+")) {
-					String t = "";
-					Component comp = (Component) type.get(t).getConstructor().newInstance();				
-
+				row = row.replaceAll(" ", "");
+				String pairs[] = row.split(";");
+				
+				if (pairs.length > 0) {
+					String t[] = pairs[0].split(":");
+					
+					Class c = Class.forName(t[1]);
+				
+					Component comp = (Component) c.getConstructor().newInstance();
+					
 					this.addComponent(comp);				
 
-					comp.load(scanner);
-					
+					comp.load(pairs);					
 				}
+				
 			}
 			reader.close();
-
-			setUpdateAll();	
 			
 		} catch (Exception e) {
 			throw new RuntimeException("Load error!", e);
 		}
 			
 	}
+	
+	public void clear() {
+		components.clear();
+		componentNodes.clear();
+		edges.clear();
+		vertices.clear();
+		
+		
+		setUpdateAll();
+	}
 
+	public void draw(GraphicsContext ctx) {
+		for (Component component : components) {
+			component.draw(ctx);
+		}
+	}
+	
 }
 
 

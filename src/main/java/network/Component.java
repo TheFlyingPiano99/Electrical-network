@@ -1,8 +1,8 @@
 package main.java.network;
 
-import java.io.IOException;
 import java.time.Duration;
-import java.util.Scanner;
+
+import javafx.scene.canvas.GraphicsContext;
 
 public abstract class Component {	
 		
@@ -89,10 +89,11 @@ public abstract class Component {
 	abstract public void update(Duration duration);
 	
 	abstract public void save(StringBuilder writer);
-	abstract public void load(Scanner scanner);
+	abstract public void load(String[] pairs);
 	
 	abstract public float getCurrent();
 	abstract public float getVoltage();
 	abstract public float getResistance();
 	
+	abstract public void draw(GraphicsContext ctx);
 }

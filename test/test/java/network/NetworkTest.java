@@ -477,5 +477,25 @@ public class NetworkTest {
 		assertTrue(network.getComponents().isEmpty());
 		assertTrue(network.getComponentNodes().isEmpty());
 	}
+	
+	@Test 
+	public void testLoad() {
+		buildParalelNetwork();
+		System.out.println("After build:");
+		for (Component component : network.getComponents()) {
+			System.out.println(component.toString());
+		}
+		
+		network.save("testSave.txt");
+		
+		network.load("testSave.txt");
+		
+		System.out.println("After load:");
 
+		for (Component component : network.getComponents()) {
+			System.out.println(component.toString());
+		}
+		
+	}
+	
 }
