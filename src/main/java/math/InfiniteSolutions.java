@@ -1,4 +1,4 @@
-package math;
+package main.java.math;
 
 public final class InfiniteSolutions extends GaussException {
     /**

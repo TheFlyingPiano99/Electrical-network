@@ -1,17 +1,28 @@
-package network;
+package main.java.network;
 
 import java.time.Duration;
 import java.util.Scanner;
 
-/**
- *	Ideal wire, with 0 resistance.
- * @author simon
- * 
- */
-public class Wire extends Component {
-	private Edge e;
+public class Resistance extends Component {
 
+	private Edge e;
+	private float resistance = 0;
+
+	//Constructors:---------------------------------------------------------------------------------------
+
+	public Resistance() {
+	}
+
+	public Resistance(float r) {
+		resistance = r;
+	}
+	
 	//Getters/Setters:------------------------------------------------------------------------------------
+	
+	@Override
+	public float getCurrent() {
+		return e.getCurrent();
+	}
 
 	@Override
 	public float getVoltage() {
@@ -20,42 +31,47 @@ public class Wire extends Component {
 
 	@Override
 	public float getResistance() {
-		return e.getResistance();
+		e.getResistance();
+		return 0;
 	}
 	
-	@Override
-	public float getCurrent() {
-		return e.getCurrent();
+	public float setResistance(float resistance) {
+		this.resistance = resistance;
+		e.setResistance(resistance);
+		return 0;
 	}
 	
 	//Build/Destroy:------------------------------------------------------------------------------------
-
+	
 	@Override
 	public void build() {
 		generateEndNodes();
-
+		
 		e = new Edge();
 		super.getParent().addEdge(e);
 
 		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);		
+		e.setResistance(resistance);	//!
+		e.setSourceVoltage(0);
+		
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
+		
 	}
 
 	@Override
 	public void destroy() {
 		removeEndNodes();
-		super.getParent().removeEdge(e);
+		super.getParent().removeEdge(e);		
 	}
-	
-	//Update:---------------------------------------------------------------------------------------------
+
+	//Update:-------------------------------------------------------------------------------------------
 	
 	@Override
 	public void update(Duration duration) {
-		;	//Do nothing.
+		// TODO Auto-generated method stub
+		
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------
@@ -64,8 +80,10 @@ public class Wire extends Component {
 	public void save(StringBuilder writer) {
 		writer.append(this.getClass().getSimpleName());
 		writer.append(": {");				
-		
-		writer.append("inputPos:");
+		writer.append("resistance:");
+		writer.append(resistance);
+
+		writer.append(", inputPos:");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
 
 		writer.append(", outputPos:");

@@ -1,13 +1,17 @@
 /**
  * 
  */
-package math;
+package test.java.math;
 
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
 import org.junit.Test;
+
+import main.java.math.Matrix;
+import main.java.math.MyMath;
+import main.java.math.Vector;
 
 
 /**
@@ -17,7 +21,7 @@ import org.junit.Test;
 public class MyMathTest {
 
 	/**
-	 * Test method for {@link math.MyMath#multiply(float, math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(float, main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testMultiplyFloatMatrix() {
@@ -32,7 +36,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#multiply(math.Matrix, math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testMultiplyMatrixMatrix() {
@@ -50,7 +54,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#multiply(math.Matrix, math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testMultiplyMatrixVector() {
@@ -67,7 +71,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#multiply(math.Vector, math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Vector, main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testMultiplyVectorMatrix() {
@@ -84,7 +88,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#multiply(math.Matrix, float)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, float)}.
 	 */
 	@Test
 	public void testMultiplyMatrixFloat() {
@@ -99,7 +103,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#Transpose(math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#Transpose(main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testTranspose() {
@@ -121,7 +125,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#add(math.Matrix, math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#add(main.java.math.Matrix, main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testAddMatrixMatrix() {
@@ -139,7 +143,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#subtrackt(math.Matrix, math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#subtrackt(main.java.math.Matrix, main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testSubtracktMatrixMatrix() {
@@ -156,7 +160,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#Identity(int)}.
+	 * Test method for {@link main.java.math.MyMath#Identity(int)}.
 	 */
 	@Test
 	public void testIdentity() {
@@ -170,7 +174,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#Diagonal(math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#Diagonal(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testDiagonal() {
@@ -189,7 +193,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#RemoveColumns(math.Matrix, java.util.ArrayList)}.
+	 * Test method for {@link main.java.math.MyMath#RemoveColumns(main.java.math.Matrix, java.util.ArrayList)}.
 	 */
 	@Test
 	public void testRemoveColumns() {
@@ -208,7 +212,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#RemoveRows(math.Matrix, java.util.List)}.
+	 * Test method for {@link main.java.math.MyMath#RemoveRows(main.java.math.Matrix, java.util.List)}.
 	 */
 	@Test
 	public void testRemoveRows() {
@@ -226,7 +230,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#MultiplyRow(math.Matrix, int, float)}.
+	 * Test method for {@link main.java.math.MyMath#MultiplyRow(main.java.math.Matrix, int, float)}.
 	 */
 	@Test
 	public void testMultiplyRow() {
@@ -242,7 +246,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#MultipyColumn(math.Matrix, int, float)}.
+	 * Test method for {@link main.java.math.MyMath#MultipyColumn(main.java.math.Matrix, int, float)}.
 	 */
 	@Test
 	public void testMultipyColumn() {
@@ -261,7 +265,7 @@ public class MyMathTest {
 	//Vector related:
 	
 	/**
-	 * Test method for {@link math.MyMath#multiply(math.Vector, float)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Vector, float)}.
 	 */
 	@Test
 	public void testMultiplyVectorFloat() {
@@ -275,7 +279,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#multiply(float, math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(float, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testMultiplyFloatVector() {
@@ -289,7 +293,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#Dot(math.Vector, math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#Dot(main.java.math.Vector, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testDot() {
@@ -305,7 +309,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#divide(math.Vector, float)}.
+	 * Test method for {@link main.java.math.MyMath#divide(main.java.math.Vector, float)}.
 	 */
 	@Test
 	public void testDivideVectorFloat() {
@@ -319,7 +323,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#divide(math.Vector, math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#divide(main.java.math.Vector, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testDivideVectorVector() {
@@ -335,7 +339,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#negate(math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#negate(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testNegate() {
@@ -349,7 +353,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#Magnitude(math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#Magnitude(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testMagnitude() {
@@ -361,7 +365,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#Normalize(math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#Normalize(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testNormalize() {
@@ -385,7 +389,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#add(math.Vector, math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#add(main.java.math.Vector, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testAddVectorVector() {
@@ -401,7 +405,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link math.MyMath#subtrackt(math.Vector, math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#subtrackt(main.java.math.Vector, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testSubtracktVectorVector() {
