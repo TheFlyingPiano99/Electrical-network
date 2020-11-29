@@ -5,8 +5,6 @@ package test.java.network;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.io.StringWriter;
 import java.time.Duration;
 
 import org.junit.Before;
@@ -191,28 +189,6 @@ public class NetworkTest {
 
 	}
 	
-	/**
-	 * Test method for {@link main.java.network.Network#gatherSourceVoltages()}.
-	 */
-	@Test
-	public void testGatherSourceVoltages() {
-		
-		Edge e1 = new Edge();
-		network.addEdge(e1);
-		e1.setSourceVoltage(10);
-		
-		Edge e2 = new Edge();
-		network.addEdge(e2);
-		e2.setSourceVoltage(20);
-
-		Vector exp = new Vector(2);
-		exp.setAt(0, 10);
-		exp.setAt(1, 20);
-		
-		assertEquals(exp, network.gatherSourceVoltages());
-		
-	}
-
 	/**
 	 * Test method for {@link main.java.network.Network#CalculateCurrent()}.
 	 */

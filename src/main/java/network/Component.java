@@ -4,6 +4,11 @@ import java.time.Duration;
 
 import javafx.scene.canvas.GraphicsContext;
 
+/**
+ * Abstract parent of all network components. 
+ * @author Simon Zoltán
+ *
+ */
 public abstract class Component {	
 		
 	private boolean grabbed;
@@ -19,6 +24,8 @@ public abstract class Component {
 	public Component(Network parent) {
 		this.parent = parent;
 	}
+	
+	///Getters/Setters:-------------------------------------------------
 	
 	public Network getParent() {
 		return parent;
@@ -52,6 +59,11 @@ public abstract class Component {
 		this.output = output;
 	}
 	
+	//Default generators:----------------------------------------------------------
+	
+	/**
+	 * Generates every end node to this component. Should be called in beginning of build method.
+	 */
 	protected void generateEndNodes() {
 		this.setInput(new ComponentNode(parent));
 		this.setOutput(new ComponentNode(parent));
@@ -63,6 +75,9 @@ public abstract class Component {
 		parent.getComponentNodes().add(this.getOutput());
 	}
 	
+	/**
+	 * Removes every end node to this component. Should be called in beginning of destroy method. 
+	 */
 	protected void removeEndNodes() {
 		ComponentNode input = getInput();
 		ComponentNode output = getOutput();
@@ -80,20 +95,59 @@ public abstract class Component {
 		}
 	}
 		
-	//To override:
+	//To override:---------------------------------------------------------------
 	
+	/**
+	 * Build the inner structure of the component, including elements of the graph representation. Must generate end nodes. 
+	 */
 	abstract public void build ();
 	
+	/**
+	 * Destroys the inner structure of the component, including elements of the graph representation. Must remove end nodes.
+	 */
 	abstract public void destroy ();
 	
-	abstract public void update(Duration duration);
+	/**
+	 * Updates the inner structure of the component, including elements of the graph representation.
+	 * In case of nonlinear components this method changes parameters of the graph representation. In this case it must set related flags of the parent network!
+	 * @param deltaTime	The time spent since the last call of update.
+	 */
+	abstract public void update(Duration deltaTime);
 	
-	abstract public void save(StringBuilder writer);
+	/**
+	 * Adds the persistent content of the component to the given builder. 
+	 * @param builder	The StringBuilder, in which the persistent information will be added.
+	 */
+	abstract public void save(StringBuilder builder);
+	
+	/**
+	 * Gets a array of Strings containing pairs of flags and values. The flag and the value must be separated by colons.
+	 * In case of stored Coordinate the value must be stored in the following format: [x,y]
+	 * @param pairs
+	 */
 	abstract public void load(String[] pairs);
 	
+	/**
+	 * 
+	 * @return
+	 */
 	abstract public float getCurrent();
+	
+	/**
+	 * 
+	 * @return
+	 */
 	abstract public float getVoltage();
+	
+	/**
+	 * 
+	 * @return
+	 */
 	abstract public float getResistance();
 	
+	/**
+	 * Draws the component's visual representation to the given GraphicsContext. 
+	 * @param ctx GraphicsContext, where the component gets drawn.
+	 */
 	abstract public void draw(GraphicsContext ctx);
 }

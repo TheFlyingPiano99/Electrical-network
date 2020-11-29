@@ -5,6 +5,11 @@ import java.time.Duration;
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 
+/**
+ * Resistance with adjustable value.
+ * @author Simon Zoltán
+ *
+ */
 public class Resistance extends Component {
 
 	private Edge e;

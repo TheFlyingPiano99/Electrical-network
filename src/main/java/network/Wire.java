@@ -6,8 +6,8 @@ import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 
 /**
- *	Ideal wire, with 0 resistance.
- * @author simon
+ *	Ideal wire, with zero resistance.
+ * @author Simon Zoltán
  * 
  */
 public class Wire extends Component {

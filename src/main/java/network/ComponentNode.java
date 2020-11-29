@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import main.java.math.Coordinate;
 
+/**
+ * The end node of all components. Helps establishing connection between components. 
+ * @author Simon Zoltán
+ *
+ */
 public class ComponentNode {
 	private Network parent;
 	private ArrayList<Component> incoming;
@@ -11,13 +16,29 @@ public class ComponentNode {
 	
 	//Position on the board:
 	Coordinate pos;
-	Coordinate grabOffset;
 	
 	
 	boolean merge = false;		//Weather it should merge with other nodes, if in close proximity.
 	boolean grabbed = false;	//Weather the node is held by user.
 
 	Vertex vertexBinding = null;	//Bound node of graph.
+	
+	//Constructors:------------------------------------------------------
+	
+	public ComponentNode() {
+		this.pos = new Coordinate(10,10);
+		incoming = new ArrayList<Component>();
+		outgoing = new ArrayList<Component>();
+	}
+	
+	public ComponentNode(Network parent) {
+		this.parent = parent;
+		this.pos = new Coordinate(10,10);
+		incoming = new ArrayList<Component>();
+		outgoing = new ArrayList<Component>();
+	}
+
+	//Getters/Setters:--------------------------------------------------
 	
 	public Network getParent() {
 		return parent;
@@ -46,32 +67,6 @@ public class ComponentNode {
 
 	public void setPos(Coordinate pos) {
 		this.pos = pos;
-	}
-
-
-	public Coordinate getGrabOffset() {
-		return grabOffset;
-	}
-
-
-	public void setGrabOffset(Coordinate grabOffset) {
-		this.grabOffset = grabOffset;
-	}
-
-	public ComponentNode() {
-		this.pos = new Coordinate(10,10);
-		incoming = new ArrayList<Component>();
-		outgoing = new ArrayList<Component>();
-	}
-	
-	public ComponentNode(Network parent) {
-		this.parent = parent;
-		this.pos = new Coordinate(10,10);
-		incoming = new ArrayList<Component>();
-		outgoing = new ArrayList<Component>();
-	}
-	
-	public void destroy () {
 	}
 	
 	public boolean isGrabbed() {
@@ -122,20 +117,38 @@ public class ComponentNode {
 		return outgoing.size();
 	}
 	
+	//Manipulation:-----------------------------------------------------------
+	
+	/**
+	 * Grab node. (Before move.); 
+	 */
 	public void grab() {
 		this.setMerge(true);
 		this.setGrabbed(true);	
 	}
 	
+	/**
+	 * Move node to new location.
+	 * @param pos {@link Coordinate} of the new position.
+	 */
 	public void move(Coordinate pos) {
 		setPos(pos);
 	}
 	
+	/**
+	 * Release node. (After grabbed.)
+	 */
 	public void release() {
 		setGrabbed(false);
 	}
 	
+	/**
+	 * Whether this and the given node is node of the same {@link Component}.
+	 * @param n	The {@link ComponentNode} examined.
+	 * @return <code>true</code> when this and the given node is node of the same {@link Component}.
+	 */
 	public boolean isNeighbouring (ComponentNode n) {
 		return this.vertexBinding.isNeighbouring(n.getVertexBinding());
 	}
+	
 }

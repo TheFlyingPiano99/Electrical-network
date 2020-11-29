@@ -1,5 +1,11 @@
 package main.java.network;
 
+
+/**
+ * The edge of the graph representation of the network. 
+ * @author Simon Zoltán
+ *
+ */
 public class Edge {
 	
 	static int gen = 0;
@@ -14,6 +20,20 @@ public class Edge {
 	
 	boolean grabbed = false;
 
+	//Constructor:----------------------------------------------------------
+	
+	public Edge() {
+		gen++;
+		id = gen;
+	}
+
+	public Edge(float r, float i) {
+		gen++;
+		id = gen;
+		resistance = r;
+		current = i;
+	}
+	
 	//Getters/Setters:----------------------------------------------------------
 	
 	public boolean isGrabbed() {
@@ -24,47 +44,10 @@ public class Edge {
 	public void setGrabbed(boolean grabbed) {
 		this.grabbed = grabbed;
 	}
-
-
-	public Edge() {
-		gen++;
-		id = gen;
-	}
 	
-	public Edge(float r, float i) {
-		gen++;
-		id = gen;
-		resistance = r;
-		current = i;
-	}
-
 	public int getId() {
 		return id;
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
-		return result;
-	}
-
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Edge other = (Edge) obj;
-		if (id != other.getId())
-			return false;
-		return true;
-	}
-
 
 	public float getSourceVoltage() {
 		return sourceVoltage;
@@ -109,7 +92,30 @@ public class Edge {
 	public void setCurrent(float current) {
 		this.current = current;
 	}
+
+	//HashCode/Equals:---------------------------------------------------
 	
-	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Edge other = (Edge) obj;
+		if (id != other.getId())
+			return false;
+		return true;
+	}
 	
 }
