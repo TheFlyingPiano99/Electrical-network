@@ -24,6 +24,7 @@ import main.java.math.Vector;
  *
  */
 public class Network {
+	
 	private ArrayList<Vertex> vertices;
 	private ArrayList<Edge> edges;
 	
@@ -31,12 +32,15 @@ public class Network {
 	private ArrayList<Component> components;
 	
 	private LinearSystemForCurrent linSystem;
+	
 	boolean updateGraph = true;
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
 	
 	int mergeProximity = 8;
+	
+	//Constructor:------------------------------------------------------
 	
 	public Network() {
 		vertices = new ArrayList<Vertex>();
@@ -49,6 +53,8 @@ public class Network {
 		
 	}
 
+	//--------------------------------------------------------------------
+	
 	/**
 	 * Returns the resistance of all the edges.
 	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
@@ -77,7 +83,7 @@ public class Network {
 	 * Uses Gauss elimination, to get the current in all edges.
 	 * @return Vector of currents. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
 	 */
-	public Vector CalculateCurrent() {
+	private Vector CalculateCurrent() {
 		try {
 			return Gauss.Eliminate(linSystem);			
 		}
@@ -91,7 +97,7 @@ public class Network {
 	 * @param deltaTime	The time spent since the last call of this method.
 	 */
 	public void simulate (Duration deltaTime) {
-		//ManageLinearSystem----------------------------------
+		//ManageLinearSystem:
 		
 	    if (updateGraph || linSystem == null) {
 	    	    	
@@ -133,7 +139,7 @@ public class Network {
 		    }
 	    }
 	    
-	    //----------------------------------------------
+	    //Calculate-current:
 	    
 	    if (updateCurrent) {
 			updateCurrent = false;
@@ -156,7 +162,7 @@ public class Network {
 	 * @param incidence	Incidence matrix to fill up. Will be filled with incidence representation of the network as a graph.
 	 * @param cycle	Cycle matrix to fill up. Will be filled with cycle representation of the network as a graph.
 	 */
-	public void DFS (Matrix incidence, Matrix cycle) {
+	private void DFS (Matrix incidence, Matrix cycle) {
 		if (vertices.isEmpty()) {
 			throw new RuntimeException("No nodes to work with.");
 		}
@@ -369,24 +375,24 @@ public class Network {
 		
 	/**
 	 * Merges two vertices. After this only one vertex will remain. This, persistent vertex obtains the information held in the now obsolete vertex, such as the incoming and outgoing edges.
-	 * @param persistant	The vertex, which obtains the other's role.
+	 * @param persistent	The vertex, which obtains the other's role.
 	 * @param merge			The vertex, which is merged into the other. 
 	 */
-	public void mergeVertices(Vertex persistant, Vertex merge)  {
-		if (persistant != merge) {
+	public void mergeVertices(Vertex persistent, Vertex merge)  {
+		if (persistent != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
 				incoming.getKey().removeOutgoing(merge);
-				incoming.getKey().addOutgoing(persistant, incoming.getValue());				
+				incoming.getKey().addOutgoing(persistent, incoming.getValue());				
 				
-				incoming.getValue().setOutput(persistant);
-				persistant.addIncoming(incoming.getKey(), incoming.getValue());
+				incoming.getValue().setOutput(persistent);
+				persistent.addIncoming(incoming.getKey(), incoming.getValue());
 			}
 			for (Map.Entry<Vertex, Edge> outgoing : merge.getOutgoing().entrySet()) {
 				outgoing.getKey().removeIncoming(merge);
-				outgoing.getKey().addIncoming(persistant, outgoing.getValue());
+				outgoing.getKey().addIncoming(persistent, outgoing.getValue());
 				
-				outgoing.getValue().setInput(persistant);
-				persistant.addOutgoing(outgoing.getKey(), outgoing.getValue());
+				outgoing.getValue().setInput(persistent);
+				persistent.addOutgoing(outgoing.getKey(), outgoing.getValue());
 			}
 			vertices.remove(merge);
 			setUpdateAll();
@@ -479,7 +485,7 @@ public class Network {
 	 * @param componentNode	The node, that is tried to be merged with other nodes.
 	 * @return	True, when the merging attempt was successful.
 	 */
-	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
+	private boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
 				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					

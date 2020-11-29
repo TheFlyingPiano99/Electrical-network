@@ -309,62 +309,7 @@ public class NetworkTest {
 		
 	}
 	
-	/**
-	 * Test method for {@link main.java.network.Network#DFS(main.java.math.Matrix, main.java.math.Matrix)}.
-	 */
-	@Test
-	public void testDFS() {
-		buildParalelNetwork();
-		
-		Matrix incidence = new Matrix(0,0);
-		Matrix cycle = new Matrix(0,0);
-		
-		network.DFS(incidence, cycle);
-
-		//Print:
-		System.out.println("DFS test:");
-		for (int r = 0; r < incidence.row; r++) {
-			for (int c = 0; c < incidence.column; c++) {
-				System.out.print(incidence.at(r, c) + ", ");
-			}
-			System.out.print("\n");
-		}
-		System.out.print("\n");
-
-		for (int r = 0; r < cycle.row; r++) {
-			for (int c = 0; c < cycle.column; c++) {
-				System.out.print(cycle.at(r, c) + ", ");
-			}
-			System.out.print("\n");
-		}
-		System.out.println("-----------------------------------");
-		
-		Matrix exp = new Matrix(4,3);
-		exp.fill(0);
-
-		
-		exp.setAt(0, 0, 1.0F);
-		exp.setAt(0, 1, -1.0F);
-
-		exp.setAt(1, 1, 1.0F);
-		exp.setAt(1, 2, -1.0F);
-
-		exp.setAt(2, 0, -1.0F);
-		exp.setAt(2, 2, 1.0F);
-
-		exp.setAt(3, 0, -1.0F);
-		exp.setAt(3, 2, 1.0F);
-
-		assertEquals(exp, incidence);
-
-		exp = new Matrix(4, 1);
-		exp.fill(1.0F);
-		assertEquals(exp, cycle);
-		
-		
-		
-	}
-
+	
 	@Test
 	public void testSave() {
 		buildParalelNetwork();
