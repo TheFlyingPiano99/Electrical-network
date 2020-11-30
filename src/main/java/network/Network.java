@@ -379,13 +379,59 @@ public class Network {
 		
 		edges.remove(edge);
 	}
+	
+	/**
+	 * 
+	 * @param edge
+	 * @param vertex
+	 */
+	protected void disconnectEndOfEdge(Edge edge, Vertex vertex) {
+		if (vertex.equals(edge.getInput())) {
+			if (edge.getInput().getNoOfOutgoing() > 1 || edge.getInput().getNoOfIncoming() > 0) {
+				//Clone input vertex:
+				Vertex prevIn = edge.getInput();
+				Vertex prevOut = edge.getOutput();
+				
+				Vertex newIn = new Vertex();
+				getVertices().add(newIn);
+				
+				newIn.addOutgoing(prevOut, edge);
+				edge.setInput(newIn);
+				prevOut.removeIncoming(prevIn);
+				prevOut.addIncoming(newIn, edge);
+				
+				prevIn.removeOutgoing(prevOut);
+				edge.setInput(newIn);
+			}
+		}
 		
+		else if (vertex.equals(edge.getOutput())) {
+			if (edge.getOutput().getNoOfOutgoing() > 0 || edge.getOutput().getNoOfIncoming() > 1) {
+				//Clone output vertex:
+				Vertex prevIn = edge.getInput();
+				Vertex prevOut = edge.getOutput();
+				
+				Vertex newOut = new Vertex();
+				getVertices().add(newOut);
+				
+				newOut.addIncoming(prevIn, edge);
+				edge.setOutput(newOut);
+				prevIn.removeOutgoing(prevOut);
+				prevIn.addOutgoing(newOut, edge);
+				
+				prevOut.removeIncoming(prevIn);			
+				edge.setOutput(newOut);
+			}
+		}
+		
+	}
+	
 	/**
 	 * Merges two vertices. After this only one vertex will remain. This, persistent vertex obtains the information held in the now obsolete vertex, such as the incoming and outgoing edges.
 	 * @param persistent	The vertex, which obtains the other's role.
 	 * @param merge			The vertex, which is merged into the other. 
 	 */
-	public void mergeVertices(Vertex persistent, Vertex merge)  {
+	protected void mergeVertices(Vertex persistent, Vertex merge)  {
 		if (persistent != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
 				incoming.getKey().removeOutgoing(merge);
@@ -448,7 +494,7 @@ public class Network {
 	 * @param componentNode	The node to be moved.
  	 * @param cursorPos The new position of the cursor;
 	 */	
-	public void moveComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
+	public void dragComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
 		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node moved.");
 		}
@@ -489,7 +535,7 @@ public class Network {
 	 * @param component	The component to be moved.
 	 * @param cursorPos The new position of the cursor;
 	 */	
-	public void moveComponent(Component component, Coordinate cursorPos) {
+	public void dragComponent(Component component, Coordinate cursorPos) {
 		if (!components.contains(component)) {
 			throw new RuntimeException("Invalid component moved.");
 		}
@@ -517,7 +563,7 @@ public class Network {
 	 * updateResistance,
 	 * updateCurrent
 	 */
-	public void setUpdateAll() {
+	protected void setUpdateAll() {
 		updateGraph = true;
 		updateVoltage = true;
 		updateResistance = true;
@@ -528,7 +574,7 @@ public class Network {
 	 * Cuts out the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
 	 * @param component {@link Component} to be cut out.
 	 */
-	public void disconnectComponent(Component component) {
+	protected void disconnectComponent(Component component) {
 		if (component.getInput().getNoOfOutgoing() > 1 || component.getInput().getNoOfIncoming() > 0) {
 			//Clone input:
 			ComponentNode prevInput = component.getInput();
@@ -567,7 +613,7 @@ public class Network {
 	 * @param componentNode	The node, that is tried to be merged with other nodes.
 	 * @return	True, when the merging attempt was successful.
 	 */
-	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
+	protected boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
 				if (mergeProximity > MyMath.magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					

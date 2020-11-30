@@ -185,6 +185,13 @@ public class VoltageSource extends Component {
 	@Override
 	void disconnectGraphRepresentation() {
 		
+		getParent().disconnectEndOfEdge(e, e.getInput());
+		getInput().setVertexBinding(e.getInput());
+		
+		getParent().disconnectEndOfEdge(e, e.getOutput());
+		getOutput().setVertexBinding(e.getOutput());
+
+		/*
 		if (getInput().getVertexBinding().getNoOfOutgoing() > 1 || getInput().getVertexBinding().getNoOfIncoming() > 0) {
 			//Clone input vertex:
 			Vertex prevIn = getInput().getVertexBinding();
@@ -218,6 +225,8 @@ public class VoltageSource extends Component {
 			prevOut.removeIncoming(prevIn);			
 			getOutput().setVertexBinding(newOut);
 	}
+		 */
+		
 	}
 
 	
