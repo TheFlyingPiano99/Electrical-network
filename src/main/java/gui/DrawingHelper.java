@@ -27,8 +27,6 @@ public class DrawingHelper {
 	private static final double[] DASHES_SELECT = new double[] {10.0, 3.0};
 	private static final double DASH_OFFSET_SELECT = 5.0;
 	
-	static List<Component> components = new ArrayList<Component>();
-	
 	public static void setNormalDrawingAttributes(GraphicsContext ctx) {
 		ctx.setStroke(COLOR_NORMAL);
 		ctx.setFill(COLOR_NORMAL);
@@ -58,7 +56,7 @@ public class DrawingHelper {
 		}
 	}
 	
-	public static void updateCanvasContent(Canvas canvas) {
+	public static void updateCanvasContent(Canvas canvas, List<Component> components) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -142,26 +140,26 @@ public class DrawingHelper {
 
 	public Component grabComponent(Canvas canvas, int x, int y) {
 		Component result = null;
-		for (Component c : components) {
-			
-			int iX = c.getInput().getPos().x;
-			int iY = c.getInput().getPos().y;
-			int oX = c.getOutput().getPos().x;
-			int oY = c.getOutput().getPos().y;
-
-			int minX = Math.min(iX, oX) - 10;
-			int maxX = Math.max(iX, oX) + 10;
-			int minY = Math.min(iY, oY) - 10;
-			int maxY = Math.max(iY, oY) + 10;
-			
-			c.setGrabbed(false);
-			if (minX <= x && maxX >= x && minY <= y && maxY >= y) {
-				c.setGrabbed(!c.isGrabbed());
-				result = c;
-			}
-		}
-
-		updateCanvasContent(canvas);
+//		for (Component c : components) {
+//			
+//			int iX = c.getInput().getPos().x;
+//			int iY = c.getInput().getPos().y;
+//			int oX = c.getOutput().getPos().x;
+//			int oY = c.getOutput().getPos().y;
+//
+//			int minX = Math.min(iX, oX) - 10;
+//			int maxX = Math.max(iX, oX) + 10;
+//			int minY = Math.min(iY, oY) - 10;
+//			int maxY = Math.max(iY, oY) + 10;
+//			
+//			c.setGrabbed(false);
+//			if (minX <= x && maxX >= x && minY <= y && maxY >= y) {
+//				c.setGrabbed(!c.isGrabbed());
+//				result = c;
+//			}
+//		}
+//
+//		updateCanvasContent(canvas);
 
 		return result;
 	}
@@ -193,7 +191,6 @@ public class DrawingHelper {
 		r.setOutput(output);
 		
 		r.draw(ctx);
-		components.add(r);
 
 		//---------------------------------------
 		
@@ -210,7 +207,6 @@ public class DrawingHelper {
 		
 		r.setGrabbed(true);
 		r.draw(ctx);
-		components.add(r);
 	
 	}
 
@@ -227,7 +223,6 @@ public class DrawingHelper {
 		v.setOutput(output);
 
 		v.draw(ctx);
-		components.add(v);
 
 		v = new VoltageSource(24.0f);
 		input = new ComponentNode();
@@ -242,7 +237,6 @@ public class DrawingHelper {
 		
 		v.setGrabbed(true);
 		v.draw(ctx);
-		components.add(v);
 
 	}
 
@@ -259,7 +253,6 @@ public class DrawingHelper {
 		w.setOutput(output);
 
 		w.draw(ctx);
-		components.add(w);
 	}
 	
 }
