@@ -405,7 +405,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#subtrackt(main.java.math.Vector, main.java.math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#subtract(main.java.math.Vector, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testSubtracktVectorVector() {
@@ -417,7 +417,7 @@ public class MyMathTest {
 		Vector exp = new Vector(3);
 		exp.fill(1);
 		
-		assertEquals(exp, MyMath.subtrackt(a, b));
+		assertEquals(exp, MyMath.subtract(a, b));
 	}
 
 }
