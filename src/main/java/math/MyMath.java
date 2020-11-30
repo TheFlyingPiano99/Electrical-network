@@ -21,6 +21,17 @@ public class MyMath {
 	    return retM;
 	}
 
+	/**
+	 * Reject vector a onto vector b.
+	 * @param a	
+	 * @param b	
+	 * @return Rejected vector.
+	 */
+	public static Vector reject(Vector a, Vector b) {
+	    return subtract(a,  multiply(b, (dot(a, b) / dot(b, b))));
+	}
+
+	
 	///Multiplication
 
     public static Matrix multiply(Matrix A, Matrix B) {
@@ -306,7 +317,7 @@ public class MyMath {
 	}
 
 
-	public static Vector subtrackt(Vector a, Vector b) {
+	public static Vector subtract(Vector a, Vector b) {
 	    Vector retV = new Vector(a.dimension);
 	    for (int i = 0; i < a.dimension; i++) {
 	        retV.setAt(i, a.at(i) - b.at(i));
