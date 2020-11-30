@@ -3,6 +3,8 @@ package main.java.network;
 import java.time.Duration;
 
 import javafx.scene.canvas.GraphicsContext;
+import main.java.math.Coordinate;
+import main.java.math.MyMath;
 
 /**
  * Abstract parent of all network components. 
@@ -11,12 +13,27 @@ import javafx.scene.canvas.GraphicsContext;
  */
 public abstract class Component {	
 		
-	private boolean grabbed;
-
 	private Network parent;
 
 	private ComponentNode input;
 	private ComponentNode output;
+	
+	//Manipulation related:
+	boolean grabbed = false;
+
+	/**
+	 * When the component is grabbed, the actual position of the cursor and the position of the components input node may not match.
+	 */
+	Coordinate grabCursorOffset;
+	
+	/**
+	 * When the component is moved, the input and output node must move together.
+	 * This coordinate is basically a vector pointing from input's position to output's position.
+	 */
+	Coordinate fromInputToOutput;	
+	
+	
+	//Constructors:-----------------------------------------------------
 	
 	public Component() {
 	}
@@ -94,6 +111,30 @@ public abstract class Component {
 			output.getIncoming().remove(this);			
 		}
 	}
+	
+	//Manipulate:----------------------------------------------------------------
+	
+	public void grab(Coordinate cursorPos) {
+		grabbed = true;
+		grabCursorOffset = MyMath.subtrackt(cursorPos, getInput().getPos());	//CP - P = RP
+		fromInputToOutput = MyMath.subtrackt(getOutput().getPos(), getInput().getPos());
+		parent.cutOutComponent(this);		
+	}
+
+	public void drag(Coordinate cursorPos) {
+		Coordinate newInputPos = MyMath.subtrackt(cursorPos, grabCursorOffset);
+		getInput().setPos(newInputPos);
+		getOutput().setPos(MyMath.add(newInputPos, fromInputToOutput));
+	}
+
+	public void release() {
+		grabbed = false;
+		grabCursorOffset = null;
+		fromInputToOutput = null;
+		parent.tryToMergeComponentNode(getInput());
+		parent.tryToMergeComponentNode(getOutput());
+	}
+
 		
 	//To override:---------------------------------------------------------------
 	
@@ -150,4 +191,5 @@ public abstract class Component {
 	 * @param ctx GraphicsContext, where the component gets drawn.
 	 */
 	abstract public void draw(GraphicsContext ctx);
+
 }

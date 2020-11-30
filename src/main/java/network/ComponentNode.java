@@ -3,6 +3,7 @@ package main.java.network;
 import java.util.ArrayList;
 
 import main.java.math.Coordinate;
+import main.java.math.MyMath;
 
 /**
  * The end node of all components. Helps establishing connection between components. 
@@ -16,7 +17,7 @@ public class ComponentNode {
 	
 	//Position on the board:
 	Coordinate pos;
-	
+	Coordinate grabCursorOffset;	//When the node is grabbed, the actual position of the cursor and the position of the node may not match.
 	
 	boolean merge = false;		//Weather it should merge with other nodes, if in close proximity.
 	boolean grabbed = false;	//Weather the node is held by user.
@@ -121,18 +122,20 @@ public class ComponentNode {
 	
 	/**
 	 * Grab node. (Before move.); 
+	 * @param cursorPos TODO
 	 */
-	public void grab() {
+	public void grab(Coordinate cursorPos) {
 		this.setMerge(true);
-		this.setGrabbed(true);	
+		this.setGrabbed(true);
+		grabCursorOffset = MyMath.subtrackt(cursorPos, pos);
 	}
 	
 	/**
 	 * Move node to new location.
 	 * @param pos {@link Coordinate} of the new position.
 	 */
-	public void move(Coordinate pos) {
-		setPos(pos);
+	public void drag(Coordinate CursorPos) {
+		setPos(MyMath.subtrackt(CursorPos, grabCursorOffset));
 	}
 	
 	/**
@@ -140,6 +143,9 @@ public class ComponentNode {
 	 */
 	public void release() {
 		setGrabbed(false);
+		grabCursorOffset = null;
+		parent.tryToMergeComponentNode(this);
+
 	}
 	
 	/**
