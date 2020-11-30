@@ -421,28 +421,31 @@ public class Network {
 		components.remove(component);
 	}
 	
+	//Move ComponentNode:--------------------------------------------------------------
 	
 	/**
 	 * Grab a component's end node to move it. 
 	 * @param componentNode	The node to grab.
+ 	 * @param cursorPos The position of the cursor;
 	 */
-	public void grabComponentNode(ComponentNode componentNode) {
+	public void grabComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
 		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
-		componentNode.grab();
+		componentNode.grab(cursorPos);
 			
 	}
 	
 	/**
 	 * Move a component's end node.
 	 * @param componentNode	The node to be moved.
+ 	 * @param cursorPos The new position of the cursor;
 	 */	
-	public void moveComponentNode(ComponentNode componentNode, Coordinate pos) {
+	public void moveComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
 		if (!componentNodes.contains(componentNode)) {
 			throw new RuntimeException("Invalid node moved.");
 		}
-		componentNode.move(pos);
+		componentNode.drag(cursorPos);
 	}
 	
 	/**
@@ -454,12 +457,46 @@ public class Network {
 			throw new RuntimeException("Invalid node released.");
 		}
 		componentNode.release();
-		tryToMergeComponentNode(componentNode);
 	}
 
 	//---------------------------------------------------------------
-	//ToDo
+	//Move Component:
+	/**
+	 * Grab a component.
+	 * @param component The component to be grabbed.
+	 * @param cursorPos The position of the cursor;
+	 */
+	public void grabComponent(Component component, Coordinate cursorPos) {
+		if (!components.contains(component)) {
+			throw new RuntimeException("Invalid node grabbed.");
+		}
+		
+		component.grab(cursorPos);
+		
+	}
 	
+	/**
+	 * Move a component.
+	 * @param component	The component to be moved.
+	 * @param cursorPos The new position of the cursor;
+	 */	
+	public void moveComponent(Component component, Coordinate cursorPos) {
+		if (!components.contains(component)) {
+			throw new RuntimeException("Invalid component moved.");
+		}
+		component.drag(cursorPos);
+	}
+	
+	/**
+	 * Release a component. (When the component is already grabbed.)
+	 * @param component The component to release.
+	 */
+	public void releaseComponent(Component component) {
+		if (!components.contains(component)) {
+			throw new RuntimeException("Invalid component released.");
+		}
+		component.release();
+	}
 	//---------------------------------------------------------------
 	
 	/**
@@ -476,6 +513,21 @@ public class Network {
 		updateCurrent = true;	
 	}
 	
+	/**
+	 * Cuts out the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
+	 * @param component {@link Component} to be cut out.
+	 */
+	public void cutOutComponent(Component component) {
+		if (component.getInput().getNoOfOutgoing() > 1 || component.getInput().getNoOfIncoming() > 0) {
+			//Clone input:
+			;
+		}
+		if (component.getOutput().getNoOfIncoming() > 1 || component.getOutput().getNoOfOutgoing() > 0) {
+			//Clone output:
+			;
+		}
+	}
+	
 	
 	/**
 	 * Tries to merge a given node to any of the other nodes.
@@ -485,7 +537,7 @@ public class Network {
 	 * @param componentNode	The node, that is tried to be merged with other nodes.
 	 * @return	True, when the merging attempt was successful.
 	 */
-	private boolean tryToMergeComponentNode(ComponentNode componentNode) {
+	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
 				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
@@ -633,6 +685,8 @@ public class Network {
 			component.draw(ctx);
 		}
 	}
+	
+	
 	
 }
 
