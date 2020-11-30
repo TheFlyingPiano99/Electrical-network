@@ -142,38 +142,11 @@ public class Wire extends Component {
 
 	@Override
 	void disconnectGraphRepresentation() {
+		getParent().disconnectEndOfEdge(e, e.getInput());
+		getInput().setVertexBinding(e.getInput());
 		
-		if (getInput().getVertexBinding().getNoOfOutgoing() > 1 || getInput().getVertexBinding().getNoOfIncoming() > 0) {
-			//Clone input vertex:
-			Vertex prevIn = getInput().getVertexBinding();
-			Vertex prevOut = getOutput().getVertexBinding();
-			
-			Vertex newIn = new Vertex();
-			getParent().getVertices().add(newIn);
-			
-			newIn.addOutgoing(prevOut, e);
-			e.setInput(newIn);
-			prevOut.removeIncoming(prevIn);
-			prevOut.addIncoming(newIn, e);
-			
-			prevIn.removeOutgoing(prevOut);			
-		}
-		
-		if (getOutput().getVertexBinding().getNoOfOutgoing() > 0 || getOutput().getVertexBinding().getNoOfIncoming() > 1) {
-			//Clone output vertex:
-			Vertex prevIn = getInput().getVertexBinding();
-			Vertex prevOut = getOutput().getVertexBinding();
-			
-			Vertex newOut = new Vertex();
-			getParent().getVertices().add(newOut);
-			
-			newOut.addIncoming(prevIn, e);
-			e.setOutput(newOut);
-			prevIn.removeOutgoing(prevOut);
-			prevIn.addOutgoing(newOut, e);
-			
-			prevOut.removeIncoming(prevIn);			
-		}
+		getParent().disconnectEndOfEdge(e, e.getOutput());
+		getOutput().setVertexBinding(e.getOutput());
 	}
 
 }

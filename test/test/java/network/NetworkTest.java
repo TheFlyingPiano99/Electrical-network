@@ -61,35 +61,35 @@ public class NetworkTest {
 		network.addComponent(k);
 
 		network.grabComponentNode(w.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(w.getInput(), new Coordinate(30,10));
+		network.dragComponentNode(w.getInput(), new Coordinate(30,10));
 		network.releaseComponentNode(w.getInput());
 		
 		network.grabComponentNode(w.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(w.getOutput(), new Coordinate(30,30));
+		network.dragComponentNode(w.getOutput(), new Coordinate(30,30));
 		network.releaseComponentNode(w.getOutput());
 		
 		network.grabComponentNode(r.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(r.getInput(), new Coordinate(30,30));
+		network.dragComponentNode(r.getInput(), new Coordinate(30,30));
 		network.releaseComponentNode(r.getInput());
 
 		network.grabComponentNode(r.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(r.getOutput(), new Coordinate(60,60));
+		network.dragComponentNode(r.getOutput(), new Coordinate(60,60));
 		network.releaseComponentNode(r.getOutput());
 
 		network.grabComponentNode(v.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(v.getInput(), new Coordinate(60,60));
+		network.dragComponentNode(v.getInput(), new Coordinate(60,60));
 		network.releaseComponentNode(v.getInput());
 
 		network.grabComponentNode(v.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(v.getOutput(), new Coordinate(80,90));
+		network.dragComponentNode(v.getOutput(), new Coordinate(80,90));
 		network.releaseComponentNode(v.getOutput());
 
 		network.grabComponentNode(k.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(k.getInput(), new Coordinate(80,90));
+		network.dragComponentNode(k.getInput(), new Coordinate(80,90));
 		network.releaseComponentNode(k.getInput());
 
 		network.grabComponentNode(k.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(k.getOutput(), new Coordinate(30,10));
+		network.dragComponentNode(k.getOutput(), new Coordinate(30,10));
 		network.releaseComponentNode(k.getOutput());
 	}
 	
@@ -111,7 +111,7 @@ public class NetworkTest {
 		w = new Resistance(10.0F);				
 		r = new Resistance(10.0F);				
 		k = new Resistance(10.0F);
-		l = new Resistance(50.0F);
+		l = new Resistance(10.0F);
 		
 		m = new Wire();
 		n = new Wire();
@@ -126,65 +126,65 @@ public class NetworkTest {
 		
 		//v:
 		network.grabComponentNode(v.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(v.getInput(), new Coordinate(30, 100));
+		network.dragComponentNode(v.getInput(), new Coordinate(30, 100));
 		network.releaseComponentNode(v.getInput());
 		
 		network.grabComponentNode(v.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(v.getOutput(), new Coordinate(60, 100));
+		network.dragComponentNode(v.getOutput(), new Coordinate(60, 100));
 		network.releaseComponentNode(v.getOutput());
 		
 		//w:
 		network.grabComponentNode(w.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(w.getInput(), new Coordinate(60, 100));
+		network.dragComponentNode(w.getInput(), new Coordinate(60, 100));
 		network.releaseComponentNode(w.getInput());
 		
 		network.grabComponentNode(w.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(w.getOutput(), new Coordinate(60, 70));
+		network.dragComponentNode(w.getOutput(), new Coordinate(60, 70));
 		network.releaseComponentNode(w.getOutput());
 		
 		//r:
 		network.grabComponentNode(r.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(r.getInput(), new Coordinate(60, 70));
+		network.dragComponentNode(r.getInput(), new Coordinate(60, 70));
 		network.releaseComponentNode(r.getInput());
 		
 		network.grabComponentNode(r.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(r.getOutput(), new Coordinate(30, 70));
+		network.dragComponentNode(r.getOutput(), new Coordinate(30, 70));
 		network.releaseComponentNode(r.getOutput());
 		
 		//k:
 		network.grabComponentNode(k.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(k.getInput(), new Coordinate(30, 70));
+		network.dragComponentNode(k.getInput(), new Coordinate(30, 70));
 		network.releaseComponentNode(k.getInput());
 		
 		network.grabComponentNode(k.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(k.getOutput(), new Coordinate(30, 100));
+		network.dragComponentNode(k.getOutput(), new Coordinate(30, 100));
 		network.releaseComponentNode(k.getOutput());
 
 		//l:
 		network.grabComponentNode(l.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(l.getInput(), new Coordinate(60, 40));
+		network.dragComponentNode(l.getInput(), new Coordinate(60, 40));
 		network.releaseComponentNode(l.getInput());
 		
 		network.grabComponentNode(l.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(l.getOutput(), new Coordinate(30, 40));
+		network.dragComponentNode(l.getOutput(), new Coordinate(30, 40));
 		network.releaseComponentNode(l.getOutput());
 		
 		//m:
 		network.grabComponentNode(m.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(m.getInput(), new Coordinate(60, 70));
+		network.dragComponentNode(m.getInput(), new Coordinate(60, 70));
 		network.releaseComponentNode(m.getInput());
 		
 		network.grabComponentNode(m.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(m.getOutput(), new Coordinate(60, 40));
+		network.dragComponentNode(m.getOutput(), new Coordinate(60, 40));
 		network.releaseComponentNode(m.getOutput());
 		
 		//n:
 		network.grabComponentNode(n.getInput(), new Coordinate(0,0));
-		network.moveComponentNode(n.getInput(), new Coordinate(30, 40));
+		network.dragComponentNode(n.getInput(), new Coordinate(30, 40));
 		network.releaseComponentNode(n.getInput());
 		
 		network.grabComponentNode(n.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(n.getOutput(), new Coordinate(30, 70));
+		network.dragComponentNode(n.getOutput(), new Coordinate(30, 70));
 		network.releaseComponentNode(n.getOutput());
 
 	}
@@ -377,11 +377,11 @@ public class NetworkTest {
 		assertTrue(4 == network.getComponentNodes().size());
 		
 		network.grabComponentNode(c1.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(c1.getOutput(), new Coordinate(30,30));
+		network.dragComponentNode(c1.getOutput(), new Coordinate(30,30));
 		network.releaseComponentNode(c1.getOutput());
 		
 		network.grabComponentNode(c2.getOutput(), new Coordinate(0,0));
-		network.moveComponentNode(c2.getOutput(), new Coordinate(28,32));
+		network.dragComponentNode(c2.getOutput(), new Coordinate(28,32));
 		network.releaseComponentNode(c2.getOutput());
 		
 		assertTrue(3 == network.getComponentNodes().size());		
@@ -431,7 +431,7 @@ public class NetworkTest {
 
 		
 		network.grabComponent(v, new Coordinate(0, 0));		
-		network.moveComponent(v, new Coordinate(500, 2));
+		network.dragComponent(v, new Coordinate(500, 2));
 		network.releaseComponent(v);
 		
 		network.simulate(null);
@@ -441,11 +441,17 @@ public class NetworkTest {
 		System.out.println(r.getCurrent());
 		System.out.println(w.getCurrent());
 		System.out.println("stb...");
-		
+	
+		assertTrue(0 == v.getInput().getNoOfIncoming());
+		assertTrue(1 == v.getInput().getNoOfOutgoing());
+
+		assertTrue(1 == v.getOutput().getNoOfIncoming());
+		assertTrue(0 == v.getOutput().getNoOfOutgoing());
+
 //------------------------------------------------------------------------
 		
 		network.grabComponent(v, new Coordinate(0, 0));		
-		network.moveComponent(v, new Coordinate(-500, -2));
+		network.dragComponent(v, new Coordinate(-500, -2));
 		network.releaseComponent(v);
 		
 		network.simulate(null);
@@ -456,11 +462,11 @@ public class NetworkTest {
 		System.out.println(w.getCurrent());
 		System.out.println("stb...");
 
-		assertTrue(0 == v.getInput().getNoOfIncoming());
+		assertTrue(1 == v.getInput().getNoOfIncoming());
 		assertTrue(1 == v.getInput().getNoOfOutgoing());
 
 		assertTrue(1 == v.getOutput().getNoOfIncoming());
-		assertTrue(0 == v.getInput().getNoOfOutgoing());
+		assertTrue(1 == v.getOutput().getNoOfOutgoing());
 }
 	
 }
