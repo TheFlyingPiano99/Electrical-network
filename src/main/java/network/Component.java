@@ -171,19 +171,19 @@ public abstract class Component {
 	
 	/**
 	 * 
-	 * @return
+	 * @return current
 	 */
 	abstract public float getCurrent();
 	
 	/**
 	 * 
-	 * @return
+	 * @return voltage
 	 */
 	abstract public float getVoltage();
 	
 	/**
 	 * 
-	 * @return
+	 * @return resistance
 	 */
 	abstract public float getResistance();
 	
