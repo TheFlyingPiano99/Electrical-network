@@ -47,6 +47,13 @@
             <MenuItem fx:id="miAbout" mnemonicParsing="false" onAction="#miAboutAction" text="Az alkalmazásról..." />
           </items>
         </Menu>
+            <Menu fx:id="miTeszt" mnemonicParsing="false" text="[ TESZT ]">
+               <items>
+                  <MenuItem fx:id="miTest1" mnemonicParsing="false" onAction="#miTest1Action" text="Teszt 1" />
+                  <MenuItem fx:id="miTest2" mnemonicParsing="false" onAction="#miTest2Action" text="Teszt 2" />
+                  <MenuItem fx:id="miTest3" mnemonicParsing="false" onAction="#miTest3Action" text="Teszt 3" />
+               </items>
+            </Menu>
       </menus>
     </MenuBar>
       <ToolBar prefHeight="40.0" prefWidth="200.0">
@@ -65,7 +72,7 @@
         </AnchorPane>
       <AnchorPane id="Content" minHeight="-Infinity" minWidth="-Infinity">
         <children>
-                  <Canvas height="502.0" layoutY="6.0" onMouseClicked="#onMouseClicked" width="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" fx:id="xCanvas" />
+                  <Canvas height="502.0" layoutY="6.0" width="441.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" fx:id="xCanvas" />
         </children>
       </AnchorPane>
         <AnchorPane>

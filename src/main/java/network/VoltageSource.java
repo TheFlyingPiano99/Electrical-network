@@ -2,9 +2,13 @@ package main.java.network;
 
 import javafx.util.Duration;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
+import main.java.math.Line;
 
 /**
  * Ideal voltage source, with adjustable value and zero resistance.
@@ -14,6 +18,7 @@ import main.java.math.Coordinate;
 public class VoltageSource extends Component {
 	private Edge e;
 	private float sourceVoltage = 0;
+	private final float DEFAULT_SIZE = 60.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -142,7 +147,38 @@ public class VoltageSource extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
-		
+		List<Line> lines = new ArrayList<Line>();
+
+		//Construction:
+		lines.add(new Line(0.0f, 0.0f, DEFAULT_SIZE/3.0f, 0.0f));
+		lines.add(new Line(DEFAULT_SIZE/3.0f, -DEFAULT_SIZE/4.0f, DEFAULT_SIZE/3.0f, +DEFAULT_SIZE/4.0f));
+		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/2.0f, 2.0f/3.0f * DEFAULT_SIZE, +DEFAULT_SIZE/2.0f));
+
+		// [+] sign
+		lines.add(new Line(
+				(5.0f/6.0f * DEFAULT_SIZE) - (1.0f/15.0f * DEFAULT_SIZE),  
+				-1.0f/4.0f * DEFAULT_SIZE,
+				(5.0f/6.0f * DEFAULT_SIZE) + (1.0f/15.0f * DEFAULT_SIZE),
+				-1.0f/4.0f * DEFAULT_SIZE));
+		lines.add(new Line(
+				(5.0f/6.0f * DEFAULT_SIZE),  
+				-1.0f/4.0f * DEFAULT_SIZE - (1.0f/15.0f * DEFAULT_SIZE),
+				(5.0f/6.0f * DEFAULT_SIZE),
+				-1.0f/4.0f * DEFAULT_SIZE + (1.0f/15.0f * DEFAULT_SIZE)));
+
+		// [-] sign
+		lines.add(new Line(
+				(1.0f/6.0f * DEFAULT_SIZE) - (1.0f/15.0f * DEFAULT_SIZE),  
+				-1.0f/4.0f * DEFAULT_SIZE,
+				(1.0f/6.0f * DEFAULT_SIZE) + (1.0f/15.0f * DEFAULT_SIZE),
+				-1.0f/4.0f * DEFAULT_SIZE));
+
+		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, 0.0f, DEFAULT_SIZE, 0.0f));
+
+		//call drawShape
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, isGrabbed());
+
+		System.out.println("VoltageSource draw!");		
 	}
 
 

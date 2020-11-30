@@ -20,12 +20,14 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class MainController {
+	
+	private DrawingHelper helper; 
 
     @FXML
     private ResourceBundle resources;
@@ -174,10 +176,20 @@ public class MainController {
     }
 
     @FXML
-    void onMouseClicked(MouseEvent event) {
-
+    void miTest1Action(ActionEvent event) {
+    	helper.test1(xCanvas.getGraphicsContext2D());
     }
 
+    @FXML
+    void miTest2Action(ActionEvent event) {
+    	helper.test2(xCanvas.getGraphicsContext2D());
+    }    
+
+    @FXML
+    void miTest3Action(ActionEvent event) {
+    	helper.test3(xCanvas.getGraphicsContext2D());
+    }    
+    
     @FXML
     void initialize() {
         assert miNew != null : "fx:id=\"miNew\" was not injected: check your FXML file 'windowlayout.fxml'.";
@@ -253,7 +265,7 @@ public class MainController {
     
         xCanvas.setOnDragDropped(
         		event -> {
-        			System.out.println("target OnDragDropped");
+        			System.out.println("target DragDropped");
         	        Dragboard dragboard = event.getDragboard();
         	        if (dragboard.hasString())
         	        {
@@ -266,7 +278,34 @@ public class MainController {
         	        event.consume();        			
         		}
 		);
-    
+        
+        helper = new DrawingHelper();
+        
+        xCanvas.setOnMousePressed(
+        		event -> {
+        			if (event.getButton() ==  MouseButton.PRIMARY) {
+        				helper.grabComponent(
+        						xCanvas,
+        						(int)event.getX(),
+        						(int)event.getY());
+
+        				System.out.println(String.format("xCanvas MousePressed %d", System.currentTimeMillis()));
+        			}
+        		}
+        );
+
+        xCanvas.setOnMouseReleased(
+        		event -> {
+        			System.out.println(String.format("xCanvas MouseReleased %d", System.currentTimeMillis()));
+        		}
+        );
+
+        xCanvas.setOnMouseExited(
+        		event -> {
+        			System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
+        		}
+        );
+        
     }
 
 }

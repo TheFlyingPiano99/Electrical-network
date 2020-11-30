@@ -1,6 +1,8 @@
 package main.java.math;
 
 public class Coordinate {
+	public int x, y;
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -26,8 +28,6 @@ public class Coordinate {
 		return true;
 	}
 
-	public int x, y;
-	
 	public Coordinate(int x, int y) {
 		this.x = x;
 		this.y = y;

@@ -4,6 +4,12 @@ import java.util.*;
 
 public class MyMath {
 	
+	public static Vector coordToVector(Coordinate c) {
+		Vector v = new Vector(2);
+		v.setAt(0, (float)c.x);
+		v.setAt(1, (float)c.y);
+		return v; 
+	}
 
 	public static Matrix multiply(float s, Matrix M) {
 	    Matrix retM = new Matrix(M.row, M.column);
@@ -69,7 +75,7 @@ public class MyMath {
 	    return retM;
 	}
 	
-	public static Matrix Transpose(Matrix M) {
+	public static Matrix transpose(Matrix M) {
 	    Matrix retM = new Matrix(M.column, M.row);
 	    for (int c = 0; c < M.column; c++) {
 	        for (int r = 0; r < M.row; r++) {
@@ -115,7 +121,7 @@ public class MyMath {
 	}
 */
 	
-	public static Matrix Identity(int size) {
+	public static Matrix identity(int size) {
 	    Matrix retM = new Matrix(size, size);
 	    retM.fill(0);
 	    for (int i = 0; i < size; i++) {
@@ -129,7 +135,7 @@ public class MyMath {
 	 * @param v vector
 	 * @return matrix
 	 */
-	public static Matrix Diagonal(Vector v) {
+	public static Matrix diagonal(Vector v) {
 	    Matrix retM = new Matrix(v.dimension, v.dimension);
 	    retM.fill(0);
 	    for (int i = 0; i < v.dimension; i++) {
@@ -142,7 +148,7 @@ public class MyMath {
 	 * Removes columns given by they index in List.
 	 * @param toRemoveIndexes - indexes to remove
 	 */
-	public static Matrix RemoveColumns(Matrix M, List<Integer> toRemoveIndexes) {
+	public static Matrix removeColumns(Matrix M, List<Integer> toRemoveIndexes) {
 	    Matrix tempM = new Matrix(M.row, M.column - toRemoveIndexes.size());
 	    
 	    toRemoveIndexes.sort(null);
@@ -166,7 +172,7 @@ public class MyMath {
 	 * Removes rows given by they index in List.
 	 * @param toRemoveIndexes - indexes to remove
 	 */
-	public static Matrix RemoveRows(Matrix M, List<Integer> toRemoveIndexes) {
+	public static Matrix removeRows(Matrix M, List<Integer> toRemoveIndexes) {
 	    Matrix tempM = new Matrix(M.row - toRemoveIndexes.size(), M.column);
 	    
 	    toRemoveIndexes.sort(null);
@@ -191,7 +197,7 @@ public class MyMath {
 	 * Multiply row by value.
 	 * @param val - factor
 	 */
-	public static Matrix MultiplyRow(Matrix M, int row, float val) {
+	public static Matrix multiplyRow(Matrix M, int row, float val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
 	    for (int c = 0; c < M.column; c++) {
@@ -204,7 +210,7 @@ public class MyMath {
 	 * Multiply column by value.
 	 * @param val - factor
 	 */
-	public static Matrix MultipyColumn(Matrix M, int column, float val) {
+	public static Matrix multipyColumn(Matrix M, int column, float val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
 	    for (int r = 0; r < M.row; r++) {
@@ -235,7 +241,7 @@ public class MyMath {
 	    return retV;
 	}
 
-	public static float Dot (Vector a, Vector b) {
+	public static float dot (Vector a, Vector b) {
 	    float sum = 0;
 	    for (int i = 0; i < a.dimension; i++) {
 	        sum += a.at(i) * b.at(i);
@@ -272,7 +278,7 @@ public class MyMath {
 	}
 
 
-	public static float Magnitude(Vector v) {
+	public static float magnitude(Vector v) {
 	    float sum = 0;
 	    for (int i = 0; i < v.dimension; i++) {
 	        sum += v.at(i) * v.at(i);
@@ -281,8 +287,8 @@ public class MyMath {
 	}
 
 
-	public static Vector Normalize(Vector v) {
-		float mag = Magnitude(v);
+	public static Vector normalize(Vector v) {
+		float mag = magnitude(v);
 		if (mag != 0) {
 		    return  divide(v, mag);
 		}
@@ -322,7 +328,7 @@ public class MyMath {
 	}
 	 */
 	
-	public Matrix ConcatenateRight (Matrix A, Matrix B) {
+	public Matrix concatenateRight (Matrix A, Matrix B) {
 		if (A.row != B.row) {
 			throw new RuntimeException("Concatenation of matrices with nonequal number of rows.");
 		}
@@ -342,7 +348,7 @@ public class MyMath {
 		return retM; 
 	}
 	
-	public Matrix ConcatenateRight (Matrix A, Vector v) {
+	public Matrix concatenateRight (Matrix A, Vector v) {
 		if (A.row != v.dimension) {
 			throw new RuntimeException("Concatenation of matrix and vector with nonequal number of rows.");
 		}
@@ -363,7 +369,7 @@ public class MyMath {
 	}
 	
 
-	public Matrix ConcatenateBottom (Matrix A, Matrix B) {
+	public Matrix concatenateBottom (Matrix A, Matrix B) {
 		if (A.column != B.column) {
 			throw new RuntimeException("Concatenation of matrices with nonequal number of columns.");
 		}
@@ -383,7 +389,7 @@ public class MyMath {
 		return retM; 
 	}
 
-	public Matrix ConcatenateBottom (Matrix A, Vector v) {
+	public Matrix concatenateBottom (Matrix A, Vector v) {
 		if (A.column != v.dimension) {
 			throw new RuntimeException("Concatenation of matrix and vector with nonequal number of columns.");
 		}
@@ -404,7 +410,7 @@ public class MyMath {
 	}
 
 	//Coordinate related:------------------------------------------------------------------------------------
-	public static double Magnitude(Coordinate c) {
+	public static double magnitude(Coordinate c) {
 		return Math.sqrt(c.x * c.x + c.y * c.y);
 	}
 	

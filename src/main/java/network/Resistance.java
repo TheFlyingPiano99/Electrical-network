@@ -1,8 +1,15 @@
 package main.java.network;
 
 import javafx.util.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.scene.canvas.GraphicsContext;
+import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
+import main.java.math.Line;
+import main.java.math.MyMath;
+import main.java.math.Vector;
 
 /**
  * Resistance with adjustable value.
@@ -13,7 +20,10 @@ public class Resistance extends Component {
 
 	private Edge e;
 	private float resistance = 0;
-
+	private final float DEFAULT_WIDTH  = 20.0f;
+	private final float DEFAULT_LENGTH = 100.0f;
+	
+	
 	//Constructors:---------------------------------------------------------------------------------------
 
 	public Resistance() {
@@ -136,7 +146,32 @@ public class Resistance extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
-		;
+		List<Line> lines = new ArrayList<Line>();
+		
+		//Construction:
+		lines.add(new Line(
+				0.0f, 0.0f,
+				DEFAULT_WIDTH, 0.0f));
+		lines.add(new Line(
+				DEFAULT_WIDTH, -DEFAULT_WIDTH/2.0f,
+				DEFAULT_WIDTH, +DEFAULT_WIDTH/2.0f));
+		lines.add(new Line(
+				DEFAULT_WIDTH, -DEFAULT_WIDTH/2.0f,
+				DEFAULT_LENGTH - DEFAULT_WIDTH, -DEFAULT_WIDTH/2.0f));
+		lines.add(new Line(
+				DEFAULT_WIDTH, +DEFAULT_WIDTH/2.0f,
+				DEFAULT_LENGTH - DEFAULT_WIDTH, +DEFAULT_WIDTH/2.0f));
+		lines.add(new Line(
+				DEFAULT_LENGTH - DEFAULT_WIDTH, -DEFAULT_WIDTH/2.0f, 
+				DEFAULT_LENGTH - DEFAULT_WIDTH, +DEFAULT_WIDTH/2.0f));
+		lines.add(new Line(
+				DEFAULT_LENGTH - DEFAULT_WIDTH, 0.0f, 
+				DEFAULT_LENGTH, 0.0f));
+
+		//call drawShape
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_LENGTH, isGrabbed());
+		
+		System.out.println("Resistance draw!");
 	}
 	
 	@Override

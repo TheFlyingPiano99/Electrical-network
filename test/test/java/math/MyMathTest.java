@@ -15,7 +15,7 @@ import main.java.math.Vector;
 
 
 /**
- * @author simon
+ * @author Simon Zoltán
  *
  */
 public class MyMathTest {
@@ -103,7 +103,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#Transpose(main.java.math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#transpose(main.java.math.Matrix)}.
 	 */
 	@Test
 	public void testTranspose() {
@@ -121,7 +121,7 @@ public class MyMathTest {
 		exp.setAt(2, 2, 3);
 		exp.setAt(1, 0, 4);	//!
 		
-		assertEquals(exp, MyMath.Transpose(m));
+		assertEquals(exp, MyMath.transpose(m));
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#Identity(int)}.
+	 * Test method for {@link main.java.math.MyMath#identity(int)}.
 	 */
 	@Test
 	public void testIdentity() {
@@ -170,11 +170,11 @@ public class MyMathTest {
 		exp.setAt(1,1, 1);
 		exp.setAt(2,2, 1);
 		
-		assertEquals(exp, MyMath.Identity(3));
+		assertEquals(exp, MyMath.identity(3));
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#Diagonal(main.java.math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#diagonal(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testDiagonal() {
@@ -189,11 +189,11 @@ public class MyMathTest {
 		exp.setAt(1,1, 3);
 		exp.setAt(2,2, 6);
 		
-		assertEquals(exp, MyMath.Diagonal(v));
+		assertEquals(exp, MyMath.diagonal(v));
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#RemoveColumns(main.java.math.Matrix, java.util.ArrayList)}.
+	 * Test method for {@link main.java.math.MyMath#removeColumns(main.java.math.Matrix, java.util.ArrayList)}.
 	 */
 	@Test
 	public void testRemoveColumns() {
@@ -208,11 +208,11 @@ public class MyMathTest {
 		Matrix exp = new Matrix(3,4);
 		exp.fill(2);
 		
-		assertEquals(exp, MyMath.RemoveColumns(M, toRemove));		
+		assertEquals(exp, MyMath.removeColumns(M, toRemove));		
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#RemoveRows(main.java.math.Matrix, java.util.List)}.
+	 * Test method for {@link main.java.math.MyMath#removeRows(main.java.math.Matrix, java.util.List)}.
 	 */
 	@Test
 	public void testRemoveRows() {
@@ -226,11 +226,11 @@ public class MyMathTest {
 		Matrix exp = new Matrix(4,3);
 		exp.fill(2);
 		
-		assertEquals(exp, MyMath.RemoveRows(M, toRemove));		
+		assertEquals(exp, MyMath.removeRows(M, toRemove));		
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#MultiplyRow(main.java.math.Matrix, int, float)}.
+	 * Test method for {@link main.java.math.MyMath#multiplyRow(main.java.math.Matrix, int, float)}.
 	 */
 	@Test
 	public void testMultiplyRow() {
@@ -242,11 +242,11 @@ public class MyMathTest {
 		exp.setAt(1,0, 2);
 		exp.setAt(1,1, 2);
 		
-		assertEquals(exp, MyMath.MultiplyRow(M, 0, 3));
+		assertEquals(exp, MyMath.multiplyRow(M, 0, 3));
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#MultipyColumn(main.java.math.Matrix, int, float)}.
+	 * Test method for {@link main.java.math.MyMath#multipyColumn(main.java.math.Matrix, int, float)}.
 	 */
 	@Test
 	public void testMultipyColumn() {
@@ -258,7 +258,7 @@ public class MyMathTest {
 		exp.setAt(0,1, 2);
 		exp.setAt(1,1, 2);
 		
-		assertEquals(exp, MyMath.MultipyColumn(M, 0, 3));
+		assertEquals(exp, MyMath.multipyColumn(M, 0, 3));
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -293,7 +293,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#Dot(main.java.math.Vector, main.java.math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#dot(main.java.math.Vector, main.java.math.Vector)}.
 	 */
 	@Test
 	public void testDot() {
@@ -305,7 +305,7 @@ public class MyMathTest {
 		
 		float exp = a.at(0)*b.at(0) + a.at(1)*b.at(1) + a.at(2)*b.at(2);
 		
-		assertTrue(MyMath.Dot(a, b) == exp);
+		assertTrue(MyMath.dot(a, b) == exp);
 	}
 
 	/**
@@ -353,7 +353,7 @@ public class MyMathTest {
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#Magnitude(main.java.math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#magnitude(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testMagnitude() {
@@ -361,11 +361,11 @@ public class MyMathTest {
 		v.fill(3);
 		
 		float exp = (float) Math.sqrt(v.at(0)*v.at(0) + v.at(1)*v.at(1) + v.at(2)*v.at(2));
-		assertTrue(MyMath.Magnitude(v) == exp);
+		assertTrue(MyMath.magnitude(v) == exp);
 	}
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#Normalize(main.java.math.Vector)}.
+	 * Test method for {@link main.java.math.MyMath#normalize(main.java.math.Vector)}.
 	 */
 	@Test
 	public void testNormalize() {
@@ -385,7 +385,7 @@ public class MyMathTest {
 		}
 		
 		
-		assertEquals(exp, MyMath.Normalize(v));
+		assertEquals(exp, MyMath.normalize(v));
 	}
 
 	/**
