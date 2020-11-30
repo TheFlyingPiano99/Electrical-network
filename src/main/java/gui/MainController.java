@@ -1,6 +1,8 @@
 package main.java.gui;
 
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 import javafx.application.Platform;
@@ -24,12 +26,21 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import main.java.math.Coordinate;
+import main.java.network.Component;
+import main.java.network.ComponentNode;
+import main.java.network.Network;
 
 public class MainController {
 	
-	private DrawingHelper helper; 
+	private DrawingHelper helper;
+	private Network network = new Network();
+	private Component     grabbedComponent = null;
+	private ComponentNode grabbedNode = null;
 
-    @FXML
+	@FXML
     private ResourceBundle resources;
 
     @FXML
@@ -147,7 +158,21 @@ public class MainController {
 
     @FXML
     void miOpenAction(ActionEvent event) {
-
+    	FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Fájl megnyitás...");
+        fileChooser.getExtensionFilters().addAll(
+        		new ExtensionFilter("Az összes fájl", "*.*"),
+        		new ExtensionFilter("Szöveges fájlok", "*.txt"));
+        
+        String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
+        fileChooser.setInitialDirectory(new File(currentPath));
+        
+        File f = fileChooser.showOpenDialog(null);
+        if (f != null && f.exists()) {
+        	String fileName = f.getAbsolutePath();
+        	network.load(fileName);
+        	network.draw(xCanvas.getGraphicsContext2D());
+        }
     }
 
     @FXML
@@ -162,7 +187,20 @@ public class MainController {
 
     @FXML
     void miSaveAction(ActionEvent event) {
-
+    	FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Fájl mentés...");
+        fileChooser.getExtensionFilters().addAll(
+        		new ExtensionFilter("Az összes fájl", "*.*"),
+        		new ExtensionFilter("Szöveges fájlok", "*.txt"));
+        
+        String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
+        fileChooser.setInitialDirectory(new File(currentPath));
+        
+        File f = fileChooser.showSaveDialog(null);
+        if (f != null) {
+        	String fileName = f.getAbsolutePath();
+        	network.save(fileName);
+        }
     }
 
     @FXML
@@ -220,6 +258,8 @@ public class MainController {
         assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert rightStatus != null : "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+
+        helper = new DrawingHelper();
         
         // 
         lvLeftListView.getItems().add("Feszültségforrás");
@@ -279,15 +319,21 @@ public class MainController {
         		}
 		);
         
-        helper = new DrawingHelper();
-        
         xCanvas.setOnMousePressed(
         		event -> {
         			if (event.getButton() ==  MouseButton.PRIMARY) {
-        				helper.grabComponent(
-        						xCanvas,
-        						(int)event.getX(),
-        						(int)event.getY());
+        				Coordinate currentPos = new Coordinate((int)event.getX(), (int)event.getY());
+        				grabbedNode = network.getNodeAtPos(currentPos);
+        				if (grabbedNode != null) {
+        					network.grabComponentNode(grabbedNode, currentPos);
+        				} else {
+        					//network.get
+        				}
+        				
+//        				helper.grabComponent(
+//        						xCanvas,
+//        						(int)event.getX(),
+//        						(int)event.getY());
 
         				System.out.println(String.format("xCanvas MousePressed %d", System.currentTimeMillis()));
         			}
@@ -307,5 +353,5 @@ public class MainController {
         );
         
     }
-
+    
 }
