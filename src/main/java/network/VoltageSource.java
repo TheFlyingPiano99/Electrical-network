@@ -1,13 +1,14 @@
 package main.java.network;
 
-import java.time.Duration;
+import javafx.util.Duration;
+import java.util.Map;
 
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 
 /**
  * Ideal voltage source, with adjustable value and zero resistance.
- * @author Simon Zoltán
+ * @author Simon ZoltÃ¡n
  *
  */
 public class VoltageSource extends Component {
@@ -142,6 +143,45 @@ public class VoltageSource extends Component {
 	@Override
 	public void draw(GraphicsContext ctx) {
 		
+	}
+
+
+	@Override
+	void disconnectGraphRepresentation() {
+		
+		if (getInput().getVertexBinding().getNoOfOutgoing() > 1 || getInput().getVertexBinding().getNoOfIncoming() > 0) {
+			//Clone input vertex:
+			Vertex prevIn = getInput().getVertexBinding();
+			Vertex prevOut = getOutput().getVertexBinding();
+			
+			Vertex newIn = new Vertex();
+			getParent().getVertices().add(newIn);
+			
+			newIn.addOutgoing(prevOut, e);
+			e.setInput(newIn);
+			prevOut.removeIncoming(prevIn);
+			prevOut.addIncoming(newIn, e);
+			
+			prevIn.removeOutgoing(prevOut);
+			getInput().setVertexBinding(newIn);
+		}
+		
+		if (getOutput().getVertexBinding().getNoOfOutgoing() > 0 || getOutput().getVertexBinding().getNoOfIncoming() > 1) {
+			//Clone output vertex:
+			Vertex prevIn = getInput().getVertexBinding();
+			Vertex prevOut = getOutput().getVertexBinding();
+			
+			Vertex newOut = new Vertex();
+			getParent().getVertices().add(newOut);
+			
+			newOut.addIncoming(prevIn, e);
+			e.setOutput(newOut);
+			prevIn.removeOutgoing(prevOut);
+			prevIn.addOutgoing(newOut, e);
+			
+			prevOut.removeIncoming(prevIn);			
+			getOutput().setVertexBinding(newOut);
+	}
 	}
 
 	

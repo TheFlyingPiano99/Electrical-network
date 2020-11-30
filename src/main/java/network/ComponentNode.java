@@ -7,7 +7,7 @@ import main.java.math.MyMath;
 
 /**
  * The end node of all components. Helps establishing connection between components. 
- * @author Simon Zolt·n
+ * @author Simon Zolt√°n
  *
  */
 public class ComponentNode {
@@ -156,5 +156,6 @@ public class ComponentNode {
 	public boolean isNeighbouring (ComponentNode n) {
 		return this.vertexBinding.isNeighbouring(n.getVertexBinding());
 	}
+	
 	
 }

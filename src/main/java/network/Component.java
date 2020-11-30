@@ -1,6 +1,6 @@
 package main.java.network;
 
-import java.time.Duration;
+import javafx.util.Duration;
 
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
@@ -8,7 +8,7 @@ import main.java.math.MyMath;
 
 /**
  * Abstract parent of all network components. 
- * @author Simon Zolt·n
+ * @author Simon Zolt√°n
  *
  */
 public abstract class Component {	
@@ -118,7 +118,8 @@ public abstract class Component {
 		grabbed = true;
 		grabCursorOffset = MyMath.subtrackt(cursorPos, getInput().getPos());	//CP - P = RP
 		fromInputToOutput = MyMath.subtrackt(getOutput().getPos(), getInput().getPos());
-		parent.cutOutComponent(this);		
+		parent.disconnectComponent(this);
+		disconnectGraphRepresentation();
 	}
 
 	public void drag(Coordinate cursorPos) {
@@ -192,4 +193,6 @@ public abstract class Component {
 	 */
 	abstract public void draw(GraphicsContext ctx);
 
+	abstract void disconnectGraphRepresentation();
+	
 }

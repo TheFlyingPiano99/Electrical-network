@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
-import java.time.Duration;
+import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +20,7 @@ import main.java.math.Vector;
 
 /**
  * The model of the electric network.
- * @author Simon Zoltán
+ * @author Simon ZoltÃ¡n
  *
  */
 public class Network {
@@ -97,6 +97,10 @@ public class Network {
 	 * @param deltaTime	The time spent since the last call of this method.
 	 */
 	public void simulate (Duration deltaTime) {
+		if (null == deltaTime) {
+			deltaTime = new Duration(0);
+		}
+		
 		//ManageLinearSystem:
 		
 	    if (updateGraph || linSystem == null) {
@@ -187,6 +191,7 @@ public class Network {
 	        if (iter != s) {
 	            depth.put(iter, -1);
 		        previous.put(iter, null);
+		        finish.put(iter, -1);
 	        }
 	    }
 
@@ -234,6 +239,8 @@ public class Network {
 	                    }
 	                }
 	                if (current != v) { //Found adjacent vertex with (*) depth
+                        GreatestDepth = 1;
+                        depth.put(v, GreatestDepth);
 	                    current = v;
 	                } else {
 	                    run = false;
@@ -398,7 +405,7 @@ public class Network {
 			setUpdateAll();
 		}
 	}
-
+	
 	//-------------------------------------------------------------------------------------------------
 	//Manipulating components:---------------------------------------
 
@@ -433,7 +440,7 @@ public class Network {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
 		componentNode.grab(cursorPos);
-			
+		
 	}
 	
 	/**
@@ -457,6 +464,7 @@ public class Network {
 			throw new RuntimeException("Invalid node released.");
 		}
 		componentNode.release();
+		setUpdateAll();
 	}
 
 	//---------------------------------------------------------------
@@ -472,7 +480,8 @@ public class Network {
 		}
 		
 		component.grab(cursorPos);
-		
+		setUpdateAll();
+
 	}
 	
 	/**
@@ -496,6 +505,8 @@ public class Network {
 			throw new RuntimeException("Invalid component released.");
 		}
 		component.release();
+		setUpdateAll();
+
 	}
 	//---------------------------------------------------------------
 	
@@ -517,17 +528,36 @@ public class Network {
 	 * Cuts out the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
 	 * @param component {@link Component} to be cut out.
 	 */
-	public void cutOutComponent(Component component) {
+	public void disconnectComponent(Component component) {
 		if (component.getInput().getNoOfOutgoing() > 1 || component.getInput().getNoOfIncoming() > 0) {
 			//Clone input:
-			;
+			ComponentNode prevInput = component.getInput();
+			ComponentNode newInput = new ComponentNode(prevInput.getParent());
+			componentNodes.add(newInput);
+			
+			newInput.setPos(prevInput.getPos());
+			newInput.setMerge(true);
+			newInput.setVertexBinding(prevInput.getVertexBinding());
+			
+			prevInput.removeOutgoing(component);
+			newInput.addOutgoing(component);
+			component.setInput(newInput);			
 		}
 		if (component.getOutput().getNoOfIncoming() > 1 || component.getOutput().getNoOfOutgoing() > 0) {
 			//Clone output:
-			;
+			ComponentNode prevOutput = component.getOutput();
+			ComponentNode newOutput = new ComponentNode(prevOutput.getParent());
+			componentNodes.add(newOutput);
+			
+			newOutput.setPos(prevOutput.getPos());
+			newOutput.setMerge(true);
+			newOutput.setVertexBinding(prevOutput.getVertexBinding());
+			
+			prevOutput.removeIncoming(component);
+			newOutput.addIncoming(component);
+			component.setOutput(newOutput);			
 		}
 	}
-	
 	
 	/**
 	 * Tries to merge a given node to any of the other nodes.
@@ -686,7 +716,9 @@ public class Network {
 		}
 	}
 	
-	
+	public ArrayList<Vertex> getVertices() {
+		return vertices;
+	}
 	
 }
 
