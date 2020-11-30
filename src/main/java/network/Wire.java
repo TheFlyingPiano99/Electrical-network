@@ -1,9 +1,13 @@
 package main.java.network;
 
 import javafx.util.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
+import main.java.math.Line;
 
 /**
  *	Ideal wire, with zero resistance.
@@ -102,8 +106,39 @@ public class Wire extends Component {
 		builder.append("]");		
 		return builder.toString();
 	}
+
 	@Override
 	public void draw(GraphicsContext ctx) {
+		List<Line> lines = new ArrayList<Line>();		
+		Coordinate inputPos  = getInput().getPos(); 
+		Coordinate outputPos = getOutput().getPos();
+
+		boolean eqX = (outputPos.x == inputPos.x);
+		boolean eqY = (outputPos.y == inputPos.y);
+		
+		//Construction:
+		if (eqX || eqY) {
+
+			lines.add(new Line(inputPos.x, inputPos.y, outputPos.x, outputPos.y));
+
+		} else {
+
+			// 2 segments: [input -> breaking point] and [breaking point -> output]
+			int brX = outputPos.x;
+			int brY = outputPos.y;
+			if (outputPos.x != inputPos.x) {
+				brX = inputPos.x;
+			} else if (outputPos.y != inputPos.y) {
+				brY = inputPos.y;
+			}
+			lines.add(new Line(inputPos.x, inputPos.y, brX, brY));
+			lines.add(new Line(brX, brY, outputPos.x, outputPos.y));
+
+		}
+
+		//call drawWire
+		DrawingHelper.drawWire(ctx, lines);
+		
 		throw new RuntimeException("Not implemented!");
 	}
 

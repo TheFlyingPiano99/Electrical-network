@@ -145,7 +145,7 @@ public class Gauss {
             }
 
             //Shrink matrix by removing zero columns:-----------------------
-            M.copyWithResize(MyMath.RemoveColumns(M, toRemoveIndexes));
+            M.copyWithResize(MyMath.removeColumns(M, toRemoveIndexes));
 
             if (M.column < M.row - 1) {
                 return SingularityFlag.infiniteSolutions;

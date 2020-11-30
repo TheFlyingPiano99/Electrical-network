@@ -570,7 +570,7 @@ public class Network {
 	public boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
-				if (mergeProximity > MyMath.Magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
+				if (mergeProximity > MyMath.magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
 					if (!componentNode.isNeighbouring(iter)) {
 						//Merge needed:
 						for (Component incoming : componentNode.getIncoming()) {
@@ -618,7 +618,7 @@ public class Network {
 	 */
 	public ComponentNode getNodeAtPos(Coordinate pos) {
 		for (ComponentNode iter : componentNodes) {
-			if (MyMath.Magnitude(MyMath.subtrackt(iter.getPos(), pos)) < 10) {
+			if (MyMath.magnitude(MyMath.subtrackt(iter.getPos(), pos)) < 10) {
 				return iter;
 			}
 		}

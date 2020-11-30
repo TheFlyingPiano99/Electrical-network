@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**
- * @author simon
+ * @author Simon Zoltán
  *
  */
 public class MatrixTest {

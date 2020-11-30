@@ -1,7 +1,10 @@
 package main.java.math;
 
 public class Vector {
-    @Override
+	private float n[];
+    public int dimension;
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -27,9 +30,6 @@ public class Vector {
 		}
 		return true;
 	}
-
-	private float n[];
-    public int dimension;
 
     public Vector(int d) {
     	dimension = d;

@@ -1,6 +1,10 @@
 package main.java.math;
 
 public class Matrix {
+	float n[];
+    public int row;
+    public int column;
+
     @Override
 	public int hashCode() {
 		final int prime = 31;
@@ -32,10 +36,6 @@ public class Matrix {
 		}
 		return true;
 	}
-
-	float n[];
-    public int row;
-    public int column;
 
     /**
      * Constructor

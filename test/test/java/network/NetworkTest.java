@@ -23,7 +23,7 @@ import main.java.network.VoltageSource;
 import main.java.network.Wire;
 
 /**
- * @author simon
+ * @author Simon Zoltán
  *
  */
 public class NetworkTest {
