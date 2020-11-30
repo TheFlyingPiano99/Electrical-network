@@ -3,7 +3,7 @@ package main.java.network;
 
 /**
  * The edge of the graph representation of the network. 
- * @author Simon Zolt·n
+ * @author Simon Zolt√°n
  *
  */
 public class Edge {

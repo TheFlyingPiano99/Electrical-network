@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 /**
  * Vertex of the graph representation of the network.
- * @author Simon Zolt·n
+ * @author Simon Zolt√°n
  *
  */
 public class Vertex {

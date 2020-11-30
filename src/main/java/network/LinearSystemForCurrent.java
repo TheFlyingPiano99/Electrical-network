@@ -5,7 +5,7 @@ import main.java.math.Vector;
 
 /**
  * Linear system, representing a equations for electric network.
- * @author Simon Zolt·n
+ * @author Simon Zolt√°n
  *<h2>The left  side of the equations:</h2>{First e columns are the columns of the incidence matrix.
  *                              The remaining part of the matrix is the cycle matrix multiplied by resistances of the edges}</b>
  *                              
@@ -80,15 +80,16 @@ public class LinearSystemForCurrent extends Matrix {
 	 */
 	public void updateSourceVoltage(Vector sourceVoltages) {
 		for (int c = 0; c < this.cycle.column; c++) {
-			this.setAt(this.column-1, cycleOffset + c, 0);
+			float sumOfVoltages = 0;
 			for (int r = 0; r < sourceVoltages.dimension; r++) {
 				if (this.cycle.at(r, c) > 0) {
-					this.setAt(this.column-1, cycleOffset + c, this.at(this.column-1, cycleOffset + c) + sourceVoltages.at(r));									
+					sumOfVoltages += sourceVoltages.at(r);
 				}
 				else if (this.cycle.at(r, c) < 0) {
-					this.setAt(this.column-1, cycleOffset + c, this.at(this.column-1, cycleOffset + c) - sourceVoltages.at(r));														
+					sumOfVoltages -= sourceVoltages.at(r);
 				}
 			}
+			this.setAt(this.row-1, cycleOffset + c, sumOfVoltages);
 		}
 	}
 	
@@ -97,8 +98,8 @@ public class LinearSystemForCurrent extends Matrix {
 	 * @param resistances {@link Vector} of resistances.
 	 */
 	public void updateResistances(Vector resistances) {
-		for (int r = 0; r < this.column - 1; r++) {
-			for (int c = 0; c < this.cycle.column; c++) {
+		for (int c = 0; c < this.cycle.column; c++) {
+			for (int r = 0; r < resistances.dimension; r++) {
 				if (this.cycle.at(r, c) > 0) {
 					this.setAt(r, cycleOffset + c, resistances.at(r));									
 				}

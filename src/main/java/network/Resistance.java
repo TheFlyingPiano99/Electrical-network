@@ -1,13 +1,12 @@
 package main.java.network;
 
-import java.time.Duration;
-
+import javafx.util.Duration;
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 
 /**
  * Resistance with adjustable value.
- * @author Simon Zoltán
+ * @author Simon ZoltÃ¡n
  *
  */
 public class Resistance extends Component {
@@ -139,5 +138,42 @@ public class Resistance extends Component {
 	public void draw(GraphicsContext ctx) {
 		;
 	}
+	
+	@Override
+	void disconnectGraphRepresentation() {
+		
+		if (getInput().getVertexBinding().getNoOfOutgoing() > 1 || getInput().getVertexBinding().getNoOfIncoming() > 0) {
+			//Clone input vertex:
+			Vertex prevIn = getInput().getVertexBinding();
+			Vertex prevOut = getOutput().getVertexBinding();
+			
+			Vertex newIn = new Vertex();
+			getParent().getVertices().add(newIn);
+			
+			newIn.addOutgoing(prevOut, e);
+			e.setInput(newIn);
+			prevOut.removeIncoming(prevIn);
+			prevOut.addIncoming(newIn, e);
+			
+			prevIn.removeOutgoing(prevOut);			
+		}
+		
+		if (getOutput().getVertexBinding().getNoOfOutgoing() > 0 || getOutput().getVertexBinding().getNoOfIncoming() > 1) {
+			//Clone output vertex:
+			Vertex prevIn = getInput().getVertexBinding();
+			Vertex prevOut = getOutput().getVertexBinding();
+			
+			Vertex newOut = new Vertex();
+			getParent().getVertices().add(newOut);
+			
+			newOut.addIncoming(prevIn, e);
+			e.setOutput(newOut);
+			prevIn.removeOutgoing(prevOut);
+			prevIn.addOutgoing(newOut, e);
+			
+			prevOut.removeIncoming(prevIn);			
+		}
+	}
+
 
 }
