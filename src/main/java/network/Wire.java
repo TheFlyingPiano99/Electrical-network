@@ -138,8 +138,6 @@ public class Wire extends Component {
 
 		//call drawWire
 		DrawingHelper.drawWire(ctx, lines);
-		
-		throw new RuntimeException("Not implemented!");
 	}
 
 	@Override
