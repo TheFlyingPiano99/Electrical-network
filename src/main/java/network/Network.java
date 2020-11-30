@@ -38,7 +38,7 @@ public class Network {
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
 	
-	int mergeProximity = 8;
+	int closeProximity = 8;
 	
 	//Constructor:------------------------------------------------------
 	
@@ -616,7 +616,7 @@ public class Network {
 	protected boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
-				if (mergeProximity > MyMath.magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
+				if (closeProximity > MyMath.magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
 					if (!componentNode.isNeighbouring(iter)) {
 						//Merge needed:
 						for (Component incoming : componentNode.getIncoming()) {
@@ -668,6 +668,29 @@ public class Network {
 				return iter;
 			}
 		}
+		
+		return null;
+	}
+	
+	public Component getComponentAtPos(Coordinate cursorPos) {
+		
+		for (Component component : components) {
+			Vector inPos = MyMath.coordToVector(component.getInput().getPos());
+			Vector outPos = MyMath.coordToVector(component.getOutput().getPos());
+			Vector cursor = MyMath.coordToVector(cursorPos);
+			
+			Vector fromInToCursor = MyMath.subtract(cursor, inPos);
+			Vector fromOutToCursor = MyMath.subtract(cursor, outPos);
+
+			Vector fromInToOut = MyMath.subtract(outPos, inPos);			
+			
+			if (MyMath.dot(fromInToCursor, fromInToOut) > 0 && MyMath.dot(fromOutToCursor, fromInToOut) < 0) {
+				float distance = MyMath.magnitude(MyMath.reject(fromInToCursor, fromInToOut)); 
+				if (distance < closeProximity) {
+					return component;
+				}
+			}
+		}		
 		
 		return null;
 	}

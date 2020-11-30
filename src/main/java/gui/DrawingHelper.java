@@ -89,7 +89,7 @@ public class DrawingHelper {
 		Vector vInput  = MyMath.coordToVector(inputPos); 
 		Vector vOutput = MyMath.coordToVector(outputPos);
 		
-		Vector orientation = MyMath.subtrackt(vOutput, vInput);
+		Vector orientation = MyMath.subtract(vOutput, vInput);
 		float scale = MyMath.magnitude(orientation) / default_size;
 		float angle = (float)Math.atan2(orientation.at(1), orientation.at(0));
 
