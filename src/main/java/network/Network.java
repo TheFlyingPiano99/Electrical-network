@@ -61,9 +61,9 @@ public class Network {
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
-	Component selected = null;
+	private Component selected = null;
 	
-	boolean validNetwork = false;
+	private boolean validNetwork = false;
 	
 	//--------------------------------------------------
 	
