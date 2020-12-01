@@ -914,6 +914,14 @@ public class Network {
 	}
 	
 	/**
+	 * Disable selection of component.
+	 * HUN: Megszünteti egy komponens kiválasztását.
+	 */
+	public void cancelSelection() {
+		selected = null;
+	}
+	
+	/**
 	 * Whether the network is valid or not.
 	 * HUN: Helyes-e a hálózat?
 	 * @return

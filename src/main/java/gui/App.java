@@ -8,9 +8,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import main.java.network.Network;
 
 public class App extends Application {
+		
 	public static void main(String[] args) throws Exception {
 		launch(args);
 	}
@@ -23,6 +23,16 @@ public class App extends Application {
 		stage.setScene(new Scene(content));
 		stage.show();
 		stage.setTitle("Áramkör szimulátor");
+		
+		stage.getScene().setOnKeyPressed(
+			event-> {
+				if (MainController.mainController != null) {
+					MainController.mainController.handleKeyboardPressed(event);
+				}
+			}
+		);
+		
+		
 	}	
 
 }
