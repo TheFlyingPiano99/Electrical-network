@@ -17,6 +17,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
@@ -29,6 +30,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -162,7 +164,7 @@ public class MainController {
         String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
         fileChooser.setInitialDirectory(new File(currentPath));
         
-        File f = fileChooser.showOpenDialog(null);
+        File f = fileChooser.showOpenDialog(App.globalStage);
         if (f != null && f.exists()) {
         	String fileName = f.getAbsolutePath();
         	network.load(fileName);
@@ -465,9 +467,11 @@ public class MainController {
     public void buildPropertyView(Component component) {    	
     	int row = 0;
     	if (component.getProperties() != null) {
+    		Insets insets = new Insets(0,0,0,5);
         	for (Entry<String, ComponentProperty> entry : component.getProperties().entrySet()) {
         		ComponentProperty prop = entry.getValue();
         		prop.nameN = new Label(prop.name);
+        		prop.nameN.setPadding(insets);
         		propertyGrid.add(prop.nameN, 0, row);
         		
         		prop.valueN = new TextField(prop.value);
@@ -484,6 +488,7 @@ public class MainController {
         		
         		propertyGrid.add(prop.valueN, 1, row);
         		prop.unitN = new Label(prop.unit);
+        		prop.unitN.setPadding(insets);
         		propertyGrid.add(prop.unitN, 2, row);
         		row++;
     		}
