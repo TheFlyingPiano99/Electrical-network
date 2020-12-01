@@ -9,6 +9,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Main class
+ * @author Simon Zoltán
+ *
+ */
 public class App extends Application {
 		
 	static Stage globalStage;

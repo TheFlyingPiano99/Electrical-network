@@ -136,12 +136,20 @@ public class MainController {
     
 //Menu item actions:------------------------------------------------------------------------------------------
     
+    /**
+     * Show about window.
+     * @param event
+     */
     @FXML
     void miAboutAction(ActionEvent event) {
     	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán, 2020", ButtonType.OK);
     	dlg.show();
     }
 
+    /**
+     * Clear canvas.
+     * @param event
+     */
     @FXML
     void miNewAction(ActionEvent event) {
     	network.clear();
@@ -153,6 +161,11 @@ public class MainController {
     	destroyPropertyView();
     }
 
+    /**
+     * Load from file.
+     * Show "open file" dialog, for file selection.
+     * @param event
+     */
     @FXML
     void miOpenAction(ActionEvent event) {
     	FileChooser fileChooser = new FileChooser();
@@ -172,11 +185,19 @@ public class MainController {
         }
     }
 
+    /**
+     * Quit application.
+     * @param event
+     */
     @FXML
     void miQuitAction(ActionEvent event) {
     	Platform.exit();
     }
 
+    /**
+     * Show "file save as" dialog window.
+     * @param event
+     */
     @FXML
     void miSaveAction(ActionEvent event) {
     	FileChooser fileChooser = new FileChooser();
@@ -195,27 +216,20 @@ public class MainController {
         }
     }
 
-    @FXML
-    void btnStartAction(ActionEvent event) {
-    	miStartAction(event);
-    }
-
-    @FXML
-    void btnPauseAction(ActionEvent event) {
-    	miPauseAction(event);
-    }
-
-    @FXML
-    void btnStopAction(ActionEvent event) {
-    	miStopAction(event);
-    }
-    
+    /**
+     * Start simulation.
+     * @param event
+     */
     @FXML
     void miStartAction(ActionEvent event) {
     	simulating = true;
     	leftStatus.setText("Szimuláció folyamatban.");
     }
 
+    /**
+     * Pause simulation.
+     * @param event
+     */
     @FXML
     void miPauseAction(ActionEvent event) {
     	if (simulating != null && simulating == true) {
@@ -224,6 +238,10 @@ public class MainController {
     	simulating = false;
     }
 
+    /**
+     * Stop simulation.
+     * @param event
+     */
     @FXML
     void miStopAction(ActionEvent event) {
     	network.reset();
@@ -231,21 +249,38 @@ public class MainController {
     	leftStatus.setText("Szimuláció leállítva.");    		
     }
 
+    //Button actions:--------------------------------------------------------------------------
+    
+    /**
+     * @see miStartAction
+     * @param event
+     */
     @FXML
-    void miTest1Action(ActionEvent event) {
-    	helper.test1(xCanvas.getGraphicsContext2D());
+    void btnStartAction(ActionEvent event) {
+    	miStartAction(event);
     }
 
+    /**
+     * @see miPauseAction
+     * @param event
+     */
     @FXML
-    void miTest2Action(ActionEvent event) {
-    	helper.test2(xCanvas.getGraphicsContext2D());
-    }    
+    void btnPauseAction(ActionEvent event) {
+    	miPauseAction(event);
+    }
 
+    /**
+     * @see miStopAction 
+     * @param event
+     */
     @FXML
-    void miTest3Action(ActionEvent event) {
-    	helper.test3(xCanvas.getGraphicsContext2D());
-    }    
-        
+    void btnStopAction(ActionEvent event) {
+    	miStopAction(event);
+    }
+    
+//Initialize:----------------------------------------------------------------------------------------------
+    
+    
     /**
      * Initializes javaFX controller.
      * HUN: Inicializálja a javaFX kontrollert.
@@ -275,7 +310,6 @@ public class MainController {
         
         mainController = this;
         
-        // 
         lvLeftListView.getItems().add("Feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
@@ -287,22 +321,22 @@ public class MainController {
 //Keyboard:---------------------------------------------------------------------------------------
     	
 		xCanvas.setOnKeyPressed(
-				event-> {
-					handleKeyboardPressed(event);
-				}
-			);
+			event-> {
+				handleKeyboardPressed(event);
+			}
+		);
 		
 		lvLeftListView.setOnKeyPressed(
-				event-> {
-					handleKeyboardPressed(event);
-				}
-			);
+			event-> {
+				handleKeyboardPressed(event);
+			}
+		);
 		
 		lvRightListView.setOnKeyPressed(
-				event-> {
-					handleKeyboardPressed(event);
-				}
-			);
+			event-> {
+				handleKeyboardPressed(event);
+			}
+		);
 
     	
 //Mouse:------------------------------------------------------------------------------------------
@@ -318,152 +352,157 @@ public class MainController {
 
 
         lvLeftListView.setOnDragDetected(
-        		event -> {
-        			System.out.println("src DragDetected");
-                    String selectedItem = lvLeftListView.getSelectionModel().getSelectedItem();
-    				if (selectedItem != null && !"".equals(selectedItem.trim())) {
-    					Dragboard dragboard = lvLeftListView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
-    					ClipboardContent content = new ClipboardContent();
-    					content.putString(selectedItem);
-    					dragboard.setContent(content);
-    				}
-        			event.consume();
-        		}
+    		event -> {
+    			System.out.println("src DragDetected");
+                String selectedItem = lvLeftListView.getSelectionModel().getSelectedItem();
+				if (selectedItem != null && !"".equals(selectedItem.trim())) {
+					Dragboard dragboard = lvLeftListView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+					ClipboardContent content = new ClipboardContent();
+					content.putString(selectedItem);
+					dragboard.setContent(content);
+				}
+    			event.consume();
+    		}
         );
  
         xCanvas.setOnDragOver(
-        		event -> {
-        			System.out.println("target DragOver");
-        	        Dragboard dragboard = event.getDragboard();
-        	        if (dragboard.hasString())
-        	        {
-        	            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-        	        }
-        	        
-        	        event.consume();        			
-        		}
+    		event -> {
+    			System.out.println("target DragOver");
+    	        Dragboard dragboard = event.getDragboard();
+    	        if (dragboard.hasString())
+    	        {
+    	            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+    	        }
+    	        
+    	        event.consume();        			
+    		}
 		);
     
         xCanvas.setOnDragDropped(
-        		event -> {
-        			System.out.println("target DragDropped");
-        	        Dragboard dragboard = event.getDragboard();
-        	        if (dragboard.hasString())
-        	        {
-        	            event.setDropCompleted(true);
-        	            String str = dragboard.getString();
-        	            if (str.equals("Feszültségforrás")) {
-        	            	network.dropComponent(new VoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-        	            }
-        	            else if (str.equals("Ellenállás")) {
-        	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
-        	            }
-        	            else if (str.equals("Vezeték")) {
-        	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
-        	            }
-        	            selectedComponent = network.getSelected();
-        	            destroyPropertyView();
-        	            buildPropertyView(selectedComponent);
-        	            helper.updateCanvasContent(xCanvas, network);
-        	            System.out.println("Successfuly dropped " + dragboard.getString());
-        	        } else {
-        	            event.setDropCompleted(false);
-        	            System.out.println("Failed!");
-        	        }
-        	        event.consume();        			
-        		}
+    		event -> {
+    			System.out.println("target DragDropped");
+    	        Dragboard dragboard = event.getDragboard();
+    	        if (dragboard.hasString())
+    	        {
+    	            event.setDropCompleted(true);
+    	            String str = dragboard.getString();
+    	            if (str.equals("Feszültségforrás")) {
+    	            	network.dropComponent(new VoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            else if (str.equals("Ellenállás")) {
+    	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            else if (str.equals("Vezeték")) {
+    	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            selectedComponent = network.getSelected();
+    	            destroyPropertyView();
+    	            buildPropertyView(selectedComponent);
+    	            helper.updateCanvasContent(xCanvas, network);
+    	            System.out.println("Successfuly dropped " + dragboard.getString());
+    	        } else {
+    	            event.setDropCompleted(false);
+    	            System.out.println("Failed!");
+    	        }
+    	        event.consume();        			
+    		}
 		);
         
         xCanvas.setOnMousePressed(
-        		event -> {
-        			if (event.getButton() ==  MouseButton.PRIMARY) {
-        				Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
-        				grabbedNode = network.getNodeAtPos(cursorPos);
-        				if (grabbedNode != null) {
-        					network.grabComponentNode(grabbedNode, cursorPos);
+    		event -> {
+    			if (event.getButton() ==  MouseButton.PRIMARY) {
+    				Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
+    				grabbedNode = network.getNodeAtPos(cursorPos);
+    				if (grabbedNode != null) {
+    					network.grabComponentNode(grabbedNode, cursorPos);
+        				helper.updateCanvasContent(xCanvas, network);
+    				} else {
+    					grabbedComponent = network.getComponentAtPos(cursorPos);
+    					if (grabbedComponent != null) {
+    						network.grabComponent(grabbedComponent, cursorPos);
             				helper.updateCanvasContent(xCanvas, network);
-        				} else {
-        					grabbedComponent = network.getComponentAtPos(cursorPos);
-        					if (grabbedComponent != null) {
-        						network.grabComponent(grabbedComponent, cursorPos);
-                				helper.updateCanvasContent(xCanvas, network);
-                				if (null != network.getSelected() &&
-                						(selectedComponent == null || selectedComponent != network.getSelected())) {
-                    				selectedComponent = network.getSelected();
-                    				destroyPropertyView();
-                					buildPropertyView(selectedComponent);
-                				}
-                				
-        					}
-        				}
-        			}
-        		}
+            				if (null != network.getSelected() &&
+            						(selectedComponent == null || selectedComponent != network.getSelected())) {
+                				selectedComponent = network.getSelected();
+                				destroyPropertyView();
+            					buildPropertyView(selectedComponent);
+            				}
+            				
+    					}
+    				}
+    			}
+    		}
         );
         
         xCanvas.setOnMouseDragged(
-        		event -> {
-        			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
-        			if (grabbedNode != null) {
-            			System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
-        				network.dragComponentNode(grabbedNode, cursorPos);
-        				helper.updateCanvasContent(xCanvas, network);
-        			} else if (grabbedComponent != null) {
-            			System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
-						network.dragComponent(grabbedComponent, cursorPos);
-        				helper.updateCanvasContent(xCanvas, network);
-        			}
-        	        event.consume();        			
-        		}
+    		event -> {
+    			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
+    			if (grabbedNode != null) {
+        			System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
+    				network.dragComponentNode(grabbedNode, cursorPos);
+    				helper.updateCanvasContent(xCanvas, network);
+    			} else if (grabbedComponent != null) {
+        			System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
+					network.dragComponent(grabbedComponent, cursorPos);
+    				helper.updateCanvasContent(xCanvas, network);
+    			}
+    	        event.consume();        			
+    		}
         );
         
 
         xCanvas.setOnMouseReleased(
-        		event -> {
-        			if (grabbedNode != null) {
-        				network.releaseComponentNode(grabbedNode);
-        				grabbedNode = null;
-        				helper.updateCanvasContent(xCanvas, network);
-        			} else if (grabbedComponent != null) {
-						network.releaseComponent(grabbedComponent);
-						grabbedComponent = null;
-        				helper.updateCanvasContent(xCanvas, network);
-        			}
-        		}
+    		event -> {
+    			if (grabbedNode != null) {
+    				network.releaseComponentNode(grabbedNode);
+    				grabbedNode = null;
+    				helper.updateCanvasContent(xCanvas, network);
+    			} else if (grabbedComponent != null) {
+					network.releaseComponent(grabbedComponent);
+					grabbedComponent = null;
+    				helper.updateCanvasContent(xCanvas, network);
+    			}
+    		}
         );
 
         xCanvas.setOnMouseExited(
-        		event -> {
-        			System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
-        		}
+    		event -> {
+    			System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
+    		}
         );
         
 //Timer:----------------------------------------------------------------------------------------
         
         Duration duration = Duration.millis(50);
         Timeline timeline = new Timeline(new KeyFrame(
-                duration,
-                ae -> {
-            		try {
-						if (simulating != null && simulating && network != null) {
-							network.simulate(duration);
-							if (network.isValid()) {
-								rightStatus.setText("Helyes kapcsolás.");
-							}
-							else {
-						    	rightStatus.setText("Hibás kapcsolás!");    		
-							}
+            duration,
+            ae -> {
+        		try {
+					if (simulating != null && simulating && network != null) {
+						network.simulate(duration);
+						if (network.isValid()) {
+							rightStatus.setText("Helyes kapcsolás.");
 						}
-					} catch (Exception e) {
-						System.out.println("simulate error");
-						e.printStackTrace();
+						else {
+					    	rightStatus.setText("Hibás kapcsolás!");    		
+						}
 					}
-                }));
+				} catch (Exception e) {
+					System.out.println("simulate error");
+					e.printStackTrace();
+				}
+            }
+        ));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
     
 //PropertyView:---------------------------------------------------------------------------------
     
+	/**
+	 * Build property view of the given component.
+	 * @param component	{@link Component} to build view of.
+	 */
     public void buildPropertyView(Component component) {    	
     	int row = 0;
     	if (component.getProperties() != null) {
@@ -495,6 +534,9 @@ public class MainController {
     	}
     }
     
+    /**
+     * Destroy currently active property view.
+     */
     public void destroyPropertyView() {
     	Iterator<Node> it = propertyGrid.getChildren().iterator();
     	while (it.hasNext()) {
@@ -503,6 +545,10 @@ public class MainController {
 		}
     }    
     
+    /**
+     * Process keyboardPressed events.
+     * @param event
+     */
     public void handleKeyboardPressed(KeyEvent event) {
     	switch (event.getCode()) {
     		case ENTER:
@@ -526,8 +572,7 @@ public class MainController {
     		default:
     			break;
     	} 
-    }
-    
+    }   
     
     
 }
