@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.graalvm.compiler.graph.Edges;
+
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 import main.java.math.Gauss;
@@ -20,25 +22,57 @@ import main.java.math.Vector;
 
 /**
  * The model of the electric network.
+ * HUN: Az elektromos hálózat modellje.
  * @author Simon Zoltán
  *
  */
 public class Network {
 	
+	/**
+	 * Vertices of the graph representation.
+	 * HUN: A gráf-reprezentáció csúcsai.
+	 */
 	private ArrayList<Vertex> vertices;
+	
+	/**
+	 * Edges of the grapf representation.
+	 * HUN: A gráf-reprezentáció élei.
+	 */
 	private ArrayList<Edge> edges;
 	
+	/**
+	 * Nodes of the network.
+	 * HUN: A hálózat csomópontjai.
+	 */
 	private ArrayList<ComponentNode> componentNodes;
+	
+	/**
+	 * Components of the network.
+	 * HUN: A hálózat komponensei.
+	 */
 	private ArrayList<Component> components;
 	
+	/**
+	 * Matrix representation of the network.
+	 * A hálózat mátrix reprezentációja.
+	 */
 	private LinearSystemForCurrent linSystem;
 	
+	//Flags:
 	boolean updateGraph = true;
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
 	Component selected = null;
 	
+	boolean validNetwork = false;
+	
+	//--------------------------------------------------
+	
+	/**
+	 * Distance of merging and grabbing.
+	 * HUN: Az összeolvasztás és megfogás távolsága.
+	 */
 	int closeProximity = 8;
 	
 	//Constructor:------------------------------------------------------
@@ -58,6 +92,8 @@ public class Network {
 	
 	/**
 	 * Returns the resistance of all the edges.
+	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt ellenállás értékei vannak felsorolva
+	 * az élek, "edges" listában szereplő sorrendje szerint. 
 	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
 	 */
 	private Vector gatherResistances() {
@@ -70,6 +106,8 @@ public class Network {
 	
 	/**
 	 * Returns the source voltages of all the edges.
+	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt feszültségforrás értékei vannak felsorolva
+	 * az élek, "edges" listában szereplő sorrendje szerint. 
 	 * @return Vector of source voltages. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
 	 */
 	private Vector gatherSourceVoltages() {
@@ -81,7 +119,10 @@ public class Network {
 	}
 	
 	/**
-	 * Uses Gauss elimination, to get the current in all edges.
+	 * Uses Gaussian elimination, to get the current in all edges.
+	 * HUN: Gauss-elimináció segítségével kiszámolja a gráf-élekhez tartozó áramot. 
+	 * Visszaad egy vektort amiben az összes gráf-élhez rendelt áram értékei vannak felsorolva
+	 * az élek, "edges" listában szereplő sorrendje szerint. 
 	 * @return Vector of currents. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
 	 */
 	private Vector CalculateCurrent() {
@@ -94,7 +135,8 @@ public class Network {
 	}
 	
 	/**
-	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels. 
+	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels.
+	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
 	 * @param deltaTime	The time spent since the last call of this method.
 	 */
 	public void simulate (Duration deltaTime) {
@@ -126,7 +168,8 @@ public class Network {
 		    	
 		    	//Set flag:
 		    	updateCurrent = true;
-
+		    	
+		    	
 			} catch (RuntimeException e) {
 				updateCurrent = false;				
 			}
@@ -150,9 +193,13 @@ public class Network {
 			updateCurrent = false;
 			Vector current = CalculateCurrent();
 			if (current != null) {
+		    	validNetwork = true;
 				for (int i = 0; i < edges.size(); i++) {
 					edges.get(i).setCurrent(current.at(i));
 				}
+			}
+			else {
+				validNetwork = false;
 			}
 				
 	    }
@@ -165,6 +212,7 @@ public class Network {
 	
 	/**
 	 * Depth First Search algorithm.
+	 * HUN: Mélységi keresés. Visszatér a gráf-reprezentáció illszkedési- és kör
 	 * @param incidence	Incidence matrix to fill up. Will be filled with incidence representation of the network as a graph.
 	 * @param cycle	Cycle matrix to fill up. Will be filled with cycle representation of the network as a graph.
 	 */
@@ -517,6 +565,14 @@ public class Network {
 
 	//---------------------------------------------------------------
 	//Move Component:
+	
+	public void dropComponent(Component component, Coordinate cursorPos) {
+		addComponent(component);
+		selected = component;
+		component.getInput().setPos(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)));
+		component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));		
+	}
+	
 	/**
 	 * Grab a component.
 	 * @param component The component to be grabbed.
@@ -808,6 +864,10 @@ public class Network {
 	
 	public Component getSelected() {
 		return selected;
+	}
+	
+	public boolean isValid () {
+		return validNetwork;
 	}
 	
 }

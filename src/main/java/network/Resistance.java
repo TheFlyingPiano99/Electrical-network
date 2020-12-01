@@ -20,7 +20,7 @@ import main.java.math.Vector;
 public class Resistance extends Component {
 
 	private Edge e;
-	private float resistance = 0;
+	private float resistance = 1000;
 	private final float DEFAULT_WIDTH  = 20.0f;
 	private final float DEFAULT_LENGTH = 100.0f;
 	

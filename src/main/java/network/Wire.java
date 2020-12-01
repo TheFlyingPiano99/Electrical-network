@@ -13,6 +13,7 @@ import main.java.math.Line;
 
 /**
  *	Ideal wire, with zero resistance.
+ *	HUN: Ideális vezeték, nulla ellenállással.
  * @author Simon Zoltán
  * 
  */
