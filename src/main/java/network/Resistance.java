@@ -190,7 +190,7 @@ public class Resistance extends Component {
 				DEFAULT_LENGTH, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_LENGTH, getParent().selected(this));
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_LENGTH, getParent().isThisSelected(this));
 		
 		//System.out.println("Resistance draw!");
 	}
