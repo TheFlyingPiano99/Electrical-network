@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.graalvm.compiler.graph.Edges;
-
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 import main.java.math.Gauss;
@@ -212,9 +210,10 @@ public class Network {
 	
 	/**
 	 * Depth First Search algorithm.
-	 * HUN: Mélységi keresés. Visszatér a gráf-reprezentáció illszkedési- és kör
-	 * @param incidence	Incidence matrix to fill up. Will be filled with incidence representation of the network as a graph.
-	 * @param cycle	Cycle matrix to fill up. Will be filled with cycle representation of the network as a graph.
+	 * HUN: Mélységi keresés.
+	 * A kapott mátrixokat feltölti a gráf-reprezentáció illeszkedési és alapkör mátrixával.
+	 * @param incidence	Incidence matrix to fill up. Will be filled with incidence matrix of the network as a graph.
+	 * @param cycle	Cycle matrix to fill up. Will be filled with base cycle matrix  of the network as a graph.
 	 */
 	private void DFS (Matrix incidence, Matrix cycle) {
 		if (vertices.isEmpty()) {
@@ -389,6 +388,7 @@ public class Network {
 	
 	/**
 	 * Adds a new Edge to the network's graph representation. Generates two vertices to the new edge.
+	 * HUN: Hozzáad egy élet a hálózat gráf-reprezentációjához. Létrehozza az él végpontjait is. 
 	 * @param edge	Edge to be added.
 	 */
 	public void addEdge(Edge edge) {
@@ -409,6 +409,7 @@ public class Network {
 	
 	/**
 	 * Removes an edge from the network's graph representation. Removes two vertices of this edge, if the vertices connect only to the removed edge.
+	 * HUN: Kitöröl egy élet a hálózat gráf-reprezentációjából. Az él két végpontját is törli, ha azokra nem illeszkedik más él.
 	 * @param edge	Edge to be removed.
 	 */
 	public void removeEdge(Edge edge) {
@@ -431,9 +432,10 @@ public class Network {
 	}
 	
 	/**
-	 * 
-	 * @param edge
-	 * @param vertex
+	 * Disconnects an edge's particular end point.
+	 * HUN: Szétkapcsol egy élet egy adott végpontja szerint.
+	 * @param edge		The edge to be disconnected by end point.
+	 * @param vertex	The end point to disconnect by.
 	 */
 	protected void disconnectEndOfEdge(Edge edge, Vertex vertex) {
 		if (vertex.equals(edge.getInput())) {
@@ -478,6 +480,7 @@ public class Network {
 	
 	/**
 	 * Merges two vertices. After this only one vertex will remain. This, persistent vertex obtains the information held in the now obsolete vertex, such as the incoming and outgoing edges.
+	 * HUN: Összeolvaszt két gráf-csúcsot. A perzisztens csúcs megkapja a beolvadó csúcs kapcsolatait.
 	 * @param persistent	The vertex, which obtains the other's role.
 	 * @param merge			The vertex, which is merged into the other. 
 	 */
@@ -507,6 +510,7 @@ public class Network {
 
 	/**
 	 * Adds a new component to the network.
+	 * HUN: Új komponenst ad a gráfhoz.
 	 * @param component The component to be added.
 	 */
 	public void addComponent (Component component) {
@@ -517,6 +521,7 @@ public class Network {
 
 	/**
 	 * Removes a component from the network.
+	 * HUN: 
 	 * @param component	The component to be removed.
 	 */
 	public void removeComponent (Component component) {
@@ -527,7 +532,8 @@ public class Network {
 	//Move ComponentNode:--------------------------------------------------------------
 	
 	/**
-	 * Grab a component's end node to move it. 
+	 * Grab a component's end node to move it.
+	 * HUN: Megfog egy adott komponenst. 
 	 * @param componentNode	The node to grab.
  	 * @param cursorPos The position of the cursor;
 	 */
@@ -541,6 +547,7 @@ public class Network {
 	
 	/**
 	 * Move a component's end node.
+	 * HUN: Mozgat egy adott komponenst.
 	 * @param componentNode	The node to be moved.
  	 * @param cursorPos The new position of the cursor;
 	 */	
@@ -553,6 +560,7 @@ public class Network {
 	
 	/**
 	 * Release a component's end node. (When the node is already grabbed.)
+	 * HUN: Elenged egy adott komponenst.
 	 * @param componentNode The node to release.
 	 */
 	public void releaseComponentNode(ComponentNode componentNode) {
@@ -566,6 +574,12 @@ public class Network {
 	//---------------------------------------------------------------
 	//Move Component:
 	
+	/**
+	 * Drops in a new component at the given position in network.
+	 * HUN: Bedob egy új komponenst az adott pozícióra a hálózatban.
+	 * @param component	The new component.
+	 * @param cursorPos	The position to be dropped at. Input node is going to have x =-30 and output x = +30 offset on position.
+	 */
 	public void dropComponent(Component component, Coordinate cursorPos) {
 		addComponent(component);
 		selected = component;
@@ -575,6 +589,7 @@ public class Network {
 	
 	/**
 	 * Grab a component.
+	 * HUN: Megfog egy adott komponenst.
 	 * @param component The component to be grabbed.
 	 * @param cursorPos The position of the cursor;
 	 */
@@ -590,6 +605,7 @@ public class Network {
 	
 	/**
 	 * Move a component.
+	 * HUN: Mozgat egy adott komponenst.
 	 * @param component	The component to be moved.
 	 * @param cursorPos The new position of the cursor;
 	 */	
@@ -602,6 +618,7 @@ public class Network {
 	
 	/**
 	 * Release a component. (When the component is already grabbed.)
+	 * HUN: Elenged egy adott komponenst.
 	 * @param component The component to release.
 	 */
 	public void releaseComponent(Component component) {
@@ -620,6 +637,7 @@ public class Network {
 	 * updateVoltage,
 	 * updateResistance,
 	 * updateCurrent
+	 * HUN: Beállít minden frissítési jelzőt.
 	 */
 	protected void setUpdateAll() {
 		updateGraph = true;
@@ -629,7 +647,8 @@ public class Network {
 	}
 	
 	/**
-	 * Cuts out the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
+	 * Disconnects a the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
+	 * HUN: Letkapcsol egy komponenst a többi komponensről. Ez a komponenst két végpontjának lecsatlakoztatásával valósul meg.
 	 * @param component {@link Component} to be cut out.
 	 */
 	protected void disconnectComponent(Component component) {
@@ -666,7 +685,10 @@ public class Network {
 	/**
 	 * Tries to merge a given node to any of the other nodes.
 	 * Conditions of a successful merge are, that the other node must be in the close proximity of this node and
-	 * there can't be a Component between the other and this node. 
+	 * they can not be neighbor of each other.
+	 * HUN: Megpróbál találni egy adott csomóponthoz egy másik csomópontot, amellyel összeolvaszthatja az adott csomópontot.
+	 * Az összeolvasztás feltételei, hogy a másik csomópontnak "közel kell lennie" ( closeProximity )
+	 * és nem lehetnek szomszédosak.
 	 * 
 	 * @param componentNode	The node, that is tried to be merged with other nodes.
 	 * @return	True, when the merging attempt was successful.
@@ -717,6 +739,7 @@ public class Network {
 	
 	/**
 	 * Gives a ComponentNode, in close proximity to the given Coordinate.
+	 * HUN: Visszaad egy csomópontot, ami "közel van" (closeProximity) az adott pozícióhoz.
 	 * @param pos	The position.
 	 * @return	ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
 	 */
@@ -730,6 +753,12 @@ public class Network {
 		return null;
 	}
 	
+	/**
+	 * Gives a Component, in close proximity to the given Coordinate.
+	 * HUN: Visszaad egy komponenst, ami "közel van" (closeProximity) az adott pozícióhoz.
+	 * @param cursorPos The position.
+	 * @return ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
+	 */
 	public Component getComponentAtPos(Coordinate cursorPos) {
 		
 		for (Component component : components) {
@@ -755,6 +784,7 @@ public class Network {
 	
 	/**
 	 * Saves the current layout of the network. The method overwrites content of the file!
+	 * HUN: Elmenti a hálózatot.
 	 * @param fileName	The name of file, where the persistent information gets saved. 
 	 */
 	public void save(String fileName) {
@@ -778,6 +808,7 @@ public class Network {
 	
 	/**
 	 * Loads network layout from the given file. Discards previous layout.
+	 * HUN: Betölti a hálózatot.
 	 * @param fileName {@link String} The name of file, from which the persistent information gets loaded.
 	 */
 	public void load(String fileName) {
@@ -825,7 +856,8 @@ public class Network {
 	}
 	
 	/**
-	 * Clears network layout. The model will be lost! 
+	 * Clears network layout. The model will be lost!
+	 * HUN: Kötörli a hálózat tartalmát. A hálózat mentetlen állása el fog veszni! 
 	 */
 	public void clear() {
 		components.clear();
@@ -839,6 +871,7 @@ public class Network {
 
 	/**
 	 * Calls the draw method on each component.
+	 * HUN: Minden komponensen meghívja a draw metódust.
 	 * @param ctx	{@link GraphicsContext}, where the network should be drawn.
 	 */
 	public void draw(GraphicsContext ctx) {
@@ -851,6 +884,10 @@ public class Network {
 		return vertices;
 	}
 	
+	/**
+	 * Resets all components to initial state.
+	 * HUN: Minden komponenst visszaállít a kiindulási állapotába.
+	 */
 	public void reset() {
 		for (Component component : components) {
 			component.reset();
@@ -858,14 +895,29 @@ public class Network {
 		setUpdateAll();
 	}
 	
-	public boolean selected(Component component) {
+	/**
+	 * There can be only one selected component at a time.
+	 * HUN: Csak egyetlen kiválasztott komponens lehet.
+	 * @param component The component in question.
+	 * @return	Whether the given component is selected or not.
+	 */
+	public boolean isThisSelected(Component component) {
 		return selected != null && component == selected;
 	}
 	
+	/**
+	 * 
+	 * @return The selected component. 
+	 */
 	public Component getSelected() {
 		return selected;
 	}
 	
+	/**
+	 * Whether the network is valid or not.
+	 * HUN: Helyes-e a hálózat?
+	 * @return
+	 */
 	public boolean isValid () {
 		return validNetwork;
 	}
