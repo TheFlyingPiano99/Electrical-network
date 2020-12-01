@@ -79,7 +79,7 @@ public class Vector {
 	/**
      * Fills up vector with given parameter.
      * HUN: Vektor feltöltése a kapott értékkel.
-	 * @param val
+	 * @param val value
 	 */
     public void fill (float val) {
         for (int i = 0; i < dimension; i++) {

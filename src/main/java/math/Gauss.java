@@ -20,10 +20,8 @@ public class Gauss {
     /**
      * Gaussian elimination for column major matrix.
      * HUN: Gauss-elimináció oszlop-folytonos mátrixra.
-     * @param M - (N+1)*N matrix The right side values should be in the last row.
-     * Will be modified!!!
-     * @return Vector - The solution of the linear system. The 0. index value of the vector is the value of the
-     * 0. index variable.
+     * @param system M - (N+1)*N matrix The right side values should be in the last row. Will be modified!!!
+     * @return Vector - The solution of the linear system. The 0. index value of the vector is the value of the 0. index variable.
      * @throws GaussException - if the matrix has no solution or has infinite solutions.
      */
     public static Vector Eliminate (Matrix system) throws GaussException {
@@ -65,11 +63,11 @@ public class Gauss {
 	 * Reduces matrix to r.e.f.
 	 * HUN: A mátrixot lineárisan függetlené redukálja.
 	 * @param M - Matrix to reduce. Will be modified!
-	 * @return SingularityFlag: {<br\>
-	 *                              noSolution,<br\>
-	 *                              cleanSolution,<br\>
-	 *                              infiniteSolutions<br\>
-	 *                          }<br\>
+	 * @return SingularityFlag: {<br>
+	 *                          &nbsp;&nbsp;noSolution,<br>
+	 *                          &nbsp;&nbsp;cleanSolution,<br>
+	 *                          &nbsp;&nbsp;infiniteSolutions<br>
+	 *                          }<br>
 	 */
     public static SingularityFlag Reduce(Matrix M) {
     	
@@ -195,7 +193,7 @@ public class Gauss {
      * Előállít egy együtthatós rendszert.
      * @param M - Left side of equations.
      * @param v - Right side of equations.
-     * @return
+     * @return Matrix
      */
     public static Matrix CoefficientMatrix (Matrix M, Vector v) {
         if (M.column == v.dimension) {

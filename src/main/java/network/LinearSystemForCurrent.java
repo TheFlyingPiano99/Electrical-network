@@ -9,7 +9,7 @@ import main.java.math.Vector;
  * @author Simon Zoltán
  * 
  *<h2>The "left  side" of the equations:</h2>{First e columns are the columns of the incidence matrix.
- *                              The remaining part of the matrix is the cycle matrix multiplied by resistances of the edges}</b>
+ *                              The remaining part of the matrix is the cycle matrix multiplied by resistances of the edges}<br>
  *                              
  *<h2>The "right side" of the equations:</h2>{first e elements 0, then the sum of source voltages in that cycle.}<br>
  *
@@ -18,7 +18,7 @@ import main.java.math.Vector;
  *| incidence   |  cycle matrix |   A-edges
  *|  matrix     |    * R        |   V
  *-------------------------------	=
- *|   0000000   |   U0 / 0      |   <- "right side" of equations.<nl>
+ *|   0000000   |   U0 / 0      |   &lt;- "right side" of equations.
  *-------------------------------
  *
  *</pre>

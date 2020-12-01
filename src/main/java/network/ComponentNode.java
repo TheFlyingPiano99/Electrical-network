@@ -165,7 +165,7 @@ public class ComponentNode {
 	/**
 	 * Move node to new location.
 	 * HUN: Átmozgatja a csomópontot új pozícióba.
-	 * @param pos {@link Coordinate} of the new position.
+	 * @param CursorPos {@link Coordinate} of the new position.
 	 */
 	public void drag(Coordinate CursorPos) {
 		setPos(MyMath.subtrackt(CursorPos, grabCursorOffset));

@@ -221,7 +221,9 @@ public class MyMath {
 	/**
 	 * Cuts columns given by the list of they indices.
 	 * HUN: Kivágja a mátrix listában adott idexű oszlopait.
+	 * @param M - matrix
 	 * @param toRemoveIndexes - indexes to remove
+	 * @return Matrix
 	 */
 	public static Matrix removeColumns(Matrix M, List<Integer> toRemoveIndexes) {
 	    Matrix tempM = new Matrix(M.row, M.column - toRemoveIndexes.size());
@@ -246,7 +248,9 @@ public class MyMath {
 	/**
 	 * Cuts rows given by the list of they indices.
 	 * HUN: Kivágja a mátrix listában adott idexű sorait.
+	 * @param M - matrix
 	 * @param toRemoveIndexes - indexes to remove
+	 * @return Matrix
 	 */
 	public static Matrix removeRows(Matrix M, List<Integer> toRemoveIndexes) {
 	    Matrix tempM = new Matrix(M.row - toRemoveIndexes.size(), M.column);
@@ -272,6 +276,8 @@ public class MyMath {
 	/**
 	 * Multiply row by value.
 	 * HUN: Megszorozza a mátrix egy adott sorát egy adott skalárral.
+	 * @param M - matrix
+	 * @param row - index of row
 	 * @param val - multiplier
 	 * @return matrix with multiplied row
 	 */
@@ -287,9 +293,11 @@ public class MyMath {
 	/**
 	 * Multiply column by value.
 	 * HUN: Megszorozza a mátrix egy adott oszlopát egy adott skalárral.
+	 * @param M - matrix
+	 * @param column - index of column
 	 * @param val - multiplier
 	 * @return matrix with multiplied column
-	 */
+	 */	
 	public static Matrix multipyColumn(Matrix M, int column, float val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
@@ -580,8 +588,8 @@ public class MyMath {
 	/**
 	 * Add two coordinates as vectors.
 	 * HUN: Két koordináta összege, vektorként.
-	 * @param a
-	 * @param b
+	 * @param a first
+	 * @param b second
 	 * @return sum {@link Coordinate}
 	 */
 	public static Coordinate add(Coordinate a, Coordinate b) {
@@ -591,8 +599,8 @@ public class MyMath {
 	/**
 	 * Subtract two coordinates as vectors.
 	 * HUN: Két koordináta különbsége, vektorként.
-	 * @param a
-	 * @param b
+	 * @param a first
+	 * @param b second
 	 * @return difference {@link Coordinate}
 	 */
 	public static Coordinate subtrackt(Coordinate a, Coordinate b) {
