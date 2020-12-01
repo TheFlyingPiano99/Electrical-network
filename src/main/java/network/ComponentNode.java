@@ -6,7 +6,8 @@ import main.java.math.Coordinate;
 import main.java.math.MyMath;
 
 /**
- * The end node of all components. Helps establishing connection between components. 
+ * The end node of components ({@link Component}). Helps establishing connection between components ({@link Component}).
+ * HUN: A komponensek ({@link Component}) végpontja. Segít kialakítani a kapcsolatot a komponensek ({@link Component}) közt.
  * @author Simon Zoltán
  *
  */
@@ -15,14 +16,36 @@ public class ComponentNode {
 	private ArrayList<Component> incoming;
 	private ArrayList<Component> outgoing;
 	
-	//Position on the board:
+	/**
+	 *Position on the board
+	 *HUN: Elhelyezkedés a táblán. 
+	 */
 	Coordinate pos;
-	Coordinate grabCursorOffset;	//When the node is grabbed, the actual position of the cursor and the position of the node may not match.
 	
-	boolean merge = false;		//Weather it should merge with other nodes, if in close proximity.
-	boolean grabbed = false;	//Weather the node is held by user.
+	/**
+	 * When the node is grabbed, the actual position of the cursor and the position of the node may not match.
+	 * HUN: Amikor a csomópont megfogódik, akkor a csomópont és a kurzor tényleges pozíciója eltérhet.
+	 */
+	Coordinate grabCursorOffset;
+	
+	/**
+	 * Weather it should merge with other nodes, if in close proximity.
+	 * HUN: Össze kell-e olvadnia a közelében lévő csomópontokkal.
+	 */
+	boolean merge = false;
+	
+	/**
+	 * Weather the node is held by user.
+	 * HUN: A felhasználó fogja-e a csomópontot.
+	 */
+	boolean grabbed = false;
 
-	Vertex vertexBinding = null;	//Bound node of graph.
+	/**
+	 * Bound vertex of graph.
+	 * HUN: A gráf reprezetáció ehhez a csomóponthoz kötött csúcsa.
+	 * 
+	 */
+	Vertex vertexBinding = null;
 	
 	//Constructors:------------------------------------------------------
 	
@@ -110,10 +133,18 @@ public class ComponentNode {
 		this.outgoing.remove(outgoing);
 	}
 	
+	/**
+	 * 
+	 * @return Number of incoming components.
+	 */
 	public int getNoOfIncoming() {
 		return incoming.size();
 	}
 	
+	/**
+	 * 
+	 * @return Number of outgoing components.
+	 */
 	public int getNoOfOutgoing() {
 		return outgoing.size();
 	}
@@ -121,7 +152,8 @@ public class ComponentNode {
 	//Manipulation:-----------------------------------------------------------
 	
 	/**
-	 * Grab node. (Before move.); 
+	 * Grab node. (Before move.);
+	 * HUN: Megfogja a csomópontot mozgatás előtt. 
 	 * @param cursorPos TODO
 	 */
 	public void grab(Coordinate cursorPos) {
@@ -132,6 +164,7 @@ public class ComponentNode {
 	
 	/**
 	 * Move node to new location.
+	 * HUN: Átmozgatja a csomópontot új pozícióba.
 	 * @param pos {@link Coordinate} of the new position.
 	 */
 	public void drag(Coordinate CursorPos) {
@@ -140,6 +173,7 @@ public class ComponentNode {
 	
 	/**
 	 * Release node. (After grabbed.)
+	 * HUN: Elengedi a csomópontot, ha az meg volt fogva.
 	 */
 	public void release() {
 		setGrabbed(false);
@@ -150,7 +184,8 @@ public class ComponentNode {
 	
 	/**
 	 * Whether this and the given node is node of the same {@link Component}.
-	 * @param n	The {@link ComponentNode} examined.
+	 * Ez és a paraméterben kapott csomópont végpontja-e ugyanannak a komponensnek? (Szomszédosak-e?)
+	 * @param n	The {@link ComponentNode} examined node.
 	 * @return <code>true</code> when this and the given node is node of the same {@link Component}.
 	 */
 	public boolean isNeighbouring (ComponentNode n) {

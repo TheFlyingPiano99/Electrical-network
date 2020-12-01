@@ -42,6 +42,9 @@ import main.java.network.Component;
 import main.java.network.ComponentNode;
 import main.java.network.ComponentProperty;
 import main.java.network.Network;
+import main.java.network.Resistance;
+import main.java.network.VoltageSource;
+import main.java.network.Wire;
 
 public class MainController {
 	
@@ -181,27 +184,30 @@ public class MainController {
 
     @FXML
     void btnStartAction(ActionEvent event) {
-    	simulating = true;
+    	miStartAction(event);
     }
 
     @FXML
     void btnPauseAction(ActionEvent event) {
-    	simulating = false;
+    	miPauseAction(event);
     }
 
     @FXML
     void btnStopAction(ActionEvent event) {
-    	network.reset();
-    	simulating = null;
+    	miStopAction(event);
     }
     
     @FXML
     void miStartAction(ActionEvent event) {
     	simulating = true;
+    	leftStatus.setText("Szimuláció folyamatban.");
     }
 
     @FXML
     void miPauseAction(ActionEvent event) {
+    	if (simulating != null && simulating == true) {
+        	leftStatus.setText("Szimuláció szüneteltetve.");    		
+    	}
     	simulating = false;
     }
 
@@ -209,6 +215,7 @@ public class MainController {
     void miStopAction(ActionEvent event) {
     	network.reset();
     	simulating = null;
+    	leftStatus.setText("Szimuláció leállítva.");    		
     }
 
     @FXML
@@ -256,6 +263,10 @@ public class MainController {
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
+    	leftStatus.setText("Szimuláció leállítva.");    		
+    	rightStatus.setText("Hibás kapcsolás!");    		
+
+        
         lvLeftListView.setOnMouseClicked(
     		event ->  {
                 ObservableList selectedItems = lvLeftListView.getSelectionModel().getSelectedIndices();
@@ -300,6 +311,20 @@ public class MainController {
         	        if (dragboard.hasString())
         	        {
         	            event.setDropCompleted(true);
+        	            String str = dragboard.getString();
+        	            if (str.equals("Feszültségforrás")) {
+        	            	network.dropComponent(new VoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+        	            }
+        	            else if (str.equals("Ellenállás")) {
+        	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
+        	            }
+        	            else if (str.equals("Vezeték")) {
+        	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
+        	            }
+        	            selectedComponent = network.getSelected();
+        	            destroyPropertyView();
+        	            buildPropertyView(selectedComponent);
+        	            helper.updateCanvasContent(xCanvas, network);
         	            System.out.println("Successfuly dropped " + dragboard.getString());
         	        } else {
         	            event.setDropCompleted(false);
@@ -373,15 +398,19 @@ public class MainController {
         );
         
 
-        Duration duration = Duration.millis(100);
+        Duration duration = Duration.millis(50);
         Timeline timeline = new Timeline(new KeyFrame(
                 duration,
                 ae -> {
             		try {
 						if (simulating != null && simulating && network != null) {
 							network.simulate(duration);
-							
-							System.out.println("simulate");
+							if (network.isValid()) {
+								rightStatus.setText("Helyes kapcsolás.");
+							}
+							else {
+						    	rightStatus.setText("Hibás kapcsolás!");    		
+							}
 						}
 					} catch (Exception e) {
 						System.out.println("simulate error");

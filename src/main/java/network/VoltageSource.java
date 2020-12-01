@@ -19,7 +19,7 @@ import main.java.math.Line;
  */
 public class VoltageSource extends Component {
 	private Edge e;
-	private float sourceVoltage = 0;
+	private float sourceVoltage = 1.0f;
 	private final float DEFAULT_SIZE = 60.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ public class VoltageSource extends Component {
 
 		prop = new ComponentProperty();
 		prop.editable = false;
-		prop.name = "resistance:";
+		prop.name = "(resistance):";
 		prop.unit = "Ohm";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("resistance", prop);
