@@ -78,21 +78,21 @@ public class Resistance extends Component {
 
 		ComponentProperty prop = new ComponentProperty();
 		prop.editable = false;
-		prop.name = "voltage drop:";
+		prop.name = "feszültség esés:";
 		prop.unit = "V";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("voltage", prop);
 
 		prop = new ComponentProperty();
 		prop.editable = false;
-		prop.name = "current:";
+		prop.name = "áramerősség:";
 		prop.unit = "A";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("current", prop);
 
 		prop = new ComponentProperty();
 		prop.editable = true;
-		prop.name = "resistance:";
+		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
 		prop.value = String.valueOf(getResistance());
 		getProperties().put("resistance", prop);
