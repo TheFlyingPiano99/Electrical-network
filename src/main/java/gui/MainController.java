@@ -16,6 +16,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
@@ -50,6 +51,8 @@ import main.java.network.VoltageSource;
 import main.java.network.Wire;
 
 public class MainController {
+	
+	static MainController mainController = null;
 	
 	private DrawingHelper helper;
 	private Network network = new Network();
@@ -240,13 +243,12 @@ public class MainController {
     void miTest3Action(ActionEvent event) {
     	helper.test3(xCanvas.getGraphicsContext2D());
     }    
-    
+        
     /**
      * Initializes javaFX controller.
      * HUN: Inicializálja a javaFX kontrollert.
      */
-    @FXML
-    void initialize() {
+	public void initialize() {
         assert miNew != null : "fx:id=\"miNew\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert miOpen != null : "fx:id=\"miOpen\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert miSave != null : "fx:id=\"miSave\" was not injected: check your FXML file 'windowlayout.fxml'.";
@@ -269,6 +271,8 @@ public class MainController {
 
         helper = new DrawingHelper();
         
+        mainController = this;
+        
         // 
         lvLeftListView.getItems().add("Feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
@@ -277,8 +281,28 @@ public class MainController {
         
     	leftStatus.setText("Szimuláció leállítva.");    		
     	rightStatus.setText("Hibás kapcsolás!");    		
+    	
+//Keyboard:---------------------------------------------------------------------------------------
+    	
+		xCanvas.setOnKeyPressed(
+				event-> {
+					handleKeyboardPressed(event);
+				}
+			);
+		
+		lvLeftListView.setOnKeyPressed(
+				event-> {
+					handleKeyboardPressed(event);
+				}
+			);
+		
+		lvRightListView.setOnKeyPressed(
+				event-> {
+					handleKeyboardPressed(event);
+				}
+			);
 
-        
+    	
 //Mouse:------------------------------------------------------------------------------------------
     	
         lvLeftListView.setOnMouseClicked(
@@ -411,16 +435,6 @@ public class MainController {
         		}
         );
         
-//Keyboard:-------------------------------------------------------------------------------------
-        
-        xCanvas.getParent().addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent ke) {
-                if (ke.getCode() == KeyCode.DELETE) {
-                    System.out.println("Key Pressed: " + ke.getCode());
-                    ke.consume(); // <-- stops passing the event to next node
-                }
-            }
-        });
 //Timer:----------------------------------------------------------------------------------------
         
         Duration duration = Duration.millis(50);
@@ -448,7 +462,7 @@ public class MainController {
     
 //PropertyView:---------------------------------------------------------------------------------
     
-    public void buildPropertyView(Component component) {
+    public void buildPropertyView(Component component) {    	
     	int row = 0;
     	if (component.getProperties() != null) {
         	for (Entry<String, ComponentProperty> entry : component.getProperties().entrySet()) {
@@ -456,7 +470,6 @@ public class MainController {
         		prop.nameN = new Label(prop.name);
         		propertyGrid.add(prop.nameN, 0, row);
         		
-        		//prop.valueN = 
         		prop.valueN = new TextField(prop.value);
         		prop.valueN.setEditable(prop.editable);
         		if (prop.editable) {
@@ -483,7 +496,33 @@ public class MainController {
     		it.next();
 			it.remove();
 		}
+    }    
+    
+    public void handleKeyboardPressed(KeyEvent event) {
+    	switch (event.getCode()) {
+    		case ENTER:
+    			break;
+    		case DELETE:
+    			if (selectedComponent != null) {
+        			network.removeComponent(selectedComponent);
+        			destroyPropertyView();
+        			helper.updateCanvasContent(xCanvas, network);
+    				selectedComponent = null;
+    			}
+    			break;
+    		case ESCAPE:
+    			if (selectedComponent != null) {
+    				network.cancelSelection();
+        			destroyPropertyView();
+        			helper.updateCanvasContent(xCanvas, network);
+    				selectedComponent = null;
+    			}
+    			break;
+    		default:
+    			break;
+    	} 
     }
+    
     
     
 }

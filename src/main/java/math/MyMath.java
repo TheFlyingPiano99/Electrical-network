@@ -2,6 +2,11 @@ package main.java.math;
 
 import java.util.*;
 
+/**
+ * 
+ * @author Simon Zoltán
+ *
+ */
 public class MyMath {
 	
 	public static Vector coordToVector(Coordinate c) {
