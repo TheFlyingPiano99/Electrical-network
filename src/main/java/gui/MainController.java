@@ -14,6 +14,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -29,6 +30,8 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
@@ -57,6 +60,8 @@ public class MainController {
 	
 	Boolean simulating = null; 
 
+//FXML items:-----------------------------------------------------------------	
+	
 	@FXML
     private ResourceBundle resources;
 
@@ -122,6 +127,9 @@ public class MainController {
 
     @FXML
     private GridPane propertyGrid;
+  
+    
+//Menu item actions:------------------------------------------------------------------------------------------
     
     @FXML
     void miAboutAction(ActionEvent event) {
@@ -233,6 +241,10 @@ public class MainController {
     	helper.test3(xCanvas.getGraphicsContext2D());
     }    
     
+    /**
+     * Initializes javaFX controller.
+     * HUN: Inicializálja a javaFX kontrollert.
+     */
     @FXML
     void initialize() {
         assert miNew != null : "fx:id=\"miNew\" was not injected: check your FXML file 'windowlayout.fxml'.";
@@ -267,6 +279,8 @@ public class MainController {
     	rightStatus.setText("Hibás kapcsolás!");    		
 
         
+//Mouse:------------------------------------------------------------------------------------------
+    	
         lvLeftListView.setOnMouseClicked(
     		event ->  {
                 ObservableList selectedItems = lvLeftListView.getSelectionModel().getSelectedIndices();
@@ -397,7 +411,18 @@ public class MainController {
         		}
         );
         
-
+//Keyboard:-------------------------------------------------------------------------------------
+        
+        xCanvas.getParent().addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+            public void handle(KeyEvent ke) {
+                if (ke.getCode() == KeyCode.DELETE) {
+                    System.out.println("Key Pressed: " + ke.getCode());
+                    ke.consume(); // <-- stops passing the event to next node
+                }
+            }
+        });
+//Timer:----------------------------------------------------------------------------------------
+        
         Duration duration = Duration.millis(50);
         Timeline timeline = new Timeline(new KeyFrame(
                 duration,
@@ -420,6 +445,8 @@ public class MainController {
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
+    
+//PropertyView:---------------------------------------------------------------------------------
     
     public void buildPropertyView(Component component) {
     	int row = 0;
