@@ -1,5 +1,12 @@
 package main.java.math;
 
+
+/**
+ * Column major matrix, for float values.
+ * HUN: Oszlopfolytonos mátrix, lebegőpontos értékek tárolására.
+ * @author Simon Zoltán
+ *
+ */
 public class Matrix {
 	float n[];
     public int row;
@@ -52,6 +59,10 @@ public class Matrix {
         }*/
     }
 
+    /**
+     * 
+     * @param M source matrix
+     */
     public Matrix(Matrix M) {
     	row = M.row;
     	column = M.column;
@@ -92,6 +103,12 @@ public class Matrix {
         }
     }
 
+    /**
+     * Copy content of parameter matrix to this.
+     * HUN: Tartalom másolása. 
+     * @param M Source matrix. Must have same size as this!
+     * @return this
+     */
     public Matrix copy (Matrix M) {
         if (!this.equals(M)) {
             for (int c = 0; c < column; c++) {
@@ -103,6 +120,12 @@ public class Matrix {
         return this;
     }
 
+    /**
+     * Copy content of parameter matrix to this with resize.
+     * HUN: Tartalom másolása újraméretezéssel. 
+     * @param M Source matrix.
+     * @return this
+     */    
     public Matrix copyWithResize (Matrix M) {
         if (!this.equals(M)) {
             row = M.row;

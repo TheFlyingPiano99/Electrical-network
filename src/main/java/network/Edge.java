@@ -2,7 +2,8 @@ package main.java.network;
 
 
 /**
- * The edge of the graph representation of the network. 
+ * The edge of the graph representation of the network.
+ * HUN: A hálózat gráf-reprezentációjának élei. 
  * @author Simon Zoltán
  *
  */

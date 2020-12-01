@@ -2,16 +2,24 @@ package main.java.math;
 
 import java.util.ArrayList;
 
+
 enum SingularityFlag {
     noSolution,
     cleanSolution,
     infiniteSolutions
 };
 
+/**
+ * Contains methods for Gaussian elimination.
+ * HUN: Gauss-eliminációt megvalósító metódusokat tartalmaz.
+ * @author Simon Zoltán
+ *
+ */
 public class Gauss {
 
     /**
-     * Gauss elimination for column major matrix.
+     * Gaussian elimination for column major matrix.
+     * HUN: Gauss-elimináció oszlop-folytonos mátrixra.
      * @param M - (N+1)*N matrix The right side values should be in the last row.
      * Will be modified!!!
      * @return Vector - The solution of the linear system. The 0. index value of the vector is the value of the
@@ -54,13 +62,14 @@ public class Gauss {
     }
 
     /**
-	 * function to reduce matrix to r.e.f.
+	 * Reduces matrix to r.e.f.
+	 * HUN: A mátrixot lineárisan függetlené redukálja.
 	 * @param M - Matrix to reduce. Will be modified!
-	 * @return SingularityFlag: {
-	 *                              noSolution,
-	 *                              cleanSolution,
-	 *                              infiniteSolutions
-	 *                          }
+	 * @return SingularityFlag: {<br\>
+	 *                              noSolution,<br\>
+	 *                              cleanSolution,<br\>
+	 *                              infiniteSolutions<br\>
+	 *                          }<br\>
 	 */
     public static SingularityFlag Reduce(Matrix M) {
     	
@@ -163,9 +172,9 @@ public class Gauss {
 
     //Auxiliary functions:
 
-
 	/**
      * Swaps content of two columns of M matrix.
+     * HUN: Megcserél két oszlopot a mátrixban.
      * @param M - Column major matrix
      * @param col1 - Column no. 1
      * @param col2 - Column no. 2
@@ -181,7 +190,9 @@ public class Gauss {
     }
 
     /**
-     * 
+     * @deprecated
+     * Builds a coefficientMatrix;
+     * Előállít egy együtthatós rendszert.
      * @param M - Left side of equations.
      * @param v - Right side of equations.
      * @return

@@ -1,5 +1,12 @@
 package main.java.math;
 
+
+/**
+ * Represents a line in the 2D plane.
+ * HUN: Szakasz a síkban.
+ * @author Simon Zoltán
+ *
+ */
 public class Line {
 
 	public Vector a;
@@ -23,6 +30,14 @@ public class Line {
 		
 	}
 
+	/**
+	 * Transforms the coordinates of the line.
+	 * HUN: Transzformálja a szakaszt.
+	 * @param line {@link Line} to be transformed.
+	 * @param scale	float
+	 * @param angle	float in radians.
+	 * @param offset {@link Vector}.
+	 */
 	public static void transform(Line line, float scale, float angle, Vector offset) {
 
 		line.a = MyMath.multiply(scale, line.a);

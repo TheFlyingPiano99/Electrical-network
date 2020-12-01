@@ -1,5 +1,11 @@
 package main.java.math;
 
+
+/**
+ * 
+ * @author Simon Zoltán
+ *
+ */
 public class Vector {
 	private float n[];
     public int dimension;
