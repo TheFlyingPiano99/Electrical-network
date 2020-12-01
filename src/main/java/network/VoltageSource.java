@@ -3,8 +3,10 @@ package main.java.network;
 import javafx.util.Duration;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import javafx.collections.SetChangeListener;
 import javafx.scene.canvas.GraphicsContext;
 import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
@@ -76,6 +78,30 @@ public class VoltageSource extends Component {
 		
 		e.setSourceVoltage(sourceVoltage);	//!		
 
+				
+		//Properties:
+		setProperties(new HashMap<String, ComponentProperty>());
+
+		ComponentProperty prop = new ComponentProperty();
+		prop.editable = true;
+		prop.name = "source voltage:";
+		prop.unit = "V";
+		prop.value = String.valueOf(getSourceVoltage());
+		getProperties().put("voltage", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "current:";
+		prop.unit = "A";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("current", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "resistance:";
+		prop.unit = "Ohm";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("resistance", prop);
 	}
 	
 	@Override
@@ -88,8 +114,8 @@ public class VoltageSource extends Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
-		
+	public void update(Duration duration) {		
+		updatePropertyView();
 	}
 
 
@@ -121,6 +147,8 @@ public class VoltageSource extends Component {
 		
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
+		
+		updatePropertyView();
 	}
 
 
@@ -176,56 +204,71 @@ public class VoltageSource extends Component {
 		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, 0.0f, DEFAULT_SIZE, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, isGrabbed());
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().selected(this));
 
 		System.out.println("VoltageSource draw!");		
 	}
 
 
 	@Override
-	void disconnectGraphRepresentation() {
+	public void disconnectGraphRepresentation() {
 		
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
 		
 		getParent().disconnectEndOfEdge(e, e.getOutput());
 		getOutput().setVertexBinding(e.getOutput());
-
-		/*
-		if (getInput().getVertexBinding().getNoOfOutgoing() > 1 || getInput().getVertexBinding().getNoOfIncoming() > 0) {
-			//Clone input vertex:
-			Vertex prevIn = getInput().getVertexBinding();
-			Vertex prevOut = getOutput().getVertexBinding();
-			
-			Vertex newIn = new Vertex();
-			getParent().getVertices().add(newIn);
-			
-			newIn.addOutgoing(prevOut, e);
-			e.setInput(newIn);
-			prevOut.removeIncoming(prevIn);
-			prevOut.addIncoming(newIn, e);
-			
-			prevIn.removeOutgoing(prevOut);
-			getInput().setVertexBinding(newIn);
-		}
-		
-		if (getOutput().getVertexBinding().getNoOfOutgoing() > 0 || getOutput().getVertexBinding().getNoOfIncoming() > 1) {
-			//Clone output vertex:
-			Vertex prevIn = getInput().getVertexBinding();
-			Vertex prevOut = getOutput().getVertexBinding();
-			
-			Vertex newOut = new Vertex();
-			getParent().getVertices().add(newOut);
-			
-			newOut.addIncoming(prevIn, e);
-			e.setOutput(newOut);
-			prevIn.removeOutgoing(prevOut);
-			prevIn.addOutgoing(newOut, e);
-			
-			prevOut.removeIncoming(prevIn);			
-			getOutput().setVertexBinding(newOut);
 	}
-		 */
+
+
+	@Override
+	public void reset() {
+		e.setCurrent(0.0F);
+		updatePropertyView();
+	}
+
+
+	@Override
+	public void updatePropertyModel() {
+		String str = getProperties().get("voltage").value;
+		if (str != null && str.length() > 0) {
+			try {
+				float val = Float.parseFloat(str);
+				setSourceVoltage(val);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			getParent().setUpdateAll();
+			System.out.println("Updated value:" + getSourceVoltage());
+			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
+		}
+	}
+
+
+	@Override
+	public void updatePropertyView() {
+		
+		if (getProperties().containsKey("voltage")) {
+			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
+			if (getProperties().get("voltage").valueN != null) {
+				getProperties().get("voltage").valueN.setText(String.valueOf(getSourceVoltage()));				
+			}
+		}
+
+		if (getProperties().containsKey("current")) {
+			getProperties().get("current").value = String.valueOf(getCurrent());
+			if (getProperties().get("current").valueN != null) {
+				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
+			}
+		}
+
+		if (getProperties().containsKey("resistance")) {
+			getProperties().get("resistance").value = String.valueOf(getResistance());
+			if (getProperties().get("resistance").valueN != null) {
+				getProperties().get("resistance").valueN.setText(String.valueOf(getResistance()));				
+			}
+		}
 		
 	}
 

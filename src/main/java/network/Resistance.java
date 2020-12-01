@@ -2,6 +2,7 @@ package main.java.network;
 
 import javafx.util.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -47,16 +48,12 @@ public class Resistance extends Component {
 
 	@Override
 	public float getResistance() {
-		e.getResistance();
-		return 0;
+		return e.getResistance();
 	}
 	
-	public float setResistance(float resistance) {
+	public void setResistance(float resistance) {
 		this.resistance = resistance;
-		if (e != null) {
-			e.setResistance(resistance);			
-		}
-		return 0;
+		e.setResistance(resistance);
 	}
 	
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -76,6 +73,30 @@ public class Resistance extends Component {
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		
+		//Properties:
+		setProperties(new HashMap<String, ComponentProperty>());
+
+		ComponentProperty prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "voltage drop:";
+		prop.unit = "V";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("voltage", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "current:";
+		prop.unit = "A";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("current", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = true;
+		prop.name = "resistance:";
+		prop.unit = "Ohm";
+		prop.value = String.valueOf(getResistance());
+		getProperties().put("resistance", prop);
+
 	}
 
 	@Override
@@ -88,8 +109,7 @@ public class Resistance extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		// TODO Auto-generated method stub
-		
+		updatePropertyView();		
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------
@@ -123,6 +143,7 @@ public class Resistance extends Component {
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 		
+		updatePropertyView();
 	}
 
 	@Override
@@ -169,13 +190,13 @@ public class Resistance extends Component {
 				DEFAULT_LENGTH, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_LENGTH, isGrabbed());
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_LENGTH, getParent().selected(this));
 		
-		System.out.println("Resistance draw!");
+		//System.out.println("Resistance draw!");
 	}
 	
 	@Override
-	void disconnectGraphRepresentation() {
+	public void disconnectGraphRepresentation() {
 		
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
@@ -184,5 +205,52 @@ public class Resistance extends Component {
 		getOutput().setVertexBinding(e.getOutput());
 	}
 
+	@Override
+	public void reset() {		
+		e.setCurrent(0.0F);
+		updatePropertyView();
+
+	}
+
+	@Override
+	public void updatePropertyModel() {
+		String str = getProperties().get("resistance").value;
+		if (str != null && str.length() > 0) {
+			try {
+				float val = Float.parseFloat(str);
+				setResistance(val);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			getParent().setUpdateAll();
+			getProperties().get("resistance").value = String.valueOf(getResistance());
+		}
+		
+	}
+
+	@Override
+	public void updatePropertyView() {
+		if (getProperties().containsKey("voltage")) {
+			getProperties().get("voltage").value = String.valueOf(getVoltage());
+			if (getProperties().get("voltage").valueN != null) {
+				getProperties().get("voltage").valueN.setText(String.valueOf(getVoltage()));				
+			}
+		}
+
+		if (getProperties().containsKey("current")) {
+			getProperties().get("current").value = String.valueOf(getCurrent());
+			if (getProperties().get("current").valueN != null) {
+				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
+			}
+		}
+
+		if (getProperties().containsKey("resistance")) {
+			getProperties().get("resistance").value = String.valueOf(getResistance());
+			if (getProperties().get("resistance").valueN != null) {
+				getProperties().get("resistance").valueN.setText(String.valueOf(getResistance()));				
+			}
+		}
+	}
 
 }

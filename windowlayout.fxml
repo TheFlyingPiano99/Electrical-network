@@ -10,7 +10,6 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -47,7 +46,7 @@
             <MenuItem fx:id="miAbout" mnemonicParsing="false" onAction="#miAboutAction" text="Az alkalmazásról..." />
           </items>
         </Menu>
-            <Menu fx:id="miTeszt" mnemonicParsing="false" text="[ TESZT ]">
+            <Menu fx:id="miTeszt" mnemonicParsing="false" text="[ TESZT ]" visible="false">
                <items>
                   <MenuItem fx:id="miTest1" mnemonicParsing="false" onAction="#miTest1Action" text="Teszt 1" />
                   <MenuItem fx:id="miTest2" mnemonicParsing="false" onAction="#miTest2Action" text="Teszt 2" />
@@ -86,7 +85,7 @@
                         </AnchorPane>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                            <children>
-                              <Label fx:id="lblPropertiesTitle" text="Title" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <Label fx:id="lblPropertiesTitle" text="Properties" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <font>
                                     <Font name="System Bold" size="14.0" />
                                  </font>
@@ -94,7 +93,7 @@
                                     <Insets left="10.0" top="5.0" />
                                  </padding>
                               </Label>
-                              <GridPane layoutX="-36.0" layoutY="14.0" prefHeight="195.0" prefWidth="218.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="52.0">
+                              <GridPane fx:id="propertyGrid" layoutX="-36.0" layoutY="14.0" prefHeight="195.0" prefWidth="218.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="52.0">
                                 <columnConstraints>
                                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="104.0" minWidth="60.0" prefWidth="78.0" />
                                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="60.0" prefWidth="100.0" />
@@ -103,74 +102,11 @@
                                 <rowConstraints>
                                   <RowConstraints maxHeight="32.0" minHeight="32.0" prefHeight="32.0" vgrow="NEVER" />
                                     <RowConstraints maxHeight="32.0" minHeight="32.0" prefHeight="32.0" vgrow="NEVER" />
-                                  <RowConstraints maxHeight="32.0" minHeight="32.0" prefHeight="32.0" vgrow="NEVER" />
+                                    <RowConstraints maxHeight="32.0" minHeight="32.0" prefHeight="32.0" vgrow="NEVER" />
+                                    <RowConstraints maxHeight="32.0" minHeight="32.0" prefHeight="32.0" vgrow="NEVER" />
+                                    <RowConstraints maxHeight="32.0" minHeight="32.0" prefHeight="32.0" vgrow="NEVER" />
                                   <RowConstraints maxHeight="133.0" minHeight="10.0" prefHeight="95.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
-                                 <children>
-                                    <Label fx:id="lblProperties01" text="Label1" GridPane.halignment="LEFT" GridPane.valignment="CENTER">
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <GridPane.margin>
-                                          <Insets left="10.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </Label>
-                                    <TextField fx:id="txfProperties01" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.valignment="CENTER">
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </TextField>
-                                    <Label fx:id="lblProperties0102" text="V" GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.valignment="CENTER">
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </Label>
-                                    <Label fx:id="lblProperties02" text="Label1" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <GridPane.margin>
-                                          <Insets left="10.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </Label>
-                                    <TextField fx:id="txfProperties02" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </TextField>
-                                    <Label fx:id="lblProperties0202" text="V" GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </Label>
-                                    <Label fx:id="lblProperties03" text="Label1" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <GridPane.margin>
-                                          <Insets left="10.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </Label>
-                                    <TextField fx:id="txfProperties03" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </TextField>
-                                    <Label fx:id="lblProperties0302" text="V" GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                       <opaqueInsets>
-                                          <Insets />
-                                       </opaqueInsets>
-                                       <GridPane.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </GridPane.margin>
-                                    </Label>
-                                 </children>
                               </GridPane>
                            </children>
                         </AnchorPane>

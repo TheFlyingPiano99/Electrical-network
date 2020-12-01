@@ -3,12 +3,19 @@ package main.java.gui;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -24,13 +31,16 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Duration;
 import main.java.math.Coordinate;
 import main.java.network.Component;
 import main.java.network.ComponentNode;
+import main.java.network.ComponentProperty;
 import main.java.network.Network;
 
 public class MainController {
@@ -39,6 +49,10 @@ public class MainController {
 	private Network network = new Network();
 	private Component     grabbedComponent = null;
 	private ComponentNode grabbedNode = null;
+	private Component selectedComponent = null;
+	private int idx = 0;
+	
+	Boolean simulating = null; 
 
 	@FXML
     private ResourceBundle resources;
@@ -92,33 +106,6 @@ public class MainController {
     private Label lblPropertiesTitle;
 
     @FXML
-    private Label lblProperties01;
-
-    @FXML
-    private TextField txfProperties01;
-
-    @FXML
-    private Label lblProperties0102;
-
-    @FXML
-    private Label lblProperties02;
-
-    @FXML
-    private TextField txfProperties02;
-
-    @FXML
-    private Label lblProperties0202;
-
-    @FXML
-    private Label lblProperties03;
-
-    @FXML
-    private TextField txfProperties03;
-
-    @FXML
-    private Label lblProperties0302;
-
-    @FXML
     private Label leftStatus;
 
     @FXML
@@ -131,29 +118,23 @@ public class MainController {
     private Label rightStatus;
 
     @FXML
-    void btnPauseAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnStartAction(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnStopAction(ActionEvent event) {
-
-    }
-
+    private GridPane propertyGrid;
+    
     @FXML
     void miAboutAction(ActionEvent event) {
-    	Dialog dlg = new Alert(AlertType.NONE, "Az alkalmazásról...", ButtonType.OK);
+    	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán, 2020", ButtonType.OK);
     	dlg.show();
     }
 
     @FXML
     void miNewAction(ActionEvent event) {
-
+    	network.clear();
+    	helper.updateCanvasContent(xCanvas, network);
+    	selectedComponent = null;
+    	grabbedNode = null;
+    	grabbedComponent = null;
+    	simulating = null;
+    	destroyPropertyView();
     }
 
     @FXML
@@ -173,11 +154,6 @@ public class MainController {
         	network.load(fileName);
         	network.draw(xCanvas.getGraphicsContext2D());
         }
-    }
-
-    @FXML
-    void miPauseAction(ActionEvent event) {
-
     }
 
     @FXML
@@ -204,13 +180,35 @@ public class MainController {
     }
 
     @FXML
-    void miStartAction(ActionEvent event) {
+    void btnStartAction(ActionEvent event) {
+    	simulating = true;
+    }
 
+    @FXML
+    void btnPauseAction(ActionEvent event) {
+    	simulating = false;
+    }
+
+    @FXML
+    void btnStopAction(ActionEvent event) {
+    	network.reset();
+    	simulating = null;
+    }
+    
+    @FXML
+    void miStartAction(ActionEvent event) {
+    	simulating = true;
+    }
+
+    @FXML
+    void miPauseAction(ActionEvent event) {
+    	simulating = false;
     }
 
     @FXML
     void miStopAction(ActionEvent event) {
-
+    	network.reset();
+    	simulating = null;
     }
 
     @FXML
@@ -245,15 +243,6 @@ public class MainController {
         assert xCanvas != null : "fx:id=\"xCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lvRightListView != null : "fx:id=\"lvRightListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lblPropertiesTitle != null : "fx:id=\"lblPropertiesTitle\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblProperties01 != null : "fx:id=\"lblProperties01\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert txfProperties01 != null : "fx:id=\"txfProperties01\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblProperties0102 != null : "fx:id=\"lblProperties0102\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblProperties02 != null : "fx:id=\"lblProperties02\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert txfProperties02 != null : "fx:id=\"txfProperties02\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblProperties0202 != null : "fx:id=\"lblProperties0202\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblProperties03 != null : "fx:id=\"lblProperties03\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert txfProperties03 != null : "fx:id=\"txfProperties03\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblProperties0302 != null : "fx:id=\"lblProperties0302\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert leftStatus != null : "fx:id=\"leftStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
@@ -299,6 +288,7 @@ public class MainController {
         	        {
         	            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
         	        }
+        	        
         	        event.consume();        			
         		}
 		);
@@ -322,27 +312,57 @@ public class MainController {
         xCanvas.setOnMousePressed(
         		event -> {
         			if (event.getButton() ==  MouseButton.PRIMARY) {
-        				Coordinate currentPos = new Coordinate((int)event.getX(), (int)event.getY());
-        				grabbedNode = network.getNodeAtPos(currentPos);
+        				Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
+        				grabbedNode = network.getNodeAtPos(cursorPos);
         				if (grabbedNode != null) {
-        					network.grabComponentNode(grabbedNode, currentPos);
+        					network.grabComponentNode(grabbedNode, cursorPos);
+            				helper.updateCanvasContent(xCanvas, network);
         				} else {
-        					//network.get
+        					grabbedComponent = network.getComponentAtPos(cursorPos);
+        					if (grabbedComponent != null) {
+        						network.grabComponent(grabbedComponent, cursorPos);
+                				helper.updateCanvasContent(xCanvas, network);
+                				if (null != network.getSelected() &&
+                						(selectedComponent == null || selectedComponent != network.getSelected())) {
+                    				selectedComponent = network.getSelected();
+                    				destroyPropertyView();
+                					buildPropertyView(selectedComponent);
+                				}
+                				
+        					}
         				}
-        				
-//        				helper.grabComponent(
-//        						xCanvas,
-//        						(int)event.getX(),
-//        						(int)event.getY());
-
-        				System.out.println(String.format("xCanvas MousePressed %d", System.currentTimeMillis()));
         			}
         		}
         );
+        
+        xCanvas.setOnMouseDragged(
+        		event -> {
+        			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
+        			if (grabbedNode != null) {
+            			System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
+        				network.dragComponentNode(grabbedNode, cursorPos);
+        				helper.updateCanvasContent(xCanvas, network);
+        			} else if (grabbedComponent != null) {
+            			System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
+						network.dragComponent(grabbedComponent, cursorPos);
+        				helper.updateCanvasContent(xCanvas, network);
+        			}
+        	        event.consume();        			
+        		}
+        );
+        
 
         xCanvas.setOnMouseReleased(
         		event -> {
-        			System.out.println(String.format("xCanvas MouseReleased %d", System.currentTimeMillis()));
+        			if (grabbedNode != null) {
+        				network.releaseComponentNode(grabbedNode);
+        				grabbedNode = null;
+        				helper.updateCanvasContent(xCanvas, network);
+        			} else if (grabbedComponent != null) {
+						network.releaseComponent(grabbedComponent);
+						grabbedComponent = null;
+        				helper.updateCanvasContent(xCanvas, network);
+        			}
         		}
         );
 
@@ -352,6 +372,62 @@ public class MainController {
         		}
         );
         
+
+        Duration duration = Duration.millis(100);
+        Timeline timeline = new Timeline(new KeyFrame(
+                duration,
+                ae -> {
+            		try {
+						if (simulating != null && simulating && network != null) {
+							network.simulate(duration);
+							
+							System.out.println("simulate");
+						}
+					} catch (Exception e) {
+						System.out.println("simulate error");
+						e.printStackTrace();
+					}
+                }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
+    
+    public void buildPropertyView(Component component) {
+    	int row = 0;
+    	if (component.getProperties() != null) {
+        	for (Entry<String, ComponentProperty> entry : component.getProperties().entrySet()) {
+        		ComponentProperty prop = entry.getValue();
+        		prop.nameN = new Label(prop.name);
+        		propertyGrid.add(prop.nameN, 0, row);
+        		
+        		//prop.valueN = 
+        		prop.valueN = new TextField(prop.value);
+        		prop.valueN.setEditable(prop.editable);
+        		if (prop.editable) {
+        			prop.valueN.textProperty().addListener((observable, oldValue, newValue) -> {
+        				if (newValue != null  && !newValue.equals(oldValue)) {
+        					prop.value = prop.valueN.getText().trim();
+        					component.updatePropertyModel();
+        				}
+        			});
+        		}
+        		
+        		
+        		propertyGrid.add(prop.valueN, 1, row);
+        		prop.unitN = new Label(prop.unit);
+        		propertyGrid.add(prop.unitN, 2, row);
+        		row++;
+    		}
+    	}
+    }
+    
+    public void destroyPropertyView() {
+    	Iterator<Node> it = propertyGrid.getChildren().iterator();
+    	while (it.hasNext()) {
+    		it.next();
+			it.remove();
+		}
+    }
+    
     
 }

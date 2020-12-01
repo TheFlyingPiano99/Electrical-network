@@ -37,6 +37,7 @@ public class Network {
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
+	Component selected = null;
 	
 	int closeProximity = 8;
 	
@@ -147,13 +148,14 @@ public class Network {
 	    
 	    if (updateCurrent) {
 			updateCurrent = false;
-			Vector current = CalculateCurrent();		
-			for (int i = 0; i < edges.size(); i++) {
-				edges.get(i).setCurrent(current.at(i));
-
-			}						
+			Vector current = CalculateCurrent();
+			if (current != null) {
+				for (int i = 0; i < edges.size(); i++) {
+					edges.get(i).setCurrent(current.at(i));
+				}
+			}
+				
 	    }
-
 		for (Component component : components) {
 			component.update(deltaTime);
 		}
@@ -524,7 +526,7 @@ public class Network {
 		if (!components.contains(component)) {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
-		
+		selected = component;
 		component.grab(cursorPos);
 		setUpdateAll();
 
@@ -750,7 +752,11 @@ public class Network {
 					
 					this.addComponent(comp);				
 
-					comp.load(pairs);					
+					comp.load(pairs);
+					comp.getInput().setMerge(true);
+					comp.getOutput().setMerge(true);
+					tryToMergeComponentNode(comp.getInput());
+					tryToMergeComponentNode(comp.getOutput());
 				}
 				
 			}
@@ -787,6 +793,21 @@ public class Network {
 	
 	public ArrayList<Vertex> getVertices() {
 		return vertices;
+	}
+	
+	public void reset() {
+		for (Component component : components) {
+			component.reset();
+		}
+		setUpdateAll();
+	}
+	
+	public boolean selected(Component component) {
+		return selected != null && component == selected;
+	}
+	
+	public Component getSelected() {
+		return selected;
 	}
 	
 }
