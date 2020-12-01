@@ -1,5 +1,12 @@
 package main.java.math;
 
+
+/**
+ * {@link Exception} type thrown by Gaussian elimination.
+ * HUN: Gauss-elimináció álltal dobott kivételtípus.
+ * @author Simon Zoltán
+ *
+ */
 public class GaussException extends RuntimeException {
 
 	/**

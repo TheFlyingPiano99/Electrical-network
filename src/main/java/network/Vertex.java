@@ -4,12 +4,31 @@ import java.util.HashMap;
 
 /**
  * Vertex of the graph representation of the network.
+ * HUN: A hálózat gráf-reprezentációjának csúcsai. 
  * @author Simon Zoltán
  *
  */
 public class Vertex {
-	private HashMap<Vertex, Edge> incoming;	//Key - The node on the other end of the edge.
-	private HashMap<Vertex, Edge> outgoing;	
+
+	/**
+	 * Map of incoming edges.
+	 * @key {@link Vertex} Vertex on the other end of the edge.
+	 * @value {@link Edge} Incoming edge.
+	 * HUN: Bejövő élek.
+	 * @key {@link Vertex} Csúcs az él másik végén.
+	 * @value {@link Edge} Bejövő él.
+	 */
+	private HashMap<Vertex, Edge> incoming;	//
+	
+	/**
+	 * Map of outgoing edges.
+	 * @key {@link Vertex} Vertex on the other end of the edge.
+	 * @value {@link Edge} Outgoing edge.
+	 * HUN: Kimenő élek.
+	 * @key {@link Vertex} Csúcs az él másik végén.
+	 * @value {@link Edge} Kimenő él.
+	 */
+private HashMap<Vertex, Edge> outgoing;	
 	
 	static int gen = 0;
 	private int id;
@@ -89,8 +108,9 @@ public class Vertex {
 	
 	/**
 	 * Whether this and the given vertex is vertex of the same {@link Edge}.
+	 * Szomszédos-e ez a csúcs a paraméterként kapott csúccsal?
 	 * @param v	The {@link Vertex} examined.
-	 * @return <code>true</code> when this and the given vertex is vertex of the same {@link Edge}.
+	 * @return <code>true</code> when this and the given vertex is node of the same {@link Edge}.
 	 */
 	public boolean isNeighbouring (Vertex v) {
 		return ((v != null) && 

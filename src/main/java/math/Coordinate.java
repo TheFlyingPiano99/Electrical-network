@@ -1,5 +1,11 @@
 package main.java.math;
 
+/**
+ * int coordinates of 2D point.
+ * HUN: int koordináta 2D-ós pont leírására.
+ * @author Simon Zoltán
+ *
+ */
 public class Coordinate {
 	public int x, y;
 

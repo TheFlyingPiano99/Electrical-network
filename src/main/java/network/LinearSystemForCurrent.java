@@ -4,19 +4,21 @@ import main.java.math.Matrix;
 import main.java.math.Vector;
 
 /**
- * Linear system, representing a equations for electric network.
+ * Linear system, representing equations for network in matrix form.
+ * HUN: Lineáris rendszer, ami a hálózat egyenletrendszerét írja le mátrix formában.
  * @author Simon Zoltán
- *<h2>The left  side of the equations:</h2>{First e columns are the columns of the incidence matrix.
+ * 
+ *<h2>The "left  side" of the equations:</h2>{First e columns are the columns of the incidence matrix.
  *                              The remaining part of the matrix is the cycle matrix multiplied by resistances of the edges}</b>
  *                              
- *<h2>The right side of the equations:</h2>{first e elements 0, then the sum of source voltages in that cycle.}<br>
+ *<h2>The "right side" of the equations:</h2>{first e elements 0, then the sum of source voltages in that cycle.}<br>
  *
  *<pre>
  *_______________________________
  *| incidence   |  cycle matrix |   A-edges
  *|  matrix     |    * R        |   V
  *-------------------------------	=
- *|   0000000   |   U0 / 0      |   <- right side of equations.<nl>
+ *|   0000000   |   U0 / 0      |   <- "right side" of equations.<nl>
  *-------------------------------
  *
  *</pre>
@@ -28,7 +30,7 @@ public class LinearSystemForCurrent extends Matrix {
 	Matrix cycle;
 	
 	/**
-	 * 
+	 * Constructor
 	 * @param incidence		Incidence matrix of the graph representation of network.
 	 * @param cycle			Base cycle matrix of the graph representation of network.
 	 * @param resistances	Vector of resistances of edges in same order as the order of edges in the incidence and cycle matrices.
@@ -76,6 +78,7 @@ public class LinearSystemForCurrent extends Matrix {
 	
 	/**
 	 * Updates only the "source voltage" part of the matrix.
+	 * HUN: Frissíti a mátrix feszültésforrásokat leíró részét.
 	 * @param sourceVoltages	{@link Vector} of source voltages. 
 	 */
 	public void updateSourceVoltage(Vector sourceVoltages) {
@@ -95,6 +98,7 @@ public class LinearSystemForCurrent extends Matrix {
 	
 	/**
 	 * Updates only the "resistances" part of the matrix.
+	 * HUN: Frissíti a mátrix ellenállásokat leíró részét.
 	 * @param resistances {@link Vector} of resistances.
 	 */
 	public void updateResistances(Vector resistances) {
