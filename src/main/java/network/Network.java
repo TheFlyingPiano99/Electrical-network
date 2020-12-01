@@ -92,7 +92,7 @@ public class Network {
 	 * Returns the resistance of all the edges.
 	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt ellenállás értékei vannak felsorolva
 	 * az élek, "edges" listában szereplő sorrendje szerint. 
-	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
+	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 */
 	private Vector gatherResistances() {
     	Vector resistances = new Vector(edges.size());
@@ -106,7 +106,7 @@ public class Network {
 	 * Returns the source voltages of all the edges.
 	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt feszültségforrás értékei vannak felsorolva
 	 * az élek, "edges" listában szereplő sorrendje szerint. 
-	 * @return Vector of source voltages. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
+	 * @return Vector of source voltages. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 */
 	private Vector gatherSourceVoltages() {
     	Vector sourceVoltages = new Vector(edges.size());
@@ -121,7 +121,7 @@ public class Network {
 	 * HUN: Gauss-elimináció segítségével kiszámolja a gráf-élekhez tartozó áramot. 
 	 * Visszaad egy vektort amiben az összes gráf-élhez rendelt áram értékei vannak felsorolva
 	 * az élek, "edges" listában szereplő sorrendje szerint. 
-	 * @return Vector of currents. The order of elements of the vector is the same as the order of the edges in private ArrayList<Edge> edges.
+	 * @return Vector of currents. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 */
 	private Vector CalculateCurrent() {
 		try {
@@ -924,7 +924,7 @@ public class Network {
 	/**
 	 * Whether the network is valid or not.
 	 * HUN: Helyes-e a hálózat?
-	 * @return
+	 * @return boolean
 	 */
 	public boolean isValid () {
 		return validNetwork;

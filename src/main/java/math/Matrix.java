@@ -19,8 +19,7 @@ public class Matrix {
      * Constructor
      * @param r - number of rows
      * @param c - number of columns
-     * @return
-     */
+     */    
     public Matrix(int r,int c) {
     	row = r;
     	column = c;

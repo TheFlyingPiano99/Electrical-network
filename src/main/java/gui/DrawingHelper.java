@@ -1,21 +1,15 @@
 package main.java.gui;
 
-import javafx.scene.canvas.Canvas;
-import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.StrokeLineCap;
 import main.java.math.Coordinate;
 import main.java.math.Line;
 import main.java.math.MyMath;
 import main.java.math.Vector;
-import main.java.network.Component;
-import main.java.network.ComponentNode;
 import main.java.network.Network;
-import main.java.network.Resistance;
-import main.java.network.VoltageSource;
-import main.java.network.Wire;
 
 /**
  * Auxiliary methods for drawing components.

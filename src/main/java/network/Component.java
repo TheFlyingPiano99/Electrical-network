@@ -136,7 +136,7 @@ public abstract class Component {
 	/**
 	 * Grabs component to move.
 	 * HUN: Megfogja a komponenst, hogy aztán mozgatni lehessen.
-	 * @param cursorPos
+	 * @param cursorPos position of cursor
 	 */
 	public void grab(Coordinate cursorPos) {
 		grabbed = true;

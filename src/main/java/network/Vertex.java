@@ -12,21 +12,21 @@ public class Vertex {
 
 	/**
 	 * Map of incoming edges.
-	 * @key {@link Vertex} Vertex on the other end of the edge.
-	 * @value {@link Edge} Incoming edge.
+	 * key {@link Vertex} Vertex on the other end of the edge.
+	 * value {@link Edge} Incoming edge.
 	 * HUN: Bejövő élek.
-	 * @key {@link Vertex} Csúcs az él másik végén.
-	 * @value {@link Edge} Bejövő él.
+	 * key {@link Vertex} Csúcs az él másik végén.
+	 * value {@link Edge} Bejövő él.
 	 */
 	private HashMap<Vertex, Edge> incoming;	//
 	
 	/**
 	 * Map of outgoing edges.
-	 * @key {@link Vertex} Vertex on the other end of the edge.
-	 * @value {@link Edge} Outgoing edge.
+	 * key Vertex {@link Vertex} Vertex on the other end of the edge.
+	 * value Edge {@link Edge} Outgoing edge.
 	 * HUN: Kimenő élek.
-	 * @key {@link Vertex} Csúcs az él másik végén.
-	 * @value {@link Edge} Kimenő él.
+	 * key Vertex {@link Vertex} Csúcs az él másik végén.
+	 * value Edge {@link Edge} Kimenő él.
 	 */
 private HashMap<Vertex, Edge> outgoing;	
 	
