@@ -141,14 +141,17 @@ public class Wire extends Component {
 		Coordinate inputPos  = getInput().getPos(); 
 		Coordinate outputPos = getOutput().getPos();
 
-		boolean eqX = (outputPos.x == inputPos.x);
-		boolean eqY = (outputPos.y == inputPos.y);
+		//boolean eqX = (outputPos.x == inputPos.x);
+		//boolean eqY = (outputPos.y == inputPos.y);
 		
+		lines.add(new Line(0, 0, 100, 0));
+		
+		DrawingHelper.drawShape(ctx, inputPos, outputPos, lines, 100, getParent().isThisSelected(this));
+
+/*
 		//Construction:
 		if (eqX || eqY) {
-
 			lines.add(new Line(inputPos.x, inputPos.y, outputPos.x, outputPos.y));
-
 		} else {
 
 			// 2 segments: [input -> breaking point] and [breaking point -> output]
@@ -166,6 +169,7 @@ public class Wire extends Component {
 
 		//call drawWire
 		DrawingHelper.drawWire(ctx, lines);
+*/
 	}
 
 	@Override

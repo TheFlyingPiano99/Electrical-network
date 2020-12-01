@@ -50,10 +50,8 @@ public class DrawingHelper {
 			setNormalDrawingAttributes(ctx);
 			ctx.fillOval(lines.get(0).a.at(0)-3, lines.get(0).a.at(1)-3, 6, 6);
 
-			int last = 0;
-			if ((last = lines.size()-1) > 0) {
-				ctx.fillOval(lines.get(last).b.at(0)-3, lines.get(last).b.at(1)-3, 6, 6);
-			}
+			int last = lines.size()-1;
+			ctx.fillOval(lines.get(last).b.at(0)-3, lines.get(last).b.at(1)-3, 6, 6);
 		}
 	}
 	
