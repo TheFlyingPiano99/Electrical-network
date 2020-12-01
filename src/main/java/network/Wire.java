@@ -2,7 +2,9 @@ package main.java.network;
 
 import javafx.util.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javafx.scene.canvas.GraphicsContext;
 import main.java.gui.DrawingHelper;
@@ -49,6 +51,30 @@ public class Wire extends Component {
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
+		
+		//Properties:
+		setProperties(new HashMap<String, ComponentProperty>());
+
+		ComponentProperty prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "voltage drop:";
+		prop.unit = "V";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("voltage", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "current:";
+		prop.unit = "A";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("current", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = false;
+		prop.name = "resistance:";
+		prop.unit = "Ohm";
+		prop.value = String.valueOf(0.0);
+		getProperties().put("resistance", prop);
 	}
 
 	@Override
@@ -61,7 +87,7 @@ public class Wire extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		;	//Do nothing.
+		updatePropertyView();
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------
@@ -87,6 +113,7 @@ public class Wire extends Component {
 		String coordOut[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 		
+		updatePropertyView();
 	}
 
 	@Override
@@ -141,12 +168,51 @@ public class Wire extends Component {
 	}
 
 	@Override
+	public
 	void disconnectGraphRepresentation() {
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
 		
 		getParent().disconnectEndOfEdge(e, e.getOutput());
 		getOutput().setVertexBinding(e.getOutput());
+	}
+
+	@Override
+	public
+	void reset() {		
+		e.setCurrent(0.0F);
+		updatePropertyView();
+
+	}
+
+	@Override
+	public
+	void updatePropertyModel() {
+	}
+
+	@Override
+	public void updatePropertyView() {
+		if (getProperties().containsKey("voltage")) {
+			getProperties().get("voltage").value = String.valueOf(getVoltage());
+			if (getProperties().get("voltage").valueN != null) {
+				getProperties().get("voltage").valueN.setText(String.valueOf(getVoltage()));				
+			}
+		}
+
+		if (getProperties().containsKey("current")) {
+			getProperties().get("current").value = String.valueOf(getCurrent());
+			if (getProperties().get("current").valueN != null) {
+				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
+			}
+		}
+
+		if (getProperties().containsKey("resistance")) {
+			getProperties().get("resistance").value = String.valueOf(getResistance());
+			if (getProperties().get("resistance").valueN != null) {
+				getProperties().get("resistance").valueN.setText(String.valueOf(getResistance()));				
+			}
+		}
+		
 	}
 
 }

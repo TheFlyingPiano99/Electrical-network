@@ -12,6 +12,7 @@ import main.java.math.MyMath;
 import main.java.math.Vector;
 import main.java.network.Component;
 import main.java.network.ComponentNode;
+import main.java.network.Network;
 import main.java.network.Resistance;
 import main.java.network.VoltageSource;
 import main.java.network.Wire;
@@ -56,13 +57,11 @@ public class DrawingHelper {
 		}
 	}
 	
-	public static void updateCanvasContent(Canvas canvas, List<Component> components) {
+	protected static void updateCanvasContent(Canvas canvas, Network network) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			for (Component component : components) {
-				component.draw(ctx);
-			}
+			network.draw(ctx);
 		}
 	}
 	
@@ -82,7 +81,7 @@ public class DrawingHelper {
 		}
 	}
 	
-	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_size, boolean grabbed) {
+	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_size, boolean selected) {
 
 		Vector vInput  = MyMath.coordToVector(inputPos); 
 		Vector vOutput = MyMath.coordToVector(outputPos);
@@ -118,7 +117,7 @@ public class DrawingHelper {
 
 			drawConnectors(ctx, lines);
 
-			if (grabbed) {
+			if (selected) {
 				setSelDrawingAttributes(ctx);
 				ctx.strokeRect(
 						minX - 10.0f, minY - 10.0f,

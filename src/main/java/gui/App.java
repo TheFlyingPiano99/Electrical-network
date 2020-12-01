@@ -22,6 +22,7 @@ public class App extends Application {
 		Parent content = loader.load(url);
 		stage.setScene(new Scene(content));
 		stage.show();
+		stage.setTitle("Áramkör szimulátor");
 	}	
 
 }

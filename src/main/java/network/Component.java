@@ -2,6 +2,8 @@ package main.java.network;
 
 import javafx.util.Duration;
 
+import java.util.Map;
+
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 import main.java.math.MyMath;
@@ -15,6 +17,9 @@ public abstract class Component {
 		
 	private Network parent;
 
+	
+	private Map<String, ComponentProperty> properties = null;
+	
 	private ComponentNode input;
 	private ComponentNode output;
 	
@@ -76,6 +81,14 @@ public abstract class Component {
 		this.output = output;
 	}
 	
+	public Map<String, ComponentProperty> getProperties() {
+		return properties;
+	}
+	
+	public void setProperties(Map<String, ComponentProperty> properties) {
+		this.properties = properties;
+	}
+
 	//Default generators:----------------------------------------------------------
 	
 	/**
@@ -143,7 +156,8 @@ public abstract class Component {
 	 * Build the inner structure of the component, including elements of the graph representation. Must generate end nodes. 
 	 */
 	abstract public void build ();
-	
+
+
 	/**
 	 * Destroys the inner structure of the component, including elements of the graph representation. Must remove end nodes.
 	 */
@@ -193,6 +207,12 @@ public abstract class Component {
 	 */
 	abstract public void draw(GraphicsContext ctx);
 
-	abstract void disconnectGraphRepresentation();
+	abstract public void disconnectGraphRepresentation();
+	
+	abstract public void reset();
+	
+	abstract public void updatePropertyModel(); 
+	
+	abstract public void updatePropertyView();
 	
 }
