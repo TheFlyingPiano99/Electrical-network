@@ -44,6 +44,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
 import main.java.math.Coordinate;
+import main.java.network.Capacitor;
 import main.java.network.Component;
 import main.java.network.ComponentNode;
 import main.java.network.ComponentProperty;
@@ -313,6 +314,7 @@ public class MainController {
         lvLeftListView.getItems().add("Feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
+        lvLeftListView.getItems().add("Kapacitor");
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText("Szimuláció leállítva.");    		
@@ -394,6 +396,9 @@ public class MainController {
     	            }
     	            else if (str.equals("Vezeték")) {
     	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            else if (str.equals("Kapacitor")) {
+    	            	network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();
