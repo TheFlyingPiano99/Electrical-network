@@ -9,6 +9,7 @@ import main.java.math.Coordinate;
 import main.java.math.Line;
 import main.java.math.MyMath;
 import main.java.math.Vector;
+import main.java.network.Component;
 import main.java.network.Network;
 
 /**
@@ -18,7 +19,7 @@ import main.java.network.Network;
  *
  */
 public class DrawingHelper {
-	
+
 	private static final javafx.scene.paint.Color COLOR_NORMAL = javafx.scene.paint.Color.BLACK;
 	private static final javafx.scene.paint.Color COLOR_SELECT = javafx.scene.paint.Color.GREEN;
 	private static final StrokeLineCap LINE_CAP_NORMAL = StrokeLineCap.ROUND;
@@ -77,7 +78,7 @@ public class DrawingHelper {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			network.draw(ctx);
+			network.draw(ctx);			
 		}
 	}
 	
@@ -133,6 +134,8 @@ public class DrawingHelper {
 				ctx.strokeRect(
 						minX - 10.0f, minY - 10.0f,
 						maxX - minX + 20.0f, maxY - minY + 20.0f);
+				
+				
 			}
 		}
 

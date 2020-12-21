@@ -48,6 +48,7 @@ import main.java.network.Capacitor;
 import main.java.network.Component;
 import main.java.network.ComponentNode;
 import main.java.network.ComponentProperty;
+import main.java.network.Inductor;
 import main.java.network.Network;
 import main.java.network.Resistance;
 import main.java.network.VoltageSource;
@@ -314,7 +315,8 @@ public class MainController {
         lvLeftListView.getItems().add("Feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
-        lvLeftListView.getItems().add("Kapacitor");
+        lvLeftListView.getItems().add("Kondenzátor");
+        lvLeftListView.getItems().add("Induktor");
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText("Szimuláció leállítva.");    		
@@ -397,8 +399,11 @@ public class MainController {
     	            else if (str.equals("Vezeték")) {
     	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
-    	            else if (str.equals("Kapacitor")) {
+    	            else if (str.equals("Kondenzátor")) {
     	            	network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            else if (str.equals("Induktor")) {
+    	            	network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();

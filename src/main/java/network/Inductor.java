@@ -13,49 +13,30 @@ import main.java.math.Coordinate;
 import main.java.math.Line;
 
 /**
- * Capacitor, with adjustable capacity.
+ * Ideal inductor, with adjustable value and zero resistance.
  * @author Simon Zoltán
  *
  */
-public class Capacitor extends Component {
+public class Inductor extends Component {
 	private Edge e;
-	public float getCharge() {
-		return charge;
-	}
-
-
-	public void setCharge(float charge) {
-		this.charge = charge;
-	}
-
-
-	public float getCapacity() {
-		return capacity;
-	}
-
-
-	private float charge = 0;
-	private float capacity = 1;
+	private float inductance = 1;
+	private float prevCurrent = 0;
 	private final float DEFAULT_SIZE = 60.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
-	public Capacitor() {
+	public Inductor() {
 	}
 	
 	
-	public Capacitor(float c) {
-		capacity = c;
+	public Inductor(float l) {
+		inductance = l;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
 	public float getSourceVoltage() {
-		return -(1/capacity) * charge;
-	}
-
-	public void setCapacity(float capacity) {
-		this.capacity = capacity;
+		return -inductance * (e.getCurrent() - prevCurrent);
 	}
 
 	@Override
@@ -66,6 +47,11 @@ public class Capacitor extends Component {
 	@Override
 	public float getVoltage() {
 		return getSourceVoltage();
+	}
+
+	@Override
+	public float getResistance() {
+		return 0;
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -79,11 +65,12 @@ public class Capacitor extends Component {
 
 		e.setCurrent(0);
 		e.setResistance(0);
-		e.setSourceVoltage(this.getSourceVoltage());
+		e.setSourceVoltage(0);		
+		
 		
 		getInput().setVertexBinding(e.getInput());
-		getOutput().setVertexBinding(e.getOutput());
-		
+		getOutput().setVertexBinding(e.getOutput());		
+
 				
 		//Properties:
 		setProperties(new HashMap<String, ComponentProperty>());
@@ -92,7 +79,7 @@ public class Capacitor extends Component {
 		prop.editable = false;
 		prop.name = "forrás feszültség:";
 		prop.unit = "V";
-		prop.value = String.valueOf(getSourceVoltage());
+		prop.value = String.valueOf(0.0);
 		getProperties().put("voltage", prop);
 
 		prop = new ComponentProperty();
@@ -104,10 +91,10 @@ public class Capacitor extends Component {
 
 		prop = new ComponentProperty();
 		prop.editable = true;
-		prop.name = "kapacitás:";
-		prop.unit = "Farad";
-		prop.value = String.valueOf(getCapacity());
-		getProperties().put("capacity", prop);
+		prop.name = "Induktivitás:";
+		prop.unit = "H";
+		prop.value = String.valueOf(inductance);
+		getProperties().put("inductance", prop);
 	}
 	
 	@Override
@@ -121,11 +108,10 @@ public class Capacitor extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		charge += e.getCurrent() * duration.toSeconds();
 		e.setSourceVoltage(this.getSourceVoltage());
-		System.out.println(e.getSourceVoltage());
+		
+		prevCurrent = e.getCurrent();
 		updatePropertyView();
-		getParent().setUpdateAll();
 	}
 
 
@@ -135,8 +121,8 @@ public class Capacitor extends Component {
 	public void save(StringBuilder writer) {
 		writer.append("class: ");				
 		writer.append(this.getClass().getCanonicalName());
-		writer.append("; capacity: ");
-		writer.append(capacity);
+		writer.append("; inductance: ");
+		writer.append(inductance);
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -149,7 +135,7 @@ public class Capacitor extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setCapacity(Float.valueOf(pairs[1].split(":")[1]));
+		setInductance(Float.valueOf(pairs[1].split(":")[1]));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -162,12 +148,22 @@ public class Capacitor extends Component {
 	}
 
 
+	public float getInductance() {
+		return inductance;
+	}
+
+
+	public void setInductance(float inductance) {
+		this.inductance = inductance;
+	}
+
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("VoltageSource [");
-		builder.append("capacity=");
-		builder.append(capacity);
+		builder.append("inductance=");
+		builder.append(inductance);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");		
@@ -189,8 +185,9 @@ public class Capacitor extends Component {
 
 		//Construction:
 		lines.add(new Line(0.0f, 0.0f, DEFAULT_SIZE/3.0f, 0.0f));
-		lines.add(new Line(DEFAULT_SIZE/3.0f, -DEFAULT_SIZE/4.0f, DEFAULT_SIZE/3.0f, +DEFAULT_SIZE/4.0f));
-		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/4.0f, 2.0f/3.0f * DEFAULT_SIZE, +DEFAULT_SIZE/4.0f));
+		
+		lines.add(new Line(DEFAULT_SIZE/3.0f, 0.0f, 1.5f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/4.0f));
+		lines.add(new Line(1.5f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/4.0f, 2.0f/3.0f * DEFAULT_SIZE, 0.0f));
 
 		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, 0.0f, DEFAULT_SIZE, 0.0f));
 
@@ -216,25 +213,25 @@ public class Capacitor extends Component {
 	public void reset() {
 		e.setCurrent(0.0F);
 		e.setSourceVoltage(0.0F);
-		setCharge(0.0F);
+		prevCurrent = 0.0F;
 		updatePropertyView();
 	}
 
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("capacity").value;
+		String str = getProperties().get("inductance").value;
 		if (str != null && str.length() > 0) {
 			try {
 				float val = Float.parseFloat(str);
-				setCapacity(val);
+				setInductance(val);
 				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			System.out.println("Updated value:" + getCapacity());
-			getProperties().get("capacity").value = String.valueOf(getCapacity());
+			System.out.println("Updated value:" + getInductance());
+			getProperties().get("inductance").value = String.valueOf(getInductance());
 		}
 	}
 
@@ -242,33 +239,27 @@ public class Capacitor extends Component {
 	@Override
 	public void updatePropertyView() {
 		
-		if (getProperties().containsKey("current")) {
-			getProperties().get("current").value = String.valueOf(this.getCurrent());
-			if (getProperties().get("current").valueN != null) {
-				getProperties().get("current").valueN.setText(String.valueOf(this.getCurrent()));				
-			}
-		}
-
 		if (getProperties().containsKey("voltage")) {
-			getProperties().get("voltage").value = String.valueOf(this.getSourceVoltage());
+			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
 			if (getProperties().get("voltage").valueN != null) {
-				getProperties().get("voltage").valueN.setText(String.valueOf(this.getSourceVoltage()));				
+				getProperties().get("voltage").valueN.setText(String.valueOf(getSourceVoltage()));				
 			}
 		}
 
-		if (getProperties().containsKey("capacity")) {
-			getProperties().get("capacity").value = String.valueOf(this.getCapacity());
-			if (getProperties().get("capacity").valueN != null) {
-				getProperties().get("capacity").valueN.setText(String.valueOf(this.getCapacity()));				
+		if (getProperties().containsKey("current")) {
+			getProperties().get("current").value = String.valueOf(getCurrent());
+			if (getProperties().get("current").valueN != null) {
+				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
+			}
+		}
+
+		if (getProperties().containsKey("inductance")) {
+			getProperties().get("inductance").value = String.valueOf(getInductance());
+			if (getProperties().get("inductance").valueN != null) {
+				getProperties().get("inductance").valueN.setText(String.valueOf(getInductance()));				
 			}
 		}
 		
-	}
-
-
-	@Override
-	public float getResistance() {
-		return 0;
 	}
 
 	
