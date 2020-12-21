@@ -243,23 +243,23 @@ public class Capacitor extends Component {
 	public void updatePropertyView() {
 		
 		if (getProperties().containsKey("current")) {
-			getProperties().get("current").value = String.valueOf(getCurrent());
+			getProperties().get("current").value = String.valueOf(this.getCurrent());
 			if (getProperties().get("current").valueN != null) {
-				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
+				getProperties().get("current").valueN.setText(String.valueOf(this.getCurrent()));				
 			}
 		}
 
 		if (getProperties().containsKey("voltage")) {
-			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
+			getProperties().get("voltage").value = String.valueOf(this.getSourceVoltage());
 			if (getProperties().get("voltage").valueN != null) {
-				getProperties().get("voltage").valueN.setText(String.valueOf(getSourceVoltage()));				
+				getProperties().get("voltage").valueN.setText(String.valueOf(this.getSourceVoltage()));				
 			}
 		}
 
 		if (getProperties().containsKey("capacity")) {
-			getProperties().get("capacity").value = String.valueOf(getCapacity());
+			getProperties().get("capacity").value = String.valueOf(this.getCapacity());
 			if (getProperties().get("capacity").valueN != null) {
-				getProperties().get("capacity").valueN.setText(String.valueOf(getCapacity()));				
+				getProperties().get("capacity").valueN.setText(String.valueOf(this.getCapacity()));				
 			}
 		}
 		
