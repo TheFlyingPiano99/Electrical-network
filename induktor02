@@ -1,0 +1,7 @@
+class: main.java.network.VoltageSource; voltage: 100.0; inputPos: [203, 97]; outputPos: [293, 94]
+class: main.java.network.Resistance; resistance: 10.0; inputPos: [293, 94]; outputPos: [327, 179]
+class: main.java.network.Resistance; resistance: 10.0; inputPos: [327, 179]; outputPos: [289, 259]
+class: main.java.network.Inductor; inductance: 200.0; inputPos: [170, 182]; outputPos: [327, 179]
+class: main.java.network.Wire; inputPos: [170, 182]; outputPos: [203, 97]
+class: main.java.network.Wire; inputPos: [208, 258]; outputPos: [170, 182]
+class: main.java.network.Wire; inputPos: [208, 258]; outputPos: [289, 259]

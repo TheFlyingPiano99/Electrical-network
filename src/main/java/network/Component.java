@@ -17,13 +17,33 @@ import main.java.math.MyMath;
 public abstract class Component {
 		
 	private Network parent;
-
 	
+	public float getCurrentVisualisationOffset() {
+		return currentVisualisationOffset;
+	}
+
+	public void setCurrentVisualisationOffset(float currentVisualisationOffset) {
+		this.currentVisualisationOffset = currentVisualisationOffset;
+	}
+
 	private Map<String, ComponentProperty> properties = null;
 	
-	private ComponentNode input;
-	private ComponentNode output;
+	private float DEFAULT_SIZE = 60.0f;
+
+	private float currentVisualisationOffset = 0;
+	private static float currentVisualisationSpeed = 100;
 	
+	private ComponentNode input;
+	public float getDEFAULT_SIZE() {
+		return DEFAULT_SIZE;
+	}
+
+	public void setDEFAULT_SIZE(float size) {
+		DEFAULT_SIZE = size;
+	}
+
+	private ComponentNode output;
+		
 	//Manipulation related:
 	boolean grabbed = false;
 
@@ -169,6 +189,12 @@ public abstract class Component {
 		parent.tryToMergeComponentNode(getOutput());
 	}
 
+	//CUrrentVisualisation:-------------------------------------------------------
+	
+	
+	public void increaseCurrentVisualisationOffset() {
+		currentVisualisationOffset = (currentVisualisationOffset + getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+	}	
 		
 	//To override:---------------------------------------------------------------
 	
@@ -260,5 +286,13 @@ public abstract class Component {
 	 * HUN: Frissíti a {@link ComponentProperty} mapot a belső változók szerint.
 	 */
 	abstract public void updatePropertyView();
+
+	public static float getCurrentVisualisationSpeed() {
+		return currentVisualisationSpeed;
+	}
+
+	public static void setCurrentVisualisationSpeed(float currentVisualisationSpeed) {
+		Component.currentVisualisationSpeed = currentVisualisationSpeed;
+	}
 	
 }
