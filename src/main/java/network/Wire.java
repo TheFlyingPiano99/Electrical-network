@@ -88,6 +88,7 @@ public class Wire extends Component {
 	
 	@Override
 	public void update(Duration duration) {
+		increaseCurrentVisualisationOffset();
 		updatePropertyView();
 	}
 
@@ -144,9 +145,9 @@ public class Wire extends Component {
 		//boolean eqX = (outputPos.x == inputPos.x);
 		//boolean eqY = (outputPos.y == inputPos.y);
 		
-		lines.add(new Line(0, 0, 100, 0));
+		lines.add(new Line(0, 0, getDEFAULT_SIZE(), 0));
 		
-		DrawingHelper.drawShape(ctx, inputPos, outputPos, lines, 100, getParent().isThisSelected(this));
+		DrawingHelper.drawShape(ctx, inputPos, outputPos, lines, getDEFAULT_SIZE(), getParent().isThisSelected(this), getCurrentVisualisationOffset());
 
 /*
 		//Construction:

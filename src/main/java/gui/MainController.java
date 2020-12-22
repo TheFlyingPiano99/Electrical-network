@@ -490,6 +490,7 @@ public class MainController {
         		try {
 					if (simulating != null && simulating && network != null) {
 						network.simulate(duration);
+						helper.updateCanvasContent(xCanvas, network);
 						if (network.isValid()) {
 							rightStatus.setText("Helyes kapcsolás.");
 						}

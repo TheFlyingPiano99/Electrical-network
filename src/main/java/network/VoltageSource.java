@@ -20,7 +20,6 @@ import main.java.math.Line;
 public class VoltageSource extends Component {
 	private Edge e;
 	private float sourceVoltage = 1.0f;
-	private final float DEFAULT_SIZE = 60.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -114,7 +113,8 @@ public class VoltageSource extends Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {		
+	public void update(Duration duration) {
+		increaseCurrentVisualisationOffset();
 		updatePropertyView();
 	}
 
@@ -178,33 +178,34 @@ public class VoltageSource extends Component {
 		List<Line> lines = new ArrayList<Line>();
 
 		//Construction:
-		lines.add(new Line(0.0f, 0.0f, DEFAULT_SIZE/3.0f, 0.0f));
-		lines.add(new Line(DEFAULT_SIZE/3.0f, -DEFAULT_SIZE/4.0f, DEFAULT_SIZE/3.0f, +DEFAULT_SIZE/4.0f));
-		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/2.0f, 2.0f/3.0f * DEFAULT_SIZE, +DEFAULT_SIZE/2.0f));
+		float defaultSize = getDEFAULT_SIZE();
+		lines.add(new Line(0.0f, 0.0f, defaultSize/3.0f, 0.0f));
+		lines.add(new Line(defaultSize/3.0f, -defaultSize/4.0f, defaultSize/3.0f, +defaultSize/4.0f));
+		lines.add(new Line(2.0f/3.0f * defaultSize, -defaultSize/2.0f, 2.0f/3.0f * defaultSize, +defaultSize/2.0f));
 
 		// [+] sign
 		lines.add(new Line(
-				(5.0f/6.0f * DEFAULT_SIZE) - (1.0f/15.0f * DEFAULT_SIZE),  
-				-1.0f/4.0f * DEFAULT_SIZE,
-				(5.0f/6.0f * DEFAULT_SIZE) + (1.0f/15.0f * DEFAULT_SIZE),
-				-1.0f/4.0f * DEFAULT_SIZE));
+				(5.0f/6.0f * defaultSize) - (1.0f/15.0f * defaultSize),  
+				-1.0f/4.0f * defaultSize,
+				(5.0f/6.0f * defaultSize) + (1.0f/15.0f * defaultSize),
+				-1.0f/4.0f * defaultSize));
 		lines.add(new Line(
-				(5.0f/6.0f * DEFAULT_SIZE),  
-				-1.0f/4.0f * DEFAULT_SIZE - (1.0f/15.0f * DEFAULT_SIZE),
-				(5.0f/6.0f * DEFAULT_SIZE),
-				-1.0f/4.0f * DEFAULT_SIZE + (1.0f/15.0f * DEFAULT_SIZE)));
+				(5.0f/6.0f * defaultSize),  
+				-1.0f/4.0f * defaultSize - (1.0f/15.0f * defaultSize),
+				(5.0f/6.0f * defaultSize),
+				-1.0f/4.0f * defaultSize + (1.0f/15.0f * defaultSize)));
 
 		// [-] sign
 		lines.add(new Line(
-				(1.0f/6.0f * DEFAULT_SIZE) - (1.0f/15.0f * DEFAULT_SIZE),  
-				-1.0f/4.0f * DEFAULT_SIZE,
-				(1.0f/6.0f * DEFAULT_SIZE) + (1.0f/15.0f * DEFAULT_SIZE),
-				-1.0f/4.0f * DEFAULT_SIZE));
+				(1.0f/6.0f * defaultSize) - (1.0f/15.0f * defaultSize),  
+				-1.0f/4.0f * defaultSize,
+				(1.0f/6.0f * defaultSize) + (1.0f/15.0f * defaultSize),
+				-1.0f/4.0f * defaultSize));
 
-		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, 0.0f, DEFAULT_SIZE, 0.0f));
+		lines.add(new Line(2.0f/3.0f * defaultSize, 0.0f, defaultSize, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this));
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset());
 
 		System.out.println("VoltageSource draw!");		
 	}

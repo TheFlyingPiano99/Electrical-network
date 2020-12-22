@@ -4,6 +4,7 @@ import java.util.List;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import main.java.math.Coordinate;
 import main.java.math.Line;
@@ -91,19 +92,22 @@ public class DrawingHelper {
 	 * @param lines		List of lines describing the shape of the component.
 	 * @param default_length	The default / normal length of the component. Used to calculate scaling of the drawing.
 	 * @param selected		Whether the component is selected or not.
+	 * @param currentVisualisationOffset TODO
 	 */
-	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_length, boolean selected) {
+	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_length, boolean selected, float currentVisualisationOffset) {
 
 		Vector vInput  = MyMath.coordToVector(inputPos); 
 		Vector vOutput = MyMath.coordToVector(outputPos);
 		
+		
 		Vector orientation = MyMath.subtract(vOutput, vInput);
 		float scale = MyMath.magnitude(orientation) / default_length;
 		float angle = (float)Math.atan2(orientation.at(1), orientation.at(0));
-
+		
 		//------------------------------------------------------
 		if (lines != null && !lines.isEmpty()) {
 
+		
 			Float minX = null;
 			Float maxX = null;
 			Float minY = null;
@@ -126,6 +130,12 @@ public class DrawingHelper {
 
 				ctx.strokeLine(aX, aY, bX, bY);
 			}
+			
+			ctx.setStroke(Color.GREEN);
+			ctx.setLineWidth(5);
+			ctx.setLineDashes(default_length*0.2, default_length*0.8);
+			ctx.setLineDashOffset(-currentVisualisationOffset);
+			ctx.strokeLine(vInput.at(0),vInput.at(1), vOutput.at(0), vOutput.at(1));
 
 			drawEndNodes(ctx, inputPos, outputPos);
 

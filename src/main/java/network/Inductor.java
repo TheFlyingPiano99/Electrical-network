@@ -111,6 +111,8 @@ public class Inductor extends Component {
 		e.setSourceVoltage(this.getSourceVoltage());
 		
 		prevCurrent = e.getCurrent();
+		increaseCurrentVisualisationOffset();
+
 		updatePropertyView();
 	}
 
@@ -192,7 +194,7 @@ public class Inductor extends Component {
 		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, 0.0f, DEFAULT_SIZE, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this));
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this), getCurrentVisualisationOffset());
 
 		System.out.println("VoltageSource draw!");		
 	}
