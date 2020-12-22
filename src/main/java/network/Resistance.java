@@ -168,15 +168,14 @@ public class Resistance extends Component {
 
 		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		lines.add(new Line(0.0f, 0.0f, defaultSize, 0.0f));
-		lines.add(new Line(defaultSize, -defaultSize / 2.0f, defaultSize, +defaultSize / 2.0f));
-		lines.add(
-				new Line(defaultSize, -defaultSize / 2.0f, defaultSize - defaultSize, -defaultSize / 2.0f));
-		lines.add(
-				new Line(defaultSize, +defaultSize / 2.0f, defaultSize - defaultSize, +defaultSize / 2.0f));
-		lines.add(new Line(defaultSize - defaultSize, -defaultSize / 2.0f, defaultSize - defaultSize,
-				+defaultSize / 2.0f));
-		lines.add(new Line(defaultSize - defaultSize, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(0.0f, 0.0f, defaultSize/6.0f, 0.0f));
+		lines.add(new Line(defaultSize/6.0f, +defaultSize / 7.0f, defaultSize/6.0f, -defaultSize / 7.0f));
+		
+		lines.add(new Line(defaultSize/6.0f, +defaultSize / 7.0f, defaultSize * 0.83f, +defaultSize / 7.0f));
+		lines.add(new Line(defaultSize/6.0f, -defaultSize / 7.0f, defaultSize * 0.83f, -defaultSize / 7.0f));
+
+		lines.add(new Line(defaultSize* 0.83f, +defaultSize / 7.0f, defaultSize* 0.83f, -defaultSize / 7.0f));
+		lines.add(new Line(defaultSize* 0.83f, 0.0f, defaultSize, 0.0f));
 
 		// call drawShape
 		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize,

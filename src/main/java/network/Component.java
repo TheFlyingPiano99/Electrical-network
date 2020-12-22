@@ -173,6 +173,9 @@ public abstract class Component {
 	 */
 	public void drag(Coordinate cursorPos) {
 		Coordinate newInputPos = MyMath.subtrackt(cursorPos, grabCursorOffset);
+		if (parent.isSnapToGrid()) {
+			newInputPos = Coordinate.snapToGrid(newInputPos, parent.getGridSize());
+		}
 		getInput().setPos(newInputPos);
 		getOutput().setPos(MyMath.add(newInputPos, fromInputToOutput));
 	}
@@ -193,13 +196,12 @@ public abstract class Component {
 	
 	
 	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;			
+		
 		Float test =Float.valueOf(currentVisualisationOffset);
-
 		if (test.isNaN()) {
-			currentVisualisationOffset = 0;
-		}
-		else {
-			currentVisualisationOffset = (currentVisualisationOffset + getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;			
+			currentVisualisationOffset = pres;
 		}
 	}	
 		

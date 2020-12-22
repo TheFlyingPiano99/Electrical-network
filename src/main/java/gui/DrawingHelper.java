@@ -79,9 +79,15 @@ public class DrawingHelper {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+			
+			if (network.isSnapToGrid()) {
+				drawGrid(canvas, network.getGridSize());				
+			}
+			
 			network.draw(ctx);			
 		}
 	}
+	
 	
 	/**
 	 * Draw shape of a component. Called by components.
@@ -177,5 +183,19 @@ public class DrawingHelper {
 		float temp = Math.min(a, b);
 		return (prevMin == null || prevMin > temp) ? temp : prevMin;
 	}
+	
+	private static void drawGrid(Canvas canvas, int gridSize) {
+		GraphicsContext ctx = canvas.getGraphicsContext2D();
+		ctx.setStroke(Color.GREY);
+		ctx.setLineWidth(0.3);
+		ctx.setLineDashes(null);
 		
+		for (int x = 0; x < canvas.getWidth(); x++) {
+			ctx.strokeLine(x * gridSize, 0, x * gridSize, canvas.getHeight());
+		}
+		for (int y = 0; y < canvas.getHeight(); y++) {
+			ctx.strokeLine(0, y * gridSize, canvas.getWidth(), y * gridSize);				
+		}	
+	}
+	
 }

@@ -45,5 +45,19 @@ public class Coordinate {
 			this.y = coor.y;
 		}
 	}
-	
+	public static Coordinate snapToGrid(Coordinate coord, int gridSize) {
+		double m = coord.x % gridSize;
+    	coord.x = (int)((double)coord.x / (double)gridSize) * gridSize;
+    	if (m >gridSize * 0.5) {
+    		coord.x += gridSize;
+    	}
+    	m = coord.y % gridSize;
+    	coord.y = (int)((double)coord.y / (double)gridSize) * gridSize; 
+    	if (m > gridSize * 0.5) {
+    		coord.y += gridSize;
+    	}
+    	
+    	return new Coordinate(coord.x, coord.y);
+    }
+
 }

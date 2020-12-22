@@ -62,16 +62,17 @@ public class Network {
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
 	private Component selected = null;
-	
+	private boolean snapToGrid = true;
 	private boolean validNetwork = false;
 	
+	private int gridSize = 30;
 	//--------------------------------------------------
 	
 	/**
 	 * Distance of merging and grabbing.
 	 * HUN: Az összeolvasztás és megfogás távolsága.
 	 */
-	int closeProximity = 8;
+	int closeProximity = (int)(gridSize * 0.4);
 	
 	//Constructor:------------------------------------------------------
 	
@@ -583,8 +584,14 @@ public class Network {
 	public void dropComponent(Component component, Coordinate cursorPos) {
 		addComponent(component);
 		selected = component;
-		component.getInput().setPos(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)));
-		component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));		
+		if (snapToGrid) {
+			component.getInput().setPos(Coordinate.snapToGrid(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)), gridSize));
+			component.getOutput().setPos(Coordinate.snapToGrid(MyMath.add(cursorPos, new Coordinate(30, 0)), gridSize));					
+		}
+		else {
+			component.getInput().setPos(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)));
+			component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));					
+		}
 	}
 	
 	/**
@@ -616,6 +623,22 @@ public class Network {
 		component.drag(cursorPos);
 	}
 	
+	public boolean isSnapToGrid() {
+		return snapToGrid;
+	}
+
+	public void setSnapToGrid(boolean snapToGrid) {
+		this.snapToGrid = snapToGrid;
+	}
+
+	public int getGridSize() {
+		return gridSize;
+	}
+
+	public void setGridSize(int gridSize) {
+		this.gridSize = gridSize;
+	}
+
 	/**
 	 * Release a component. (When the component is already grabbed.)
 	 * HUN: Elenged egy adott komponenst.

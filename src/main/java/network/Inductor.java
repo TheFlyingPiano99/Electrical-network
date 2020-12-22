@@ -211,8 +211,6 @@ public class Inductor extends Component {
 
 		//call drawShape
 		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this), getCurrentVisualisationOffset());
-
-		System.out.println("VoltageSource draw!");		
 	}
 
 
@@ -248,7 +246,7 @@ public class Inductor extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			System.out.println("Updated value:" + getInductance());
+			//System.out.println("Updated value:" + getInductance());
 			getProperties().get("inductance").value = String.valueOf(getInductance());
 		}
 	}

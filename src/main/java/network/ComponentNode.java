@@ -168,7 +168,11 @@ public class ComponentNode {
 	 * @param CursorPos {@link Coordinate} of the new position.
 	 */
 	public void drag(Coordinate CursorPos) {
-		setPos(MyMath.subtrackt(CursorPos, grabCursorOffset));
+		CursorPos = MyMath.subtrackt(CursorPos, grabCursorOffset);
+		if (parent.isSnapToGrid()) {
+			CursorPos = Coordinate.snapToGrid(CursorPos, parent.getGridSize());
+		}
+		setPos(CursorPos);
 	}
 	
 	/**
