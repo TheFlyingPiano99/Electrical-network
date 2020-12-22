@@ -206,8 +206,6 @@ public class VoltageSource extends Component {
 
 		//call drawShape
 		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset());
-
-		System.out.println("VoltageSource draw!");		
 	}
 
 
@@ -241,7 +239,7 @@ public class VoltageSource extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			System.out.println("Updated value:" + getSourceVoltage());
+			//System.out.println("Updated value:" + getSourceVoltage());
 			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
 		}
 	}

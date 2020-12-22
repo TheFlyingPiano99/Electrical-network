@@ -197,8 +197,6 @@ public class Capacitor extends Component {
 
 		//call drawShape
 		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset());
-
-		System.out.println("VoltageSource draw!");		
 	}
 
 
@@ -234,7 +232,7 @@ public class Capacitor extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			System.out.println("Updated value:" + getCapacity());
+			//System.out.println("Updated value:" + getCapacity());
 			getProperties().get("capacity").value = String.valueOf(getCapacity());
 		}
 	}

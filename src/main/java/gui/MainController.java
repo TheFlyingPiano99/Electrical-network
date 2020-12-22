@@ -65,6 +65,7 @@ public class MainController {
 	private Component selectedComponent = null;
 	private int idx = 0;
 	
+	boolean snapToGrid = true;
 	Boolean simulating = null; 
 
 //FXML items:-----------------------------------------------------------------	
@@ -183,7 +184,7 @@ public class MainController {
         if (f != null && f.exists()) {
         	String fileName = f.getAbsolutePath();
         	network.load(fileName);
-        	network.draw(xCanvas.getGraphicsContext2D());
+        	DrawingHelper.updateCanvasContent(xCanvas, network);
         }
     }
 
@@ -384,8 +385,7 @@ public class MainController {
     
         xCanvas.setOnDragDropped(
     		event -> {
-    			System.out.println("target DragDropped");
-    	        Dragboard dragboard = event.getDragboard();
+       			Dragboard dragboard = event.getDragboard();
     	        if (dragboard.hasString())
     	        {
     	            event.setDropCompleted(true);
@@ -506,6 +506,8 @@ public class MainController {
         ));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
+        
+    	DrawingHelper.updateCanvasContent(xCanvas, network);
     }
     
 //PropertyView:---------------------------------------------------------------------------------
@@ -578,6 +580,18 @@ public class MainController {
         			destroyPropertyView();
         			helper.updateCanvasContent(xCanvas, network);
     				selectedComponent = null;
+    			}
+    			break;
+    		case G:
+    			if (snapToGrid || network.isSnapToGrid()) {
+    				this.snapToGrid = false;
+    				network.setSnapToGrid(false);
+    				DrawingHelper.updateCanvasContent(xCanvas, network);
+    			}
+    			else if (!snapToGrid && !network.isSnapToGrid()) {
+    				this.snapToGrid = true;
+    				network.setSnapToGrid(true);
+    				DrawingHelper.updateCanvasContent(xCanvas, network);
     			}
     			break;
     		default:
