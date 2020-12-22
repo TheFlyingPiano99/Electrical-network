@@ -11,6 +11,7 @@ import javafx.scene.canvas.GraphicsContext;
 import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
 import main.java.math.Line;
+import main.java.math.Vector;
 
 /**
  * Ideal inductor, with adjustable value and zero resistance.
@@ -20,7 +21,8 @@ import main.java.math.Line;
 public class Inductor extends Component {
 	private Edge e;
 	private float inductance = 1;
-	private float prevCurrent = 0;
+	private ArrayList<Float> prevCurrent = new ArrayList<Float>();
+	private float derivativeOfCurrent = 0;
 	private final float DEFAULT_SIZE = 60.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
@@ -36,7 +38,7 @@ public class Inductor extends Component {
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
 	public float getSourceVoltage() {
-		return -inductance * (e.getCurrent() - prevCurrent);
+		return -inductance * derivativeOfCurrent;
 	}
 
 	@Override
@@ -108,12 +110,26 @@ public class Inductor extends Component {
 	
 	@Override
 	public void update(Duration duration) {
+		float h = (float)duration.toSeconds();
+		float avarage = 0;
+		for (Float float1 : prevCurrent) {
+			avarage += float1;
+		}
+		if (prevCurrent.size() > 0) {
+			avarage /= prevCurrent.size();			
+		}
+		if (5 < prevCurrent.size()) {
+			prevCurrent.remove(0);
+		}
+		
+		derivativeOfCurrent = (e.getCurrent() - avarage) / h;
+
 		e.setSourceVoltage(this.getSourceVoltage());
 		
-		prevCurrent = e.getCurrent();
 		increaseCurrentVisualisationOffset();
-
 		updatePropertyView();
+		getParent().setUpdateAll();	
+		prevCurrent.add(e.getCurrent());
 	}
 
 
@@ -215,7 +231,7 @@ public class Inductor extends Component {
 	public void reset() {
 		e.setCurrent(0.0F);
 		e.setSourceVoltage(0.0F);
-		prevCurrent = 0.0F;
+		prevCurrent.clear();
 		updatePropertyView();
 	}
 

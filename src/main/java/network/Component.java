@@ -193,7 +193,14 @@ public abstract class Component {
 	
 	
 	public void increaseCurrentVisualisationOffset() {
-		currentVisualisationOffset = (currentVisualisationOffset + getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+		Float test =Float.valueOf(currentVisualisationOffset);
+
+		if (test.isNaN()) {
+			currentVisualisationOffset = 0;
+		}
+		else {
+			currentVisualisationOffset = (currentVisualisationOffset + getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;			
+		}
 	}	
 		
 	//To override:---------------------------------------------------------------
