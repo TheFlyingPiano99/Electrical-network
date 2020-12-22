@@ -136,6 +136,7 @@ public class DrawingHelper {
 			ctx.setLineDashes(default_length*0.2, default_length*0.8);
 			ctx.setLineDashOffset(-currentVisualisationOffset);
 			ctx.strokeLine(vInput.at(0),vInput.at(1), vOutput.at(0), vOutput.at(1));
+			ctx.setLineDashOffset(0);
 
 			drawEndNodes(ctx, inputPos, outputPos);
 
