@@ -189,14 +189,14 @@ public class Capacitor extends Component {
 
 		//Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		lines.add(new Line(0.0f, 0.0f, defaultSize/3.0f, 0.0f));
-		lines.add(new Line(defaultSize/3.0f, -defaultSize/4.0f, defaultSize/3.0f, +defaultSize/4.0f));
-		lines.add(new Line(2.0f/3.0f * defaultSize, -defaultSize/4.0f, 2.0f/3.0f * defaultSize, +defaultSize/4.0f));
+		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.4f, 0.0f));
+		lines.add(new Line(defaultSize * 0.4f, -defaultSize * 0.1f, defaultSize * 0.4f, +defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.6f, -defaultSize * 0.1f, defaultSize * 0.6f, +defaultSize * 0.1f));
 
-		lines.add(new Line(2.0f/3.0f * defaultSize, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(defaultSize * 0.6f, 0.0f, defaultSize, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset());
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
 	}
 
 

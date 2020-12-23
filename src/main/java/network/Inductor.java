@@ -202,15 +202,71 @@ public class Inductor extends Component {
 		List<Line> lines = new ArrayList<Line>();
 
 		//Construction:
-		lines.add(new Line(0.0f, 0.0f, DEFAULT_SIZE/3.0f, 0.0f));
-		
-		lines.add(new Line(DEFAULT_SIZE/3.0f, 0.0f, 1.5f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/4.0f));
-		lines.add(new Line(1.5f/3.0f * DEFAULT_SIZE, -DEFAULT_SIZE/4.0f, 2.0f/3.0f * DEFAULT_SIZE, 0.0f));
+		lines.add(new Line(0.0f, 0.0f, DEFAULT_SIZE * 0.2f, 0.0f));
+		//Bumps:
+		//1.
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.2f,
+				0.0f,
+				DEFAULT_SIZE * 0.27f,
+				-DEFAULT_SIZE * 0.13f
+				));
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.27f,
+				-DEFAULT_SIZE * 0.13f,
+				DEFAULT_SIZE * 0.33f,
+				-DEFAULT_SIZE * 0.13f
+				));
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.33f,
+				-DEFAULT_SIZE * 0.13f,
+				DEFAULT_SIZE * 0.4f,
+				0.0f
+				));
+		//2.
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.4f,
+				0.0f,
+				DEFAULT_SIZE * 0.47f,
+				-DEFAULT_SIZE * 0.13f
+				));
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.47f,
+				-DEFAULT_SIZE * 0.13f,
+				DEFAULT_SIZE * 0.53f,
+				-DEFAULT_SIZE * 0.13f
+				));
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.53f,
+				-DEFAULT_SIZE * 0.13f,
+				DEFAULT_SIZE * 0.6f,
+				0.0f
+				));
 
-		lines.add(new Line(2.0f/3.0f * DEFAULT_SIZE, 0.0f, DEFAULT_SIZE, 0.0f));
+		//3.
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.6f,
+				0.0f,
+				DEFAULT_SIZE * 0.67f,
+				-DEFAULT_SIZE * 0.13f
+				));
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.67f,
+				-DEFAULT_SIZE * 0.13f,
+				DEFAULT_SIZE * 0.73f,
+				-DEFAULT_SIZE * 0.13f
+				));
+		lines.add(new Line(
+				DEFAULT_SIZE * 0.73f,
+				-DEFAULT_SIZE * 0.13f,
+				DEFAULT_SIZE * 0.8f,
+				0.0f
+				));
+
+		lines.add(new Line(DEFAULT_SIZE * 0.8f, 0.0f, DEFAULT_SIZE, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this), getCurrentVisualisationOffset());
+		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
 	}
 
 

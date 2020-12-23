@@ -13,22 +13,25 @@ import main.java.math.MyMath;
 import main.java.math.Vector;
 
 /**
- * Resistance with adjustable value.
+ * Amper meter.
  * 
  * @author Simon Zoltán
  *
  */
-public class Resistance extends Component {
+public class AnalogeAmmeter extends Component {
 
 	private Edge e;
-	private float resistance = 1000;
-
+	private float resistance = 0.000001f;
+	
+	private float scale = 0.1f;
+	private float needlePrevAngle = 1.57f;  
+	
 	// Constructors:---------------------------------------------------------------------------------------
 
-	public Resistance() {
+	public AnalogeAmmeter() {
 	}
 
-	public Resistance(float r) {
+	public AnalogeAmmeter(float r) {
 		resistance = r;
 	}
 
@@ -94,6 +97,12 @@ public class Resistance extends Component {
 		prop.value = String.valueOf(getResistance());
 		getProperties().put("resistance", prop);
 
+		prop = new ComponentProperty();
+		prop.editable = true;
+		prop.name = "skála:";
+		prop.unit = "deg/A";
+		prop.value = String.valueOf(scale);
+		getProperties().put("scale", prop);
 	}
 
 	@Override
@@ -119,6 +128,8 @@ public class Resistance extends Component {
 		writer.append(this.getClass().getCanonicalName());
 		writer.append("; resistance: ");
 		writer.append(resistance);
+		writer.append("; scale: ");
+		writer.append(scale);
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -133,11 +144,11 @@ public class Resistance extends Component {
 	@Override
 	public void load(String[] pairs) {
 		setResistance(Float.valueOf(pairs[1].split(":")[1]));
-
-		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		scale = Float.valueOf(pairs[2].split(":")[1]);
+		String coordIn[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
 
-		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		String coordOut[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 
 		updatePropertyView();
@@ -168,18 +179,74 @@ public class Resistance extends Component {
 
 		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.25f, 0.0f));
-		lines.add(new Line(defaultSize * 0.25f, +defaultSize * 0.1f, defaultSize * 0.25f, -defaultSize * 0.1f));
 		
-		lines.add(new Line(defaultSize * 0.25f, +defaultSize * 0.1f, defaultSize * 0.75f, +defaultSize * 0.1f));
-		lines.add(new Line(defaultSize * 0.25f, -defaultSize * 0.1f, defaultSize * 0.75f, -defaultSize * 0.1f));
+		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.06f, 0.0f));
+		lines.add(new Line(defaultSize * 0.06f, +defaultSize / 3.0f, defaultSize * 0.06f, -defaultSize / 3.0f));
+		
+		lines.add(new Line(defaultSize * 0.06f, +defaultSize / 3.0f, defaultSize * 0.94f, +defaultSize / 3.0f));
+		lines.add(new Line(defaultSize * 0.06f, -defaultSize / 3.0f, defaultSize * 0.94f, -defaultSize / 3.0f));
 
-		lines.add(new Line(defaultSize* 0.75f, +defaultSize * 0.1f, defaultSize* 0.75f, -defaultSize * 0.1f));
-		lines.add(new Line(defaultSize* 0.75f, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(defaultSize* 0.94f, +defaultSize / 3.0f, defaultSize* 0.94f, -defaultSize / 3.0f));
+		lines.add(new Line(defaultSize* 0.94f, 0.0f, defaultSize, 0.0f));
 
+		//Letter "A":
+		lines.add(new Line(
+				defaultSize * 0.2f,
+				-defaultSize * 0.05f,
+				defaultSize * 0.25f,
+				-defaultSize * 0.2f
+				));
+		lines.add(new Line(
+				defaultSize * 0.25f,
+				-defaultSize * 0.2f,
+				defaultSize * 0.3f,
+				-defaultSize * 0.05f
+				));
+		lines.add(new Line(
+				defaultSize * 0.219f,
+				-defaultSize * 0.1f,
+				defaultSize * 0.281f,
+				-defaultSize * 0.1f
+				));
+		
+		//Dial:
+		float angle = 0.3927f;
+		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+		
+		angle = 1.5708f;
+		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+
+		angle = 2.7489f;
+		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+
+		angle = 1.5708f + getCurrent() * scale * 0.017453f;
+		angle = (angle + needlePrevAngle) / 2.0f;
+		if (2.7489f < angle) {
+			angle = 2.7489f; 
+		}
+		else if (0.3927f > angle) {
+			angle = 0.3927f;
+		}
+		needlePrevAngle = angle;
+		
+		//Needle:
+		lines.add(new Line(defaultSize* 0.5f, defaultSize / 3.0f,
+				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.38f,
+				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.38f));
+
+		
 		// call drawShape
 		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize,
-				getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
+				getParent().isThisSelected(this), 0, false);
 
 		// System.out.println("Resistance draw!");
 	}
@@ -216,6 +283,17 @@ public class Resistance extends Component {
 			getProperties().get("resistance").value = String.valueOf(getResistance());
 		}
 
+		str = getProperties().get("scale").value;
+		if (str != null && str.length() > 0) {
+			try {
+				float val = Float.parseFloat(str);
+				scale = val;
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			getProperties().get("scale").value = String.valueOf(scale);
+		}
 	}
 
 	@Override
@@ -238,6 +316,12 @@ public class Resistance extends Component {
 			getProperties().get("resistance").value = String.valueOf(getResistance());
 			if (getProperties().get("resistance").valueN != null) {
 				getProperties().get("resistance").valueN.setText(String.valueOf(getResistance()));
+			}
+		}
+		if (getProperties().containsKey("scale")) {
+			getProperties().get("scale").value = String.valueOf(scale);
+			if (getProperties().get("scale").valueN != null) {
+				getProperties().get("scale").valueN.setText(String.valueOf(scale));
 			}
 		}
 	}

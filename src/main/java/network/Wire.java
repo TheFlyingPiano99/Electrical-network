@@ -147,7 +147,7 @@ public class Wire extends Component {
 		
 		lines.add(new Line(0, 0, getDEFAULT_SIZE(), 0));
 		
-		DrawingHelper.drawShape(ctx, inputPos, outputPos, lines, getDEFAULT_SIZE(), getParent().isThisSelected(this), getCurrentVisualisationOffset());
+		DrawingHelper.drawShape(ctx, inputPos, outputPos, lines, getDEFAULT_SIZE(), getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
 
 /*
 		//Construction:

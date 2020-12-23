@@ -99,8 +99,9 @@ public class DrawingHelper {
 	 * @param default_length	The default / normal length of the component. Used to calculate scaling of the drawing.
 	 * @param selected		Whether the component is selected or not.
 	 * @param currentVisualisationOffset TODO
+	 * @param visualiseCurrent TODO
 	 */
-	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_length, boolean selected, float currentVisualisationOffset) {
+	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_length, boolean selected, float currentVisualisationOffset, boolean visualiseCurrent) {
 
 		Vector vInput  = MyMath.coordToVector(inputPos); 
 		Vector vOutput = MyMath.coordToVector(outputPos);
@@ -137,12 +138,14 @@ public class DrawingHelper {
 				ctx.strokeLine(aX, aY, bX, bY);
 			}
 			
-			ctx.setStroke(Color.GREEN);
-			ctx.setLineWidth(5);
-			ctx.setLineDashes(default_length*0.2, default_length*0.8);
-			ctx.setLineDashOffset(-currentVisualisationOffset);
-			ctx.strokeLine(vInput.at(0),vInput.at(1), vOutput.at(0), vOutput.at(1));
-			ctx.setLineDashOffset(0);
+			if (visualiseCurrent) {
+				ctx.setStroke(Color.GREEN);
+				ctx.setLineWidth(5);
+				ctx.setLineDashes(default_length*0.2, default_length*0.8);
+				ctx.setLineDashOffset(-currentVisualisationOffset);
+				ctx.strokeLine(vInput.at(0),vInput.at(1), vOutput.at(0), vOutput.at(1));
+				ctx.setLineDashOffset(0);
+			}
 
 			drawEndNodes(ctx, inputPos, outputPos);
 
