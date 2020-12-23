@@ -44,6 +44,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
 import main.java.math.Coordinate;
+import main.java.network.AnalogVoltmeter;
+import main.java.network.AnalogeAmmeter;
 import main.java.network.Capacitor;
 import main.java.network.Component;
 import main.java.network.ComponentNode;
@@ -318,6 +320,8 @@ public class MainController {
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getItems().add("Kondenzátor");
         lvLeftListView.getItems().add("Induktor");
+        lvLeftListView.getItems().add("Analóg voltmérő");
+        lvLeftListView.getItems().add("Analóg ampermérő");
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText("Szimuláció leállítva.");    		
@@ -405,6 +409,12 @@ public class MainController {
     	            else if (str.equals("Induktor")) {
     	            	network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
+    	            else if (str.equals("Analóg voltmérő")) {
+    	            	network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            else if (str.equals("Analóg ampermérő")) {
+    	            	network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
@@ -490,7 +500,6 @@ public class MainController {
         		try {
 					if (simulating != null && simulating && network != null) {
 						network.simulate(duration);
-						helper.updateCanvasContent(xCanvas, network);
 						if (network.isValid()) {
 							rightStatus.setText("Helyes kapcsolás.");
 						}
@@ -498,6 +507,7 @@ public class MainController {
 					    	rightStatus.setText("Hibás kapcsolás!");    		
 						}
 					}
+					DrawingHelper.updateCanvasContent(xCanvas, network);
 				} catch (Exception e) {
 					System.out.println("simulate error");
 					e.printStackTrace();

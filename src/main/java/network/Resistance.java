@@ -168,18 +168,18 @@ public class Resistance extends Component {
 
 		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		lines.add(new Line(0.0f, 0.0f, defaultSize/6.0f, 0.0f));
-		lines.add(new Line(defaultSize/6.0f, +defaultSize / 7.0f, defaultSize/6.0f, -defaultSize / 7.0f));
+		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.25f, 0.0f));
+		lines.add(new Line(defaultSize * 0.25f, +defaultSize * 0.1f, defaultSize * 0.25f, -defaultSize * 0.1f));
 		
-		lines.add(new Line(defaultSize/6.0f, +defaultSize / 7.0f, defaultSize * 0.83f, +defaultSize / 7.0f));
-		lines.add(new Line(defaultSize/6.0f, -defaultSize / 7.0f, defaultSize * 0.83f, -defaultSize / 7.0f));
+		lines.add(new Line(defaultSize * 0.25f, +defaultSize * 0.1f, defaultSize * 0.75f, +defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.25f, -defaultSize * 0.1f, defaultSize * 0.75f, -defaultSize * 0.1f));
 
-		lines.add(new Line(defaultSize* 0.83f, +defaultSize / 7.0f, defaultSize* 0.83f, -defaultSize / 7.0f));
-		lines.add(new Line(defaultSize* 0.83f, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(defaultSize* 0.75f, +defaultSize * 0.1f, defaultSize* 0.75f, -defaultSize * 0.1f));
+		lines.add(new Line(defaultSize* 0.75f, 0.0f, defaultSize, 0.0f));
 
 		// call drawShape
 		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize,
-				getParent().isThisSelected(this), getCurrentVisualisationOffset());
+				getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
 
 		// System.out.println("Resistance draw!");
 	}
