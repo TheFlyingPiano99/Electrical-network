@@ -124,7 +124,7 @@ public class Capacitor extends Component {
 		e.setSourceVoltage(this.getSourceVoltage());
 		System.out.println(e.getSourceVoltage());
 		increaseCurrentVisualisationOffset();
-		updatePropertyView();
+		updatePropertyView(false);
 		getParent().setUpdateAll();
 	}
 
@@ -158,7 +158,7 @@ public class Capacitor extends Component {
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 		
-		updatePropertyView();
+		updatePropertyView(true);
 	}
 
 
@@ -216,7 +216,7 @@ public class Capacitor extends Component {
 		e.setCurrent(0.0F);
 		e.setSourceVoltage(0.0F);
 		setCharge(0.0F);
-		updatePropertyView();
+		updatePropertyView(false);
 	}
 
 
@@ -239,29 +239,12 @@ public class Capacitor extends Component {
 
 
 	@Override
-	public void updatePropertyView() {
-		
-		if (getProperties().containsKey("current")) {
-			getProperties().get("current").value = String.valueOf(this.getCurrent());
-			if (getProperties().get("current").valueN != null) {
-				getProperties().get("current").valueN.setText(String.valueOf(this.getCurrent()));				
-			}
-		}
-
-		if (getProperties().containsKey("voltage")) {
-			getProperties().get("voltage").value = String.valueOf(this.getSourceVoltage());
-			if (getProperties().get("voltage").valueN != null) {
-				getProperties().get("voltage").valueN.setText(String.valueOf(this.getSourceVoltage()));				
-			}
-		}
-
-		if (getProperties().containsKey("capacity")) {
-			getProperties().get("capacity").value = String.valueOf(this.getCapacity());
-			if (getProperties().get("capacity").valueN != null) {
-				getProperties().get("capacity").valueN.setText(String.valueOf(this.getCapacity()));				
-			}
-		}
-		
+	public void updatePropertyView(boolean updateEditable) {
+		setProperty("voltage", this::getVoltage);
+		setProperty("current", this::getCurrent);
+		if (updateEditable) {
+			setProperty("capacity", this::getCapacity);
+		}		
 	}
 
 

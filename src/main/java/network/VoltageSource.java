@@ -2,6 +2,11 @@ package main.java.network;
 
 import javafx.util.Duration;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.function.DoubleSupplier;
+import java.util.function.ToDoubleFunction;
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -115,7 +120,7 @@ public class VoltageSource extends Component {
 	@Override
 	public void update(Duration duration) {
 		increaseCurrentVisualisationOffset();
-		updatePropertyView();
+		updatePropertyView(false);
 	}
 
 
@@ -148,7 +153,7 @@ public class VoltageSource extends Component {
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 		
-		updatePropertyView();
+		updatePropertyView(true);
 	}
 
 
@@ -223,7 +228,7 @@ public class VoltageSource extends Component {
 	@Override
 	public void reset() {
 		e.setCurrent(0.0F);
-		updatePropertyView();
+		updatePropertyView(false);
 	}
 
 
@@ -246,30 +251,16 @@ public class VoltageSource extends Component {
 
 
 	@Override
-	public void updatePropertyView() {
+	public void updatePropertyView(boolean updateEditable) {
 		
-		if (getProperties().containsKey("voltage")) {
-			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
-			if (getProperties().get("voltage").valueN != null) {
-				getProperties().get("voltage").valueN.setText(String.valueOf(getSourceVoltage()));				
-			}
+		if (updateEditable) {
+			setProperty("voltage", this::getSourceVoltage);
 		}
-
-		if (getProperties().containsKey("current")) {
-			getProperties().get("current").value = String.valueOf(getCurrent());
-			if (getProperties().get("current").valueN != null) {
-				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
-			}
-		}
-
-		if (getProperties().containsKey("resistance")) {
-			getProperties().get("resistance").value = String.valueOf(getResistance());
-			if (getProperties().get("resistance").valueN != null) {
-				getProperties().get("resistance").valueN.setText(String.valueOf(getResistance()));				
-			}
-		}
-		
+		setProperty("current", this::getCurrent);
+		setProperty("resistance", this::getResistance);
 	}
+
+
 
 	
 }
