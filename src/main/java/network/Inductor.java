@@ -127,7 +127,7 @@ public class Inductor extends Component {
 		e.setSourceVoltage(this.getSourceVoltage());
 		
 		increaseCurrentVisualisationOffset();
-		updatePropertyView();
+		updatePropertyView(false);
 		getParent().setUpdateAll();	
 		prevCurrent.add(e.getCurrent());
 	}
@@ -162,7 +162,7 @@ public class Inductor extends Component {
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 		
-		updatePropertyView();
+		updatePropertyView(true);
 	}
 
 
@@ -286,7 +286,7 @@ public class Inductor extends Component {
 		e.setCurrent(0.0F);
 		e.setSourceVoltage(0.0F);
 		prevCurrent.clear();
-		updatePropertyView();
+		updatePropertyView(false);
 	}
 
 
@@ -309,29 +309,12 @@ public class Inductor extends Component {
 
 
 	@Override
-	public void updatePropertyView() {
-		
-		if (getProperties().containsKey("voltage")) {
-			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
-			if (getProperties().get("voltage").valueN != null) {
-				getProperties().get("voltage").valueN.setText(String.valueOf(getSourceVoltage()));				
-			}
-		}
-
-		if (getProperties().containsKey("current")) {
-			getProperties().get("current").value = String.valueOf(getCurrent());
-			if (getProperties().get("current").valueN != null) {
-				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));				
-			}
-		}
-
-		if (getProperties().containsKey("inductance")) {
-			getProperties().get("inductance").value = String.valueOf(getInductance());
-			if (getProperties().get("inductance").valueN != null) {
-				getProperties().get("inductance").valueN.setText(String.valueOf(getInductance()));				
-			}
-		}
-		
+	public void updatePropertyView(boolean updateEditable) {
+		setProperty("voltage", this::getVoltage);
+		setProperty("current", this::getCurrent);
+		if (updateEditable) {
+			setProperty("inductance", this::getInductance);
+		}		
 	}
 
 	

@@ -116,7 +116,7 @@ public class AnalogeAmmeter extends Component {
 	@Override
 	public void update(Duration duration) {
 		increaseCurrentVisualisationOffset();
-		updatePropertyView();
+		updatePropertyView(false);
 	}
 
 	// Persistence:-----------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ public class AnalogeAmmeter extends Component {
 		String coordOut[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 
-		updatePropertyView();
+		updatePropertyView(true);
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class AnalogeAmmeter extends Component {
 	@Override
 	public void reset() {
 		e.setCurrent(0.0F);
-		updatePropertyView();
+		updatePropertyView(false);
 
 	}
 
@@ -297,33 +297,21 @@ public class AnalogeAmmeter extends Component {
 	}
 
 	@Override
-	public void updatePropertyView() {
-		if (getProperties().containsKey("voltage")) {
-			getProperties().get("voltage").value = String.valueOf(getVoltage());
-			if (getProperties().get("voltage").valueN != null) {
-				getProperties().get("voltage").valueN.setText(String.valueOf(getVoltage()));
-			}
-		}
+	public void updatePropertyView(boolean updateEditable) {
+		setProperty("voltage", this::getVoltage);
+		setProperty("current", this::getCurrent);
+		if (updateEditable) {
+			setProperty("resistance", this::getResistance);
+			setProperty("scale", this::getScale);
+		}		
+	}
 
-		if (getProperties().containsKey("current")) {
-			getProperties().get("current").value = String.valueOf(getCurrent());
-			if (getProperties().get("current").valueN != null) {
-				getProperties().get("current").valueN.setText(String.valueOf(getCurrent()));
-			}
-		}
+	public float getScale() {
+		return scale;
+	}
 
-		if (getProperties().containsKey("resistance")) {
-			getProperties().get("resistance").value = String.valueOf(getResistance());
-			if (getProperties().get("resistance").valueN != null) {
-				getProperties().get("resistance").valueN.setText(String.valueOf(getResistance()));
-			}
-		}
-		if (getProperties().containsKey("scale")) {
-			getProperties().get("scale").value = String.valueOf(scale);
-			if (getProperties().get("scale").valueN != null) {
-				getProperties().get("scale").valueN.setText(String.valueOf(scale));
-			}
-		}
+	public void setScale(float scale) {
+		this.scale = scale;
 	}
 
 }

@@ -3,6 +3,8 @@ package main.java.network;
 import javafx.util.Duration;
 
 import java.util.Map;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
@@ -293,8 +295,9 @@ public abstract class Component {
 	/**
 	 * Updates the {@link ComponentProperty} map according to the inner values of the component. 
 	 * HUN: Frissíti a {@link ComponentProperty} mapot a belső változók szerint.
+	 * @param updateEditable TODO
 	 */
-	abstract public void updatePropertyView();
+	abstract public void updatePropertyView(boolean updateEditable);
 
 	public static float getCurrentVisualisationSpeed() {
 		return currentVisualisationSpeed;
@@ -304,4 +307,17 @@ public abstract class Component {
 		Component.currentVisualisationSpeed = currentVisualisationSpeed;
 	}
 	
+	protected void setProperty(String propName, Supplier<Float> getter) {
+		if (getProperties().containsKey(propName)) {
+			try {
+				getProperties().get(propName).value = String.valueOf(getter.get());
+				if (getProperties().get(propName).valueN != null) {
+					getProperties().get(propName).valueN.setText(String.valueOf(getter.get()));				
+				}
+			} catch (Exception e) {
+				
+			}
+		}
+	}
+
 }
