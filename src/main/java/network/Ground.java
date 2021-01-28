@@ -27,7 +27,6 @@ import main.java.math.Line;
 
 public class Ground extends Component {
 	private Edge e;
-	private float inputCurrent = 0.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -36,17 +35,6 @@ public class Ground extends Component {
 			
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public float getInputCurrent() {
-		return inputCurrent;
-	}
-
-	public void setInputCurrent(float inputCurrent) {
-		this.inputCurrent = inputCurrent;
-		if (e != null) {
-			e.getOutput().setInputCurrent(inputCurrent);
-		}
-	}
-
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -55,16 +43,15 @@ public class Ground extends Component {
 		super.generateEndNodes();
 		
 		e = new Edge();
-		super.getParent().addEdge(e);
+		super.getParent().addEdgeWithGroundedOutput(e);
 
 		e.setCurrent(0);
 		e.setResistance(0);
 		e.setSourceVoltage(0);
-		e.getOutput().setInputCurrent(getInputCurrent()); //!
 
 		
 		getInput().setVertexBinding(e.getInput());
-		getOutput().setVertexBinding(e.getOutput());
+		//getOutput().setVertexBinding(e.getOutput());
 				
 		//Properties:
 		setProperties(new HashMap<String, ComponentProperty>());
@@ -73,7 +60,7 @@ public class Ground extends Component {
 		prop.editable = false;
 		prop.name = "elnyelt áram:";
 		prop.unit = "A";
-		prop.value = String.valueOf(getInputCurrent());
+		prop.value = String.valueOf(getCurrent());
 		getProperties().put("current", prop);
 	}
 	
@@ -88,15 +75,6 @@ public class Ground extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		float sum = 0.0f;
-		for (int i = 0; i < getParent().getVertices().size(); i++) {
-			if (getParent().getVertices().get(i) != e.getOutput()) {
-				sum += getParent().getVertices().get(i).getInputCurrent();
-			}
-		}
-		setInputCurrent(-sum);
-		
-		
 		increaseCurrentVisualisationOffset();
 		updatePropertyView(false);
 	}
@@ -108,8 +86,6 @@ public class Ground extends Component {
 	public void save(StringBuilder writer) {
 		writer.append("class: ");				
 		writer.append(this.getClass().getCanonicalName());
-		writer.append("; current: ");
-		writer.append(getInputCurrent());
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -121,14 +97,12 @@ public class Ground extends Component {
 	}
 
 	@Override
-	public void load(String[] pairs) {
-		setInputCurrent(Float.valueOf(pairs[1].split(":")[1]));
-		
-		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+	public void load(String[] pairs) {		
+		String coordIn[] = pairs[1].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
 		
 		
-		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		String coordOut[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 		
 		updatePropertyView(true);
@@ -139,8 +113,6 @@ public class Ground extends Component {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Ground [");
-		builder.append("inputCurrent=");
-		builder.append(inputCurrent);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");		
@@ -192,18 +164,6 @@ public class Ground extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("current").value;
-		if (str != null && str.length() > 0) {
-			try {
-				float val = Float.parseFloat(str);
-				setInputCurrent(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			getParent().setUpdateAll();
-			getProperties().get("current").value = String.valueOf(getInputCurrent());
-		}
 	}
 
 

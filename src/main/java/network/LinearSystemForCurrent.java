@@ -18,7 +18,7 @@ import main.java.math.Vector;
  *| incidence   |  cycle matrix |   A-edges
  *|  matrix     |    * R        |   V
  *-------------------------------	=
- *|   0000000   |   U0 / 0      |   &lt;- "right side" of equations.
+ *| ground|0000 |   U0 / 0      |   &lt;- "right side" of equations.
  *-------------------------------
  *
  *</pre>
@@ -126,12 +126,17 @@ public class LinearSystemForCurrent extends Matrix {
 	
 	/**
 	 * Updates only the "inputCurrents" part of the matrix. (Left half of the bottom row.)
+	 * Also updates current flowing into ground. (sum of inputs * -1) 
 	 * @param inputCurrent
 	 */
 	public void updateInputCurrents(Vector inputCurrent) {
-		for (int c = 0; c < cycleOffset; c++) {
+		float sum = 0.0f;
+		for (int c = 1; c < cycleOffset; c++) {
 			this.setAt(this.row-1, c, inputCurrent.at(c));
-		}		
+			sum += inputCurrent.at(c);
+		}
+		this.setAt(this.row-1, 0, -sum);
+		
 	}
 	
 }
