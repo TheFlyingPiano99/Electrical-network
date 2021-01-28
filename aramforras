@@ -1,0 +1,6 @@
+class: main.java.network.CurrentSource; current: 0.01; inputPos: [120, 360]; outputPos: [180, 360]
+class: main.java.network.Ground; current: -0.01; inputPos: [390, 360]; outputPos: [450, 360]
+class: main.java.network.Wire; inputPos: [180, 360]; outputPos: [240, 300]
+class: main.java.network.Wire; inputPos: [180, 360]; outputPos: [240, 420]
+class: main.java.network.Resistance; resistance: 1000.0; inputPos: [240, 300]; outputPos: [390, 360]
+class: main.java.network.Resistance; resistance: 1000.0; inputPos: [240, 420]; outputPos: [390, 360]

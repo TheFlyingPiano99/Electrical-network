@@ -209,7 +209,7 @@ public class Ground extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {		
-		setProperty("current", this::getInputCurrent);
+		setProperty("current", this::getCurrent);
 	}
 
 
