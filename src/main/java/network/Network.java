@@ -85,10 +85,7 @@ public class Network {
 
 		linSystem = null;
 		
-		//Create input (index 0):
-		vertices.add(new Vertex());
-
-		//Create output (index 1):
+		//Create ground-node (index 0):
 		vertices.add(new Vertex());
 	}
 
@@ -429,7 +426,19 @@ public class Network {
 		edges.add(edge);
 		vertices.add(input);
 		vertices.add(output);
+	}
+
+	
+	public void addEdgeWithGroundedOutput(Edge edge) {
+		Vertex input = new Vertex();
+		edge.setInput(input);
+		edge.setOutput(this.vertices.get(0));
 		
+		input.addOutgoing(this.vertices.get(0), edge);
+		this.vertices.get(0).addIncoming(input, edge);
+		
+		edges.add(edge);
+		vertices.add(input);
 	}
 	
 	/**
@@ -919,6 +928,7 @@ public class Network {
 		edges.clear();
 		vertices.clear();
 		
+		vertices.add(new Vertex());
 		
 		setUpdateAll();
 	}
