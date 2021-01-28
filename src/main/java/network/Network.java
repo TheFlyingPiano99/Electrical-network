@@ -447,13 +447,13 @@ public class Network {
 	 * @param edge	Edge to be removed.
 	 */
 	public void removeEdge(Edge edge) {
-		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1) {
+		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1 && vertices.indexOf(edge.getInput()) != 0) {
 			vertices.remove(edge.getInput());
 		}
 		else {
 			edge.getInput().removeOutgoing(edge.getOutput());
 		}
-		if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0) {
+		if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0 && vertices.indexOf(edge.getOutput()) != 0) {
 			vertices.remove(edge.getOutput());
 		}
 		else {
@@ -464,6 +464,7 @@ public class Network {
 		
 		edges.remove(edge);
 	}
+	
 	
 	/**
 	 * Disconnects an edge's particular end point.
