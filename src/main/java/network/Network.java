@@ -510,6 +510,7 @@ public class Network {
 	 * @param merge			The vertex, which is merged into the other. 
 	 */
 	protected void mergeVertices(Vertex persistent, Vertex merge)  {
+		System.out.println("Merged vertices.");
 		if (persistent != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
 				incoming.getKey().removeOutgoing(merge);
@@ -552,6 +553,8 @@ public class Network {
 	public void removeComponent (Component component) {
 		component.destroy();
 		components.remove(component);
+		
+		setUpdateAll();
 	}
 	
 	//Move ComponentNode:--------------------------------------------------------------
@@ -567,7 +570,7 @@ public class Network {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
 		componentNode.grab(cursorPos);
-		
+		setUpdateAll();
 	}
 	
 	/**
@@ -616,6 +619,9 @@ public class Network {
 			component.getInput().setPos(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)));
 			component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));					
 		}
+		component.release();
+		setUpdateAll();
+
 	}
 	
 	/**
