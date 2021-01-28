@@ -26,7 +26,7 @@ import main.java.math.Vector;
  */
 public class LinearSystemForCurrent extends Matrix {
 	int cycleOffset;
-	int noOfVariables;
+	int noOfEdges;
 	Matrix cycle;
 	
 	/**
@@ -35,8 +35,9 @@ public class LinearSystemForCurrent extends Matrix {
 	 * @param cycle			Base cycle matrix of the graph representation of network.
 	 * @param resistances	Vector of resistances of edges in same order as the order of edges in the incidence and cycle matrices.
 	 * @param sourceVoltage	Vector of source voltages of edges in same order as the order of edges in the incidence and cycle matrices.
+	 * @param inputCurrents Vector of currents inputed to individual vertices.
 	 */
-	public LinearSystemForCurrent(Matrix incidence, Matrix cycle, Vector resistances, Vector sourceVoltage) {
+	public LinearSystemForCurrent(Matrix incidence, Matrix cycle, Vector resistances, Vector sourceVoltage, Vector inputCurrents) {
 		super(incidence.row + 1, incidence.column + cycle.column);
 		
 		if (incidence.row != cycle.row) {
@@ -45,8 +46,8 @@ public class LinearSystemForCurrent extends Matrix {
 		
 		this.cycle = cycle;
 		
-		noOfVariables = incidence.row;
-		cycleOffset = incidence.column;
+		noOfEdges = incidence.row;
+		cycleOffset = incidence.column;	//Number of vertices.
 		
 		for (int c = 0; c < incidence.column; c++) {
 			for (int r = 0; r < incidence.row + 1; r++) {
@@ -74,7 +75,11 @@ public class LinearSystemForCurrent extends Matrix {
 		if (sourceVoltage != null) {
 			updateSourceVoltage(sourceVoltage);
 		}
+		if (inputCurrents != null) {
+			updateInputCurrents(inputCurrents);
+		}
 	}
+	
 	
 	/**
 	 * Updates only the "source voltage" part of the matrix.
@@ -96,6 +101,7 @@ public class LinearSystemForCurrent extends Matrix {
 		}
 	}
 	
+	
 	/**
 	 * Updates only the "resistances" part of the matrix.
 	 * HUN: Frissíti a mátrix ellenállásokat leíró részét.
@@ -114,6 +120,17 @@ public class LinearSystemForCurrent extends Matrix {
 					this.setAt(r, cycleOffset + c, 0);																			
 				}
 			}
+		}		
+	}
+	
+	
+	/**
+	 * Updates only the "inputCurrents" part of the matrix. (Left half of the bottom row.)
+	 * @param inputCurrent
+	 */
+	public void updateInputCurrents(Vector inputCurrent) {
+		for (int c = 0; c < cycleOffset; c++) {
+			this.setAt(this.row-1, c, inputCurrent.at(c));
 		}		
 	}
 	
