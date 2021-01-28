@@ -28,11 +28,13 @@ public class Vertex {
 	 * key Vertex {@link Vertex} Csúcs az él másik végén.
 	 * value Edge {@link Edge} Kimenő él.
 	 */
-private HashMap<Vertex, Edge> outgoing;	
+	private HashMap<Vertex, Edge> outgoing;	
 	
 	static int gen = 0;
 	private int id;
-
+	private float inputCurrent = 0.0f;
+	
+	
 	//Constructor:-----------------------------------------------------
 	
 	Vertex () {
@@ -80,8 +82,16 @@ private HashMap<Vertex, Edge> outgoing;
 		return id;
 	}
 
+	public float getInputCurrent() {
+		return inputCurrent;
+	}
+
+	public void setInputCurrent(float inputCurrent) {
+		this.inputCurrent = inputCurrent;
+	}
+
 	//HashCode/Equals:--------------------------------------------------------------
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

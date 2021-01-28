@@ -8,7 +8,6 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
 import main.java.math.Gauss;
@@ -61,6 +60,7 @@ public class Network {
 	boolean updateVoltage = true;
 	boolean updateResistance = true;
 	boolean updateCurrent = true;
+	boolean updateInputCurrent = true;
 	private Component selected = null;
 	private boolean snapToGrid = true;
 	private boolean validNetwork = false;
@@ -85,6 +85,11 @@ public class Network {
 
 		linSystem = null;
 		
+		//Create input (index 0):
+		vertices.add(new Vertex());
+
+		//Create output (index 1):
+		vertices.add(new Vertex());
 	}
 
 	//--------------------------------------------------------------------
@@ -117,6 +122,18 @@ public class Network {
     	return sourceVoltages;
 	}
 	
+	/**
+	 * 
+	 * @return	Vector of currents inputed to individual vertices.
+	 */
+	private Vector gatherInputCurrent() {
+    	Vector inputCurrents = new Vector(vertices.size());
+    	for (int i = 0; i < vertices.size(); i++) {
+    		inputCurrents.setAt(i, vertices.get(i).getInputCurrent());
+    	}
+    	return inputCurrents;
+	}
+
 	/**
 	 * Uses Gaussian elimination, to get the current in all edges.
 	 * HUN: Gauss-elimináció segítségével kiszámolja a gráf-élekhez tartozó áramot. 
@@ -155,15 +172,17 @@ public class Network {
 	    	
 		    	//Parameters:
 		    	Vector resistances = gatherResistances();
-			    Vector sourceVoltage = gatherSourceVoltages(); //Voltage sources;
+			    Vector sourceVoltage = gatherSourceVoltages();
+			    Vector inputCurrents = gatherInputCurrent();
 			    
 		    	//Create system:
-		    	linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage);
+		    	linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage, inputCurrents);
 
 		    	//Disable flags:
 		    	updateGraph = false;
 		    	updateResistance = false;
 		    	updateVoltage = false;
+		    	updateInputCurrent = false;
 		    	
 		    	//Set flag:
 		    	updateCurrent = true;
@@ -184,14 +203,19 @@ public class Network {
 		    	linSystem.updateSourceVoltage(gatherSourceVoltages());
 		    	updateCurrent = true;
 		    }
+	    	if (updateInputCurrent) {
+	    		updateInputCurrent = false;
+	    		linSystem.updateInputCurrents(gatherInputCurrent());
+	    		updateCurrent = true;
+	    	}
 	    }
 	    
 	    //Calculate-current:
 	    
 	    if (updateCurrent) {
-			updateCurrent = false;
 			Vector current = CalculateCurrent();
 			if (current != null) {
+				updateCurrent = false;
 		    	validNetwork = true;
 				for (int i = 0; i < edges.size(); i++) {
 					edges.get(i).setCurrent(current.at(i));
@@ -666,7 +690,8 @@ public class Network {
 		updateGraph = true;
 		updateVoltage = true;
 		updateResistance = true;
-		updateCurrent = true;	
+		updateInputCurrent = true;
+		updateCurrent = true;
 	}
 	
 	/**

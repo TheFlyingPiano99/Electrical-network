@@ -234,7 +234,7 @@ public class NetworkTest {
 		}
 
 		LinearSystemForCurrent system = new LinearSystemForCurrent(incidence, cycle,
-				resistance, sourceVoltage);
+				resistance, sourceVoltage, null);
 		System.out.print("\n");
 
 		for (int r = 0; r < system.row; r++) {

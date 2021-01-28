@@ -50,6 +50,8 @@ import main.java.network.Capacitor;
 import main.java.network.Component;
 import main.java.network.ComponentNode;
 import main.java.network.ComponentProperty;
+import main.java.network.CurrentSource;
+import main.java.network.Ground;
 import main.java.network.Inductor;
 import main.java.network.Network;
 import main.java.network.Resistance;
@@ -322,6 +324,8 @@ public class MainController {
         lvLeftListView.getItems().add("Induktor");
         lvLeftListView.getItems().add("Analóg voltmérő");
         lvLeftListView.getItems().add("Analóg ampermérő");
+        lvLeftListView.getItems().add("Áramforrás");
+        lvLeftListView.getItems().add("Földelés");
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText("Szimuláció leállítva.");    		
@@ -415,6 +419,13 @@ public class MainController {
     	            else if (str.equals("Analóg ampermérő")) {
     	            	network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
+    	            else if (str.equals("Áramforrás")) {
+    	            	network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	            else if (str.equals("Földelés")) {
+    	            	network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            }
+    	         
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
