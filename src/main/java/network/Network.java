@@ -186,7 +186,7 @@ public class Network {
 		    	
 		    	
 			} catch (RuntimeException e) {
-				updateCurrent = false;				
+				updateCurrent = false;
 			}
 	    }
 	    else {
@@ -220,6 +220,9 @@ public class Network {
 			}
 			else {
 				validNetwork = false;
+				for (int i = 0; i < edges.size(); i++) {
+					edges.get(i).setCurrent(0.0f);
+				}
 			}
 				
 	    }
@@ -474,7 +477,7 @@ public class Network {
 	 */
 	protected void disconnectEndOfEdge(Edge edge, Vertex vertex) {
 		if (vertex.equals(edge.getInput())) {
-			if (edge.getInput().getNoOfOutgoing() > 1 || edge.getInput().getNoOfIncoming() > 0) {
+			if (vertices.indexOf(vertex) != 0 && (edge.getInput().getNoOfOutgoing() > 1 || edge.getInput().getNoOfIncoming() > 0)) {
 				//Clone input vertex:
 				Vertex prevIn = edge.getInput();
 				Vertex prevOut = edge.getOutput();
