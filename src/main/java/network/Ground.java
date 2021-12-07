@@ -152,8 +152,8 @@ public class Ground extends Component {
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
 		
-		getParent().disconnectEndOfEdge(e, e.getOutput());
-		getOutput().setVertexBinding(e.getOutput());
+		//getParent().disconnectEndOfEdge(e, e.getOutput());
+		//getOutput().setVertexBinding(e.getOutput());
 	}
 
 
