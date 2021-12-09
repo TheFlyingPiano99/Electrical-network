@@ -33,7 +33,7 @@ public class Vertex {
 	static int gen = 0;
 	private int id;
 	private float inputCurrent = 0.0f;
-	
+	private float potential = 0.0f;
 	
 	//Constructor:-----------------------------------------------------
 	
@@ -125,6 +125,14 @@ public class Vertex {
 	public boolean isNeighbouring (Vertex v) {
 		return ((v != null) && 
 				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));
+	}
+
+	public float getPotential() {
+		return potential;
+	}
+
+	public void setPotential(float potential) {
+		this.potential = potential;
 	}
 
 }

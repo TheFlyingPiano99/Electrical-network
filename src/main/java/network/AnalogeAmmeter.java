@@ -44,7 +44,7 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public float getVoltage() {
-		return e.getVoltage();
+		return e.getVoltageDrop();
 	}
 
 	@Override
