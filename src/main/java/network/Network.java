@@ -224,7 +224,11 @@ public class Network {
 					edges.get(i).setCurrent(0.0f);
 				}
 			}
-				
+			
+			Vector potentials = discoverPotential_BFS();
+			for (int i = 0; i < vertices.size(); i++) {
+				vertices.get(i).setPotential(potentials.at(i));
+			}
 	    }
 		for (Component component : components) {
 			component.update(deltaTime);
@@ -405,6 +409,34 @@ public class Network {
 	        	currentCycle++;
 	        }
 	    }     	    
+	}
+	
+	private void offsetPotentialsToZeroMinimum(Vector potentials) {
+		float min = potentials.at(0);
+		int minIdx = 0;
+		for (int i = 1; i < potentials.dimension; i++) {
+			if (min > potentials.at(i)) {
+				min = potentials.at(i);
+				minIdx = i;
+			}
+		}
+		for (int i = 0; i < potentials.dimension; i++) {
+			potentials.setAt(i, potentials.at(i) - min);
+		}
+	}
+	
+	/*
+	 * Return vector of potentials of vertices 
+	 */
+	private Vector discoverPotential_BFS() {
+		Vector potentials = new Vector(vertices.size());
+		potentials.fill(0.0f);
+
+		//TODO {BFS}
+		
+		offsetPotentialsToZeroMinimum(potentials);
+		
+		return potentials;
 	}
 
 	

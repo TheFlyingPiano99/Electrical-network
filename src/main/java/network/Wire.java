@@ -24,7 +24,7 @@ public class Wire extends Component {
 
 	@Override
 	public float getVoltage() {
-		return e.getVoltage();
+		return e.getVoltageDrop();
 	}
 
 	@Override
