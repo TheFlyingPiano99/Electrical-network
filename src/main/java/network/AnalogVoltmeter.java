@@ -239,8 +239,16 @@ public class AnalogVoltmeter extends Component {
 
 		
 		// call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize,
-				getParent().isThisSelected(this), 0, false);
+		DrawingHelper.drawShape(ctx,
+				getInput().getPos(),
+				getOutput().getPos(),
+				lines,
+				defaultSize,
+				getParent().isThisSelected(this),
+				0,
+				false,
+				e.getInput().getPotential(),
+				e.getOutput().getPotential());
 
 		// System.out.println("Resistance draw!");
 	}

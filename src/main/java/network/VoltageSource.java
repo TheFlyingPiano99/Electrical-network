@@ -210,7 +210,16 @@ public class VoltageSource extends Component {
 
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
+		DrawingHelper.drawShape(ctx,
+				getInput().getPos(),
+				getOutput().getPos(),
+				lines,
+				defaultSize,
+				getParent().isThisSelected(this),
+				getCurrentVisualisationOffset(),
+				true,
+				e.getInput().getPotential(),
+				e.getOutput().getPotential());
 	}
 
 

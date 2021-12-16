@@ -607,6 +607,22 @@ public class MyMath {
 		return new Coordinate(a.x - b.x, a.y - b.y);
 	}
 	
-	
+	public static float min(float val1, float val2) {
+		if (val1 < val2) {
+			return val1;
+		}
+		else {
+			return val2;
+		}
+	}
+
+	public static float max(float val1, float val2) {
+		if (val1 > val2) {
+			return val1;
+		}
+		else {
+			return val2;
+		}
+	}
 	
 }

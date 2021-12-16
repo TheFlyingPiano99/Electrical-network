@@ -59,7 +59,7 @@ public class Edge {
 	}
 
 	public float getVoltageDrop() {
-		return (sourceVoltage == 0.0f)? current * resistance : sourceVoltage;
+		return (sourceVoltage == 0.0f)? current * resistance : -sourceVoltage;
 	}
 	
 	public Vertex getInput() {

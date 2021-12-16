@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javafx.scene.canvas.GraphicsContext;
 import main.java.math.Coordinate;
@@ -411,30 +412,124 @@ public class Network {
 	    }     	    
 	}
 	
-	private void offsetPotentialsToZeroMinimum(Vector potentials) {
+	private void offsetAndNormalizePotentialsToZeroMinimum(Vector potentials) {
 		float min = potentials.at(0);
-		int minIdx = 0;
+		float max = potentials.at(0);
 		for (int i = 1; i < potentials.dimension; i++) {
 			if (min > potentials.at(i)) {
 				min = potentials.at(i);
-				minIdx = i;
+			}
+			if (max < potentials.at(i)) {
+				max = potentials.at(i);
 			}
 		}
 		for (int i = 0; i < potentials.dimension; i++) {
-			potentials.setAt(i, potentials.at(i) - min);
+			potentials.setAt(i, (potentials.at(i) - min) / (max - min));
 		}
 	}
-	
+		
 	/*
 	 * Return vector of potentials of vertices 
 	 */
 	private Vector discoverPotential_BFS() {
+		if (vertices.isEmpty()) {
+			throw new RuntimeException("No nodes to work with.");
+		}
 		Vector potentials = new Vector(vertices.size());
-		potentials.fill(0.0f);
+		potentials.fill(0.5f);
+				
+	    Vertex s = vertices.iterator().next();  //Starting vertex
 
-		//TODO {BFS}
+	    Map<Vertex, Boolean> finished = new HashMap<Vertex, Boolean>();
+	    Map<Vertex, Vertex> previous = new HashMap<Vertex, Vertex>();
+	    List<Vertex> traversed = new ArrayList<Vertex>();
+	    Vertex current;
+
+	    ///Initialization:
+        previous.put(s, null);
+        finished.put(s, false);        
+        traversed.add(s);
+        for (Vertex iter : vertices) {
+	        if (iter != s) {
+		        previous.put(iter, null);
+		        finished.put(iter, false);
+	        }
+	    }
+
+
+	    current = s;
+
+	    ///Cycle:
+	    boolean run = true;
+	    while (run) {
+	    	System.out.println("Begin BFS loop.");
+	        ///Finding undiscovered adjacent vertex:
+	    	boolean foundChild = false;
+	        for (Vertex child : current.getOutgoing().keySet()) {
+	            if (!traversed.contains(child)) {
+	    	    	System.out.println("Found outgoing: " + vertices.indexOf(child));
+	    	    	traversed.add(child);
+	            	previous.put(child, current);
+	                current = child;
+	                foundChild = true;
+	        		break;
+	            }
+	        }
+			if (!foundChild) {
+				//Also search in reversed edges:
+		        for (Vertex child : current.getIncoming().keySet()) {
+		            if (!traversed.contains(child)) {
+		    	    	System.out.println("Found incoming: " + vertices.indexOf(child));
+		            	traversed.add(child);
+		            	previous.put(child, current);
+		                current = child;
+		                foundChild = true;
+		        		break;
+		            }
+		        }
+			}
+	        if (!foundChild) {
+    	    	System.out.println("Vertex finished: " + vertices.indexOf(current));
+    	    	finished.put(current, true);	// No untraversed children left.
+	            if (null != previous.get(current)) {	//Backtracking
+	    	    	System.out.println("Backtracking from " + vertices.indexOf(current));
+	                current = previous.get(current);
+	            } else {
+	    	    	System.out.println("No edges from vertex: " + vertices.indexOf(current));
+	                ///Finding untraversed vertex:
+	                boolean foundUntraversed = false;
+	                for (Vertex iter : vertices) {
+	                    if (!traversed.contains(iter)) {
+	                    	foundUntraversed = true;
+			            	traversed.add(iter);
+	                        current = iter;
+	                        break;
+	                    }
+	                }
+	                if (!foundUntraversed) {
+	                    run = false;
+	                }
+	            }
+	        }
+	        else {
+	        	float voltageDrop = 0.0f;
+	        	if (current.getIncoming().containsKey(previous.get(current))) {
+	        		voltageDrop = current.getIncoming().get(previous.get(current)).getVoltageDrop(); 
+	        	}
+	        	else if (current.getOutgoing().containsKey(previous.get(current))) {
+	        		voltageDrop = -current.getOutgoing().get(previous.get(current)).getVoltageDrop(); 
+	        	}
+	        	else {
+	        		throw new RuntimeException("Wrong previous vertex!");
+	        	}
+	        	float potential = potentials.at(vertices.indexOf(previous.get(current))) - voltageDrop;
+	        	System.out.println("Potential: " + potential);
+	        	potentials.setAt(vertices.indexOf(current), potential);
+	        }
+	    }
+
 		
-		offsetPotentialsToZeroMinimum(potentials);
+		offsetAndNormalizePotentialsToZeroMinimum(potentials);
 		
 		return potentials;
 	}

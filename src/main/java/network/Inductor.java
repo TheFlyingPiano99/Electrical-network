@@ -266,7 +266,16 @@ public class Inductor extends Component {
 		lines.add(new Line(DEFAULT_SIZE * 0.8f, 0.0f, DEFAULT_SIZE, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, DEFAULT_SIZE, getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
+		DrawingHelper.drawShape(ctx,
+				getInput().getPos(),
+				getOutput().getPos(),
+				lines,
+				DEFAULT_SIZE,
+				getParent().isThisSelected(this),
+				getCurrentVisualisationOffset(),
+				true,
+				e.getInput().getPotential(),
+				e.getOutput().getPotential());
 	}
 
 
