@@ -196,7 +196,15 @@ public class Capacitor extends Component {
 		lines.add(new Line(defaultSize * 0.6f, 0.0f, defaultSize, 0.0f));
 
 		//call drawShape
-		DrawingHelper.drawShape(ctx, getInput().getPos(), getOutput().getPos(), lines, defaultSize, getParent().isThisSelected(this), getCurrentVisualisationOffset(), true);
+		DrawingHelper.drawShape(ctx, getInput().getPos(),
+				getOutput().getPos(),
+				lines,
+				defaultSize,
+				getParent().isThisSelected(this),
+				getCurrentVisualisationOffset(),
+				true,
+				e.getInput().getPotential(),
+				e.getOutput().getPotential());
 	}
 
 

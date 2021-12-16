@@ -5,6 +5,9 @@ import java.util.List;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.StrokeLineCap;
 import main.java.math.Coordinate;
 import main.java.math.Line;
@@ -89,6 +92,14 @@ public class DrawingHelper {
 	}
 	
 	
+	private static Color getInterpolatedColor(Color color1, Color color2, float t) {
+		//t = MyMath.max(MyMath.min(t, 1.0f), 0.0f);	//Trust domain of t.
+		double r= color1.getRed() * t + color2.getRed() * (1 - t);
+		double g= color1.getGreen() * t + color2.getGreen() * (1 - t);
+		double b= color1.getBlue() * t + color2.getBlue() * (1 - t);
+		return new Color(r, g, b, 1.0);
+	}
+	
 	/**
 	 * Draw shape of a component. Called by components.
 	 * HUN: Komponens alakzatának kirajzolása. A komponensek hívják.
@@ -101,7 +112,16 @@ public class DrawingHelper {
 	 * @param currentVisualisationOffset TODO
 	 * @param visualiseCurrent TODO
 	 */
-	public static void drawShape(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos, List<Line> lines, float default_length, boolean selected, float currentVisualisationOffset, boolean visualiseCurrent) {
+	public static void drawShape(GraphicsContext ctx,
+			Coordinate inputPos,
+			Coordinate outputPos,
+			List<Line> lines,
+			float default_length,
+			boolean selected,
+			float currentVisualisationOffset,
+			boolean visualiseCurrent,
+			float inputNormalizedPotential,
+			float outputNormalizedPotential) {
 
 		Vector vInput  = MyMath.coordToVector(inputPos); 
 		Vector vOutput = MyMath.coordToVector(outputPos);
@@ -139,7 +159,18 @@ public class DrawingHelper {
 			}
 			
 			if (visualiseCurrent) {
-				ctx.setStroke(Color.GREEN);
+		        Stop[] stops = new Stop[] {
+		        			new Stop(0, getInterpolatedColor(Color.RED, Color.BLUE, inputNormalizedPotential)), new Stop(1,
+		        						getInterpolatedColor(Color.RED, Color.BLUE, outputNormalizedPotential))};
+		        LinearGradient lgt = new LinearGradient(
+		        		(inputPos.x <= outputPos.x)? 0 : 1,
+        				(inputPos.y <= outputPos.y)? 0 : 1,
+		        		(inputPos.x < outputPos.x)? 1 : 0,
+        				(inputPos.y < outputPos.y)? 1 : 0,
+        				true,
+        				CycleMethod.NO_CYCLE,
+        				stops);
+				ctx.setStroke(lgt);
 				ctx.setLineWidth(5);
 				ctx.setLineDashes(default_length*0.2, default_length*0.8);
 				ctx.setLineDashOffset(-currentVisualisationOffset);
