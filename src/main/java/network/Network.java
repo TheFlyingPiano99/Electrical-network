@@ -445,6 +445,9 @@ public class Network {
 	    List<Vertex> traversed = new ArrayList<Vertex>();
 	    Vertex current;
 
+	    List<List<Vertex>> islands = new ArrayList<List<Vertex>>();
+	    islands.add(new ArrayList<Vertex>());
+	    
 	    ///Initialization:
         previous.put(s, null);
         finished.put(s, false);        
@@ -455,7 +458,6 @@ public class Network {
 		        finished.put(iter, false);
 	        }
 	    }
-
 
 	    current = s;
 
