@@ -1,29 +1,22 @@
 package main.java.network;
 
+import javafx.scene.canvas.GraphicsContext;
 import javafx.util.Duration;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.function.DoubleSupplier;
-import java.util.function.ToDoubleFunction;
-
+import main.java.gui.DrawingHelper;
+import main.java.math.Coordinate;
+import main.java.math.Line;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import javafx.collections.SetChangeListener;
-import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
 
 /**
  * Ideal voltage source, with adjustable value and zero resistance.
  * @author Simon Zoltán
  *
  */
-public class VoltageSource extends Component {
-	private Edge e;
+public class VoltageSource extends main.java.network.Component {
+	private main.java.network.Edge e;
 	private float sourceVoltage = 1.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
