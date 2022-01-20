@@ -1,17 +1,15 @@
 package main.java.network;
 
 import javafx.util.Duration;
-import java.util.Map;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javafx.collections.SetChangeListener;
 import javafx.scene.canvas.GraphicsContext;
 import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
 import main.java.math.Line;
-import main.java.math.Vector;
 
 /**
  * Ideal inductor, with adjustable value and zero resistance.

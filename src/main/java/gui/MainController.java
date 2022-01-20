@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
@@ -14,9 +13,7 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -30,10 +27,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
@@ -257,29 +252,17 @@ public class MainController {
     }
 
     //Button actions:--------------------------------------------------------------------------
-    
-    /**
-     * @see miStartAction
-     * @param event
-     */
+
     @FXML
     void btnStartAction(ActionEvent event) {
     	miStartAction(event);
     }
 
-    /**
-     * @see miPauseAction
-     * @param event
-     */
     @FXML
     void btnPauseAction(ActionEvent event) {
     	miPauseAction(event);
     }
 
-    /**
-     * @see miStopAction 
-     * @param event
-     */
     @FXML
     void btnStopAction(ActionEvent event) {
     	miStopAction(event);

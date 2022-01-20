@@ -9,8 +9,6 @@ import javafx.scene.canvas.GraphicsContext;
 import main.java.gui.DrawingHelper;
 import main.java.math.Coordinate;
 import main.java.math.Line;
-import main.java.math.MyMath;
-import main.java.math.Vector;
 
 /**
  * Resistance with adjustable value.

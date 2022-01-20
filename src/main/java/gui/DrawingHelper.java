@@ -13,7 +13,6 @@ import main.java.math.Coordinate;
 import main.java.math.Line;
 import main.java.math.MyMath;
 import main.java.math.Vector;
-import main.java.network.Component;
 import main.java.network.Network;
 
 /**
@@ -24,8 +23,8 @@ import main.java.network.Network;
  */
 public class DrawingHelper {
 
-	private static final javafx.scene.paint.Color COLOR_NORMAL = javafx.scene.paint.Color.BLACK;
-	private static final javafx.scene.paint.Color COLOR_SELECT = javafx.scene.paint.Color.GREEN;
+	private static final Color COLOR_NORMAL = Color.BLACK;
+	private static final Color COLOR_SELECT = Color.GREEN;
 	private static final StrokeLineCap LINE_CAP_NORMAL = StrokeLineCap.ROUND;
 	private static final double LINE_WIDTH_NORMAL = 2.0;
 	private static final double LINE_WIDTH_SELECT = 0.6;

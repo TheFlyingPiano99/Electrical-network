@@ -4,7 +4,6 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javafx.scene.canvas.GraphicsContext;
 import main.java.gui.DrawingHelper;

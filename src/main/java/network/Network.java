@@ -412,19 +412,24 @@ public class Network {
 	    }     	    
 	}
 	
-	private void offsetAndNormalizePotentialsToZeroMinimum(Vector potentials) {
-		float min = potentials.at(0);
-		float max = potentials.at(0);
-		for (int i = 1; i < potentials.dimension; i++) {
-			if (min > potentials.at(i)) {
-				min = potentials.at(i);
+	private void offsetAndNormalizePotentialsToZeroMinimum(Vector potentials, List<List<Vertex>> islands) {
+		for (var island : islands) {
+			int i = vertices.indexOf(island.get(0));
+			float min = potentials.at(i);
+			float max = potentials.at(i);
+			for (var vertex : island) {
+				int j = vertices.indexOf(vertex);
+				if (min > potentials.at(j)) {
+					min = potentials.at(j);
+				}
+				if (max < potentials.at(j)) {
+					max = potentials.at(j);
+				}
 			}
-			if (max < potentials.at(i)) {
-				max = potentials.at(i);
+			for (var vertex : island) {
+				int j = vertices.indexOf(vertex);
+				potentials.setAt(j, (potentials.at(j) - min) / (max - min));
 			}
-		}
-		for (int i = 0; i < potentials.dimension; i++) {
-			potentials.setAt(i, (potentials.at(i) - min) / (max - min));
 		}
 	}
 		
@@ -445,13 +450,15 @@ public class Network {
 	    List<Vertex> traversed = new ArrayList<Vertex>();
 	    Vertex current;
 
-	    List<List<Vertex>> islands = new ArrayList<List<Vertex>>();
+	    List<List<Vertex>> islands = new ArrayList<>();
 	    islands.add(new ArrayList<Vertex>());
 	    
 	    ///Initialization:
         previous.put(s, null);
         finished.put(s, false);        
         traversed.add(s);
+		islands.get(0).add(s);
+
         for (Vertex iter : vertices) {
 	        if (iter != s) {
 		        previous.put(iter, null);
@@ -474,7 +481,7 @@ public class Network {
 	            	previous.put(child, current);
 	                current = child;
 	                foundChild = true;
-	        		break;
+					break;
 	            }
 	        }
 			if (!foundChild) {
@@ -486,7 +493,7 @@ public class Network {
 		            	previous.put(child, current);
 		                current = child;
 		                foundChild = true;
-		        		break;
+						break;
 		            }
 		        }
 			}
@@ -496,7 +503,7 @@ public class Network {
 	            if (null != previous.get(current)) {	//Backtracking
 	    	    	System.out.println("Backtracking from " + vertices.indexOf(current));
 	                current = previous.get(current);
-	            } else {
+				} else {
 	    	    	System.out.println("No edges from vertex: " + vertices.indexOf(current));
 	                ///Finding untraversed vertex:
 	                boolean foundUntraversed = false;
@@ -505,7 +512,9 @@ public class Network {
 	                    	foundUntraversed = true;
 			            	traversed.add(iter);
 	                        current = iter;
-	                        break;
+							islands.add(new ArrayList<>());	// New island
+							islands.get(islands.size() - 1).add(current);
+							break;
 	                    }
 	                }
 	                if (!foundUntraversed) {
@@ -514,7 +523,8 @@ public class Network {
 	            }
 	        }
 	        else {
-	        	float voltageDrop = 0.0f;
+				islands.get(islands.size() - 1).add(current);
+				float voltageDrop = 0.0f;
 	        	if (current.getIncoming().containsKey(previous.get(current))) {
 	        		voltageDrop = current.getIncoming().get(previous.get(current)).getVoltageDrop(); 
 	        	}
@@ -529,10 +539,10 @@ public class Network {
 	        	potentials.setAt(vertices.indexOf(current), potential);
 	        }
 	    }
+		
+		offsetAndNormalizePotentialsToZeroMinimum(potentials, islands);
 
-		
-		offsetAndNormalizePotentialsToZeroMinimum(potentials);
-		
+
 		return potentials;
 	}
 

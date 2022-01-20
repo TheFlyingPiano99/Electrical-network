@@ -3,7 +3,6 @@ package main.java.network;
 import javafx.util.Duration;
 
 import java.util.Map;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
