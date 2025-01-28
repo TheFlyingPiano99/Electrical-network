@@ -624,5 +624,23 @@ public class MyMath {
 			return val2;
 		}
 	}
+
+	// Returns value of Binomial Coefficient C(n, k)
+	public static int binomial(int n, int k) {
+
+		// k can not be grater then k so we
+		// return 0 here
+		if (k > n)
+			return 0;
+
+		// base condition when k and n are
+		// equal or k = 0
+		if (k == 0 || k == n)
+			return 1;
+
+		// Recursive add the value
+		return binomial(n - 1, k - 1)
+				+ binomial(n - 1, k);
+	}
 	
 }
