@@ -227,9 +227,9 @@ public class CurrentSource extends Component {
 		}
 	}
 
-	public void increaseCurrentVisualisationOffset() {
-		float pres = currentVisualisationOffset;
-		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+	public void increaseCurrentVisualisationOffset(double totalTimeSec) {
+		double pres = currentVisualisationOffset;
+		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 
 		Double test = Double.valueOf(currentVisualisationOffset);
 		if (test.isNaN()) {

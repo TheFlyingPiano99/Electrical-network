@@ -66,7 +66,6 @@ public class MainController {
 	
 	boolean snapToGrid = true;
 	Boolean simulating = null;
-	boolean evaluateSystem = false;
 
 	double totalTimeSec = 0;
 
@@ -430,11 +429,13 @@ public class MainController {
     				grabbedNode = network.getNodeAtPos(cursorPos);
     				if (grabbedNode != null) {
     					network.grabComponentNode(grabbedNode, cursorPos);
+						network.simulate();
         				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				} else {
     					grabbedComponent = network.getComponentAtPos(cursorPos);
     					if (grabbedComponent != null) {
     						network.grabComponent(grabbedComponent, cursorPos);
+							network.simulate();
             				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
             				if (null != network.getSelected() &&
             						(selectedComponent == null || selectedComponent != network.getSelected())) {
@@ -471,10 +472,12 @@ public class MainController {
     			if (grabbedNode != null) {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
+					network.simulate();
     				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
+					network.simulate();
     				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     		}

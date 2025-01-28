@@ -250,7 +250,7 @@ public class DrawingHelper {
 			List<Line> lines,
 			float default_length,
 			boolean selected,
-			float currentVisualisationOffset,
+			double currentVisualisationOffset,
 			boolean visualiseCurrent,
 			float inputNormalizedPotential,
 			float outputNormalizedPotential) {

@@ -79,6 +79,15 @@ public class Network {
 	//Constructor:------------------------------------------------------
 	
 	public Network() {
+		// Initialize angular frequencies:
+		int frequencyResolution = 1024;
+		double frequencyStep = 0.1;
+		Edge.defaultPhasorSpaceResolution = frequencyResolution;
+		angularFrequencies = new Vector(frequencyResolution);
+		for (int k = 0; k < frequencyResolution; k++) {
+			angularFrequencies.setAt(k, new Complex(k * frequencyStep, 0));
+		}
+
 		vertices = new ArrayList<Vertex>();
 		edges = new ArrayList<Edge>();
 		
@@ -89,15 +98,6 @@ public class Network {
 		
 		//Create ground-node (index 0):
 		vertices.add(new Vertex());
-
-		// Initialize angular frequencies:
-		int frequencyResolution = 1024;
-		double frequencyStep = 0.1;
-		Edge.defaultPhasorSpaceResolution = frequencyResolution;
-		angularFrequencies = new Vector(frequencyResolution);
-		for (int k = 0; k < frequencyResolution; k++) {
-			angularFrequencies.setAt(k, new Complex(k * frequencyStep, 0));
-		}
 	}
 
 	//--------------------------------------------------------------------
@@ -163,8 +163,7 @@ public class Network {
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
 	 */
 	public void simulate () {
-		double angularFrequencyStep = 0.1;
-		int resolution = 1024;
+		System.out.println("Calculating system");
 		for (int k = 0; k < angularFrequencies.dimension; k++) {	// Finer time resolution
 
 			//ManageLinearSystem:
@@ -442,9 +441,9 @@ public class Network {
 			throw new RuntimeException("No nodes to work with.");
 		}
 		ArrayList<Double> potentials = new ArrayList<>(vertices.size());
-		for (int i = 0; i < potentials.size(); i++)
+		for (int i = 0; i < vertices.size(); i++)
 		{
-			potentials.set(i, 0.5);
+			potentials.add(0.5);
 		}
 
 	    Vertex s = vertices.iterator().next();  //Starting vertex
