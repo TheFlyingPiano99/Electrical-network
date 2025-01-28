@@ -10,6 +10,7 @@ import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Voltage meter.
@@ -20,7 +21,7 @@ import math.Line;
 public class AnalogVoltmeter extends Component {
 
 	private Edge e;
-	private Complex impedance = new Complex(1000000000, 0);
+	private double resistance = 1000000000;
 	
 	private double scale = 1;
 	private float needlePrevAngle = 1.57f;
@@ -31,29 +32,25 @@ public class AnalogVoltmeter extends Component {
 	}
 
 	public AnalogVoltmeter(double r) {
-		impedance = new Complex(r, 0);
+		resistance = r;
 	}
 
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
-	}
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
 
 	@Override
-	public Complex getVoltagePhasor() {
-		return e.getVoltageDrop();
-	}
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
 
 	@Override
-	public Complex getImpedancePhasor() {
-		return e.getImpedance();
-	}
+	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
 
 	public void setResistance(double r) {
-		this.impedance = new Complex(r, 0);
-		e.setImpedance(impedance);
+		this.resistance = r;
+		Vector imp = new Vector(e.getImpedance().dimension);
+		imp.fill(new Complex(resistance, 0));
+		e.setImpedance(imp);
 	}
 
 	// Build/Destroy:------------------------------------------------------------------------------------
@@ -65,9 +62,16 @@ public class AnalogVoltmeter extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(impedance); // !
-		e.setSourceVoltage(new Complex(0, 0));
+		Vector omega = getParent().getAngularFrequencies();
+		Vector current = new Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(omega.dimension);
+		impedance.fill(new Complex(resistance, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -93,7 +97,7 @@ public class AnalogVoltmeter extends Component {
 		prop.editable = true;
 		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
-		prop.value = String.valueOf(getImpedancePhasor());
+		prop.value = String.valueOf(getTimeDomainResistance());
 		getProperties().put("resistance", prop);
 
 		prop = new ComponentProperty();
@@ -110,12 +114,6 @@ public class AnalogVoltmeter extends Component {
 		super.getParent().removeEdge(e);
 	}
 
-	// Update:-------------------------------------------------------------------------------------------
-
-	@Override
-	public void update(double omega) {
-	}
-
 	// Persistence:-----------------------------------------------------------------------------------
 
 	@Override
@@ -124,7 +122,7 @@ public class AnalogVoltmeter extends Component {
 		writer.append("class: ");
 		writer.append(this.getClass().getCanonicalName());
 		writer.append("; resistance: ");
-		writer.append(impedance.getRe());
+		writer.append(getTimeDomainResistance());
 		writer.append("; scale: ");
 		writer.append(scale);
 
@@ -155,7 +153,7 @@ public class AnalogVoltmeter extends Component {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Resistance [resistance=");
-		builder.append(impedance.getRe());
+		builder.append(getTimeDomainResistance());
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");
@@ -219,7 +217,7 @@ public class AnalogVoltmeter extends Component {
 				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
 				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
 
-		angle = 1.5708f + (float)(getVoltagePhasor().getRe() * scale) * 0.017453f;
+		angle = 1.5708f + (float)(getTimeDomainVoltageDrop() * scale) * 0.017453f;
 		angle = (angle + needlePrevAngle) / 2.0f;
 		if (2.7489f < angle) {
 			angle = 2.7489f; 
@@ -244,8 +242,8 @@ public class AnalogVoltmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -262,9 +260,8 @@ public class AnalogVoltmeter extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(new Complex(0, 0));
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
-
 	}
 
 	@Override
@@ -279,7 +276,7 @@ public class AnalogVoltmeter extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			getProperties().get("resistance").value = String.valueOf(getImpedancePhasor());
+			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
 		}
 
 		str = getProperties().get("scale").value;
@@ -297,12 +294,12 @@ public class AnalogVoltmeter extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		//setProperty("voltage", this::getVoltagePhasor);
-		//setProperty("current", this::getCurrentPhasor);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
-			//setProperty("resistance", this::getImpedancePhasor);
-			//setProperty("scale", this::getScale);
-		}		
+			setProperty("resistance", this::getTimeDomainResistance);
+			setProperty("scale", this::getScale);
+		}
 	}
 
 	public double getScale() {
@@ -311,6 +308,16 @@ public class AnalogVoltmeter extends Component {
 
 	public void setScale(double scale) {
 		this.scale = scale;
+	}
+
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
 	}
 
 }

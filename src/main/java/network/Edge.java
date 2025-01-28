@@ -1,24 +1,31 @@
 package network;
 import math.*;
 
+
 /**
  * The edge of the graph representation of the network.
  * HUN: A hálózat gráf-reprezentációjának élei. 
  * @author Simon Zoltán
  *
  */
+
 public class Edge {
-	
+	public static int defaultPhasorSpaceResolution = 1024;
+
 	static int gen = 0;
 	private int id;
 	
 	private Vertex input;
 	private Vertex output;
 	
-	Complex impedance = new Complex(0, 0);
-	Complex current = new Complex(0, 0);
-	Complex sourceVoltage = new Complex(0, 0);
-	
+	Vector impedance = Vector.Zeros(defaultPhasorSpaceResolution);
+	Vector current = Vector.Zeros(defaultPhasorSpaceResolution);
+	Vector sourceVoltage = Vector.Zeros(defaultPhasorSpaceResolution);
+
+	double timeDomainCurrent = 0.0;
+	double timeDomainResistance = 0.0;
+	double timeDomainSourceVoltage = 0.0;
+
 	boolean grabbed = false;
 
 	//Constructor:----------------------------------------------------------
@@ -28,7 +35,7 @@ public class Edge {
 		id = gen;
 	}
 
-	public Edge(Complex impedance, Complex current) {
+	public Edge(Vector impedance, Vector current) {
 		gen++;
 		id = gen;
 		this.impedance = impedance;
@@ -50,16 +57,16 @@ public class Edge {
 		return id;
 	}
 
-	public Complex getSourceVoltage() {
+	public Vector getSourceVoltage() {
 		return sourceVoltage;
 	}
 
-	public void setSourceVoltage(Complex sourceVoltage) {
+	public void setSourceVoltage(Vector sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 	}
 
-	public Complex getVoltageDrop() {
-		return (sourceVoltage.equals(new Complex(0, 0)))? Complex.multiply(current, impedance) : (sourceVoltage).negate();
+	public Vector getVoltageDrop() {
+		return Vector.multiply(current, impedance);
 	}
 	
 	public Vertex getInput() {
@@ -78,19 +85,19 @@ public class Edge {
 		this.output = output;
 	}
 
-	public math.Complex getImpedance() {
+	public Vector getImpedance() {
 		return impedance;
 	}
 
-	public void setImpedance(Complex impedance) {
+	public void setImpedance(Vector impedance) {
 		this.impedance = impedance;
 	}
 
-	public Complex getCurrent() {
+	public Vector getCurrent() {
 		return current;
 	}
 
-	public void setCurrent(Complex current) {
+	public void setCurrent(Vector current) {
 		this.current = current;
 	}
 
@@ -118,5 +125,36 @@ public class Edge {
 			return false;
 		return true;
 	}
-	
+
+	public void updateTimeDomainParameters(Vector omega, double totalTimeSec)
+	{
+		timeDomainCurrent = 0;
+		timeDomainResistance = 0;
+		timeDomainSourceVoltage = 0;
+		for (int k = 0; k < omega.dimension; k++) {
+			timeDomainCurrent += Complex.multiply(current.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
+			timeDomainResistance += Complex.multiply(impedance.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
+			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
+		}
+	}
+
+	public final double getTimeDomainCurrent()
+	{
+		return timeDomainCurrent;
+	}
+
+	public final double getTimeDomainSourceVoltage()
+	{
+		return timeDomainSourceVoltage;
+	}
+
+	public final double getTimeDomainResistance()
+	{
+		return timeDomainResistance;
+	}
+
+	public final double getTimeDomainVoltageDrop()
+	{
+		return timeDomainResistance / timeDomainCurrent;
+	}
 }

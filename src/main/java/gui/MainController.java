@@ -50,7 +50,7 @@ import network.Ground;
 import network.Inductor;
 import network.Network;
 import network.Resistance;
-import network.VoltageSource;
+import network.DCVoltageSource;
 import network.Wire;
 
 public class MainController {
@@ -65,7 +65,10 @@ public class MainController {
 	private int idx = 0;
 	
 	boolean snapToGrid = true;
-	Boolean simulating = null; 
+	Boolean simulating = null;
+	boolean evaluateSystem = false;
+
+	double totalTimeSec = 0;
 
 //FXML items:-----------------------------------------------------------------	
 	
@@ -155,7 +158,7 @@ public class MainController {
     @FXML
     void miNewAction(ActionEvent event) {
     	network.clear();
-    	helper.updateCanvasContent(xCanvas, network);
+    	helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     	selectedComponent = null;
     	grabbedNode = null;
     	grabbedComponent = null;
@@ -183,7 +186,7 @@ public class MainController {
         if (f != null && f.exists()) {
         	String fileName = f.getAbsolutePath();
         	network.load(fileName);
-        	DrawingHelper.updateCanvasContent(xCanvas, network);
+        	DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
         }
     }
 
@@ -379,7 +382,7 @@ public class MainController {
     	            event.setDropCompleted(true);
     	            String str = dragboard.getString();
     	            if (str.equals("Feszültségforrás")) {
-    	            	network.dropComponent(new VoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+    	            	network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
     	            else if (str.equals("Ellenállás")) {
     	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
@@ -409,7 +412,8 @@ public class MainController {
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
-    	            helper.updateCanvasContent(xCanvas, network);
+					network.simulate();
+    	            helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     	            //System.out.println("Successfuly dropped " + dragboard.getString());
     	        } else {
     	            event.setDropCompleted(false);
@@ -426,12 +430,12 @@ public class MainController {
     				grabbedNode = network.getNodeAtPos(cursorPos);
     				if (grabbedNode != null) {
     					network.grabComponentNode(grabbedNode, cursorPos);
-        				helper.updateCanvasContent(xCanvas, network);
+        				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				} else {
     					grabbedComponent = network.getComponentAtPos(cursorPos);
     					if (grabbedComponent != null) {
     						network.grabComponent(grabbedComponent, cursorPos);
-            				helper.updateCanvasContent(xCanvas, network);
+            				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
             				if (null != network.getSelected() &&
             						(selectedComponent == null || selectedComponent != network.getSelected())) {
                 				selectedComponent = network.getSelected();
@@ -451,11 +455,11 @@ public class MainController {
     			if (grabbedNode != null) {
         			//System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
     				network.dragComponentNode(grabbedNode, cursorPos);
-    				helper.updateCanvasContent(xCanvas, network);
+    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			} else if (grabbedComponent != null) {
 					//System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
 					network.dragComponent(grabbedComponent, cursorPos);
-    				helper.updateCanvasContent(xCanvas, network);
+    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     	        event.consume();        			
     		}
@@ -467,11 +471,11 @@ public class MainController {
     			if (grabbedNode != null) {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
-    				helper.updateCanvasContent(xCanvas, network);
+    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
-    				helper.updateCanvasContent(xCanvas, network);
+    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     		}
         );
@@ -490,7 +494,6 @@ public class MainController {
             ae -> {
         		try {
 					if (simulating != null && simulating && network != null) {
-						network.simulate();
 						if (network.isValid()) {
 							rightStatus.setText("Helyes kapcsolás.");
 						}
@@ -498,7 +501,7 @@ public class MainController {
 					    	rightStatus.setText("Hibás kapcsolás!");    		
 						}
 					}
-					DrawingHelper.updateCanvasContent(xCanvas, network);
+					DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
 					if (simulating != null && simulating) {
 						DrawingHelper.updateScopeImage(scopeCanvas, network);
 					}
@@ -506,12 +509,13 @@ public class MainController {
 					System.out.println("simulate error");
 					e.printStackTrace();
 				}
+				totalTimeSec += duration.toSeconds();
             }
         ));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
         
-    	DrawingHelper.updateCanvasContent(xCanvas, network);
+    	DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
 		DrawingHelper.clearScopeImage(scopeCanvas);
     }
     
@@ -575,7 +579,7 @@ public class MainController {
     			if (selectedComponent != null) {
         			network.removeComponent(selectedComponent);
         			destroyPropertyView();
-        			helper.updateCanvasContent(xCanvas, network);
+        			helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				selectedComponent = null;
     			}
     			break;
@@ -583,7 +587,7 @@ public class MainController {
     			if (selectedComponent != null) {
     				network.cancelSelection();
         			destroyPropertyView();
-        			helper.updateCanvasContent(xCanvas, network);
+        			helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				selectedComponent = null;
     			}
     			break;
@@ -591,12 +595,12 @@ public class MainController {
     			if (snapToGrid || network.isSnapToGrid()) {
     				this.snapToGrid = false;
     				network.setSnapToGrid(false);
-    				DrawingHelper.updateCanvasContent(xCanvas, network);
+    				DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     			else if (!snapToGrid && !network.isSnapToGrid()) {
     				this.snapToGrid = true;
     				network.setSnapToGrid(true);
-    				DrawingHelper.updateCanvasContent(xCanvas, network);
+    				DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     			break;
     		default:

@@ -35,23 +35,23 @@ public class AnalogeAmmeter extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() {
+		return e.getTimeDomainVoltageDrop();
 	}
 
 	@Override
-	public Complex getVoltagePhasor() {
-		return e.getVoltageDrop();
-	}
-
-	@Override
-	public Complex getImpedancePhasor() {
-		return e.getImpedance();
+	public double getTimeDomainResistance() {
+		return e.getTimeDomainResistance();
 	}
 
 	public void setResistance(double resistance) {
 		this.resistance = resistance;
-		e.setImpedance(new Complex(resistance, 0));
+		Vector imp = new Vector(e.getImpedance().dimension);
+		imp.fill(new Complex(resistance, 0));
+		e.setImpedance(imp);
 	}
 
 	// Build/Destroy:------------------------------------------------------------------------------------
@@ -63,9 +63,16 @@ public class AnalogeAmmeter extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(new Complex(resistance, 0)); // !
-		e.setSourceVoltage(new Complex(0, 0));
+		Vector omega = getParent().getAngularFrequencies();
+		Vector current = new Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(omega.dimension);
+		impedance.fill(new Complex(resistance, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -91,7 +98,7 @@ public class AnalogeAmmeter extends Component {
 		prop.editable = true;
 		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
-		prop.value = String.valueOf(getImpedancePhasor());
+		prop.value = String.valueOf(resistance);
 		getProperties().put("resistance", prop);
 
 		prop = new ComponentProperty();
@@ -106,13 +113,6 @@ public class AnalogeAmmeter extends Component {
 	public void destroy() {
 		removeEndNodes();
 		super.getParent().removeEdge(e);
-	}
-
-	// Update:-------------------------------------------------------------------------------------------
-
-	@Override
-	public void update(double omega) {
-
 	}
 
 	// Persistence:-----------------------------------------------------------------------------------
@@ -171,6 +171,7 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
 		// Construction:
@@ -224,7 +225,7 @@ public class AnalogeAmmeter extends Component {
 				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
 				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
 
-		angle = 1.5708 + (float) getCurrentPhasor().getRe() * scale * 0.017453;
+		angle = 1.5708 + (float) e.getTimeDomainCurrent() * scale * 0.017453;
 		angle = (angle + needlePrevAngle) / 2.0;
 		if (2.7489 < angle) {
 			angle = 2.7489;
@@ -249,8 +250,8 @@ public class AnalogeAmmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -267,9 +268,8 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(new Complex(0, 0));
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
-
 	}
 
 	@Override
@@ -284,7 +284,7 @@ public class AnalogeAmmeter extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			getProperties().get("resistance").value = String.valueOf(getImpedancePhasor());
+			getProperties().get("resistance").value = String.valueOf(e.getTimeDomainResistance());
 		}
 
 		str = getProperties().get("scale").value;
@@ -302,11 +302,11 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		//setProperty("voltage", this::getVoltagePhasor);
-		//setProperty("current", this::getCurrentPhasor);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
-			//setProperty("resistance", this::getImpedancePhasor);
-			//setProperty("scale", this::getScale);
+			setProperty("resistance", this::getTimeDomainResistance);
+			setProperty("scale", this::getScale);
 		}		
 	}
 
@@ -316,6 +316,16 @@ public class AnalogeAmmeter extends Component {
 
 	public void setScale(double scale) {
 		this.scale = scale;
+	}
+
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
 	}
 
 }

@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +68,13 @@ public class Network {
 	 * HUN: Az összeolvasztás és megfogás távolsága.
 	 */
 	int closeProximity = (int)(gridSize * 0.4);
+
+	private Vector angularFrequencies;
+
+	public Vector getAngularFrequencies()
+	{
+		return angularFrequencies;
+	}
 	
 	//Constructor:------------------------------------------------------
 	
@@ -83,6 +89,15 @@ public class Network {
 		
 		//Create ground-node (index 0):
 		vertices.add(new Vertex());
+
+		// Initialize angular frequencies:
+		int frequencyResolution = 1024;
+		double frequencyStep = 0.1;
+		Edge.defaultPhasorSpaceResolution = frequencyResolution;
+		angularFrequencies = new Vector(frequencyResolution);
+		for (int k = 0; k < frequencyResolution; k++) {
+			angularFrequencies.setAt(k, new Complex(k * frequencyStep, 0));
+		}
 	}
 
 	//--------------------------------------------------------------------
@@ -93,10 +108,10 @@ public class Network {
 	 * az élek, "edges" listában szereplő sorrendje szerint. 
 	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 */
-	private Vector gatherImpedance() {
+	private Vector gatherImpedance(int k) {
     	Vector impedances = new Vector(edges.size());
     	for (int i = 0; i < edges.size(); i++) {
-			impedances.setAt(i, edges.get(i).getImpedance());
+			impedances.setAt(i, edges.get(i).getImpedance().at(k));
     	}		
     	return impedances;
 	}
@@ -107,10 +122,10 @@ public class Network {
 	 * az élek, "edges" listában szereplő sorrendje szerint. 
 	 * @return Vector of source voltages. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 */
-	private Vector gatherSourceVoltages() {
+	private Vector gatherSourceVoltages(int k) {
     	Vector sourceVoltages = new Vector(edges.size());
     	for (int i = 0; i < edges.size(); i++) {
-    		sourceVoltages.setAt(i, edges.get(i).getSourceVoltage());
+    		sourceVoltages.setAt(i, edges.get(i).getSourceVoltage().at(k));
     	}
     	return sourceVoltages;
 	}
@@ -119,10 +134,10 @@ public class Network {
 	 * 
 	 * @return	Vector of currents inputed to individual vertices.
 	 */
-	private Vector gatherInputCurrent() {
+	private Vector gatherInputCurrent(int k) {
     	Vector inputCurrents = new Vector(vertices.size());
     	for (int i = 0; i < vertices.size(); i++) {
-    		inputCurrents.setAt(i, vertices.get(i).getInputCurrent());
+    		inputCurrents.setAt(i, vertices.get(i).getInputCurrent().at(k));
     	}
     	return inputCurrents;
 	}
@@ -150,12 +165,7 @@ public class Network {
 	public void simulate () {
 		double angularFrequencyStep = 0.1;
 		int resolution = 1024;
-		for (int k = 0; k < resolution; k++) {	// Finer time resolution
-			double omega = (double)(k - resolution / 2) * angularFrequencyStep;
-			omega = 0.0;
-			for (Component component : components) {
-				component.update(omega);
-			}
+		for (int k = 0; k < angularFrequencies.dimension; k++) {	// Finer time resolution
 
 			//ManageLinearSystem:
 			if (updateGraph || linSystem == null) {
@@ -167,9 +177,9 @@ public class Network {
 					DFS(incidence, cycle);
 
 					//Parameters:
-					Vector resistances = gatherImpedance();
-					Vector sourceVoltage = gatherSourceVoltages();
-					Vector inputCurrents = gatherInputCurrent();
+					Vector resistances = gatherImpedance(k);
+					Vector sourceVoltage = gatherSourceVoltages(k);
+					Vector inputCurrents = gatherInputCurrent(k);
 
 					//Create system:
 					linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage, inputCurrents);
@@ -191,17 +201,17 @@ public class Network {
 			else {
 				if (updateResistance) {
 					updateResistance = false;
-					linSystem.updateImpedances(gatherImpedance());
+					linSystem.updateImpedances(gatherImpedance(k));
 					updateCurrent = true;
 				}
 				if (updateVoltage) {
 					updateVoltage = false;
-					linSystem.updateSourceVoltage(gatherSourceVoltages());
+					linSystem.updateSourceVoltage(gatherSourceVoltages(k));
 					updateCurrent = true;
 				}
 				if (updateInputCurrent) {
 					updateInputCurrent = false;
-					linSystem.updateInputCurrents(gatherInputCurrent());
+					linSystem.updateInputCurrents(gatherInputCurrent(k));
 					updateCurrent = true;
 				}
 			}
@@ -214,19 +224,14 @@ public class Network {
 					updateCurrent = false;
 					validNetwork = true;
 					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).setCurrent(current.at(i));
+						edges.get(i).getCurrent().setAt(k, current.at(i));
 					}
 				}
 				else {
 					validNetwork = false;
 					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).setCurrent(new Complex(0, 0));
+						edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
 					}
-				}
-
-				Vector potentials = discoverPotential_BFS();
-				for (int i = 0; i < vertices.size(); i++) {
-					vertices.get(i).setPotential(potentials.at(i));
 				}
 			}
 		}
@@ -406,28 +411,25 @@ public class Network {
 	        }
 	    }     	    
 	}
-	
-	private void offsetAndNormalizePotentialsToZeroMinimum(Vector potentials, List<List<Vertex>> islands) {
+
+	private void offsetAndNormalizePotentialsToZeroMinimum(ArrayList<Double> potentials, List<List<Vertex>> islands) {
 		for (var island : islands) {
 			int i = vertices.indexOf(island.get(0));
-			Complex min = potentials.at(i);
-			Complex max = potentials.at(i);
+			double min = potentials.get(i);
+			double max = potentials.get(i);
 			for (var vertex : island) {
 				int j = vertices.indexOf(vertex);
-				if (potentials.at(j).compareTo(min) < 0) {
-					min = potentials.at(j);
+				if (min > potentials.get(j)) {
+					min = potentials.get(j);
 				}
-				if (potentials.at(j).compareTo(max) > 0) {
-					max = potentials.at(j);
+				if (max < potentials.get(j)) {
+					max = potentials.get(j);
 				}
 			}
 			for (var vertex : island) {
 				int j = vertices.indexOf(vertex);
-				potentials.setAt(j,
-					Complex.divide(
-						Complex.subtract(potentials.at(j), min),
-						Complex.subtract(max, min)
-					));
+				double pot = (potentials.get(j) - min) / (max - min);
+				potentials.set(j, pot);
 			}
 		}
 	}
@@ -435,13 +437,16 @@ public class Network {
 	/*
 	 * Return vector of potentials of vertices 
 	 */
-	private Vector discoverPotential_BFS() {
+	private ArrayList<Double> discoverPotential_BFS() {
 		if (vertices.isEmpty()) {
 			throw new RuntimeException("No nodes to work with.");
 		}
-		Vector potentials = new Vector(vertices.size());
-		potentials.fill(new Complex(0.5, 0.0));
-				
+		ArrayList<Double> potentials = new ArrayList<>(vertices.size());
+		for (int i = 0; i < potentials.size(); i++)
+		{
+			potentials.set(i, 0.5);
+		}
+
 	    Vertex s = vertices.iterator().next();  //Starting vertex
 
 	    Map<Vertex, Boolean> finished = new HashMap<Vertex, Boolean>();
@@ -523,19 +528,19 @@ public class Network {
 	        }
 	        else {
 				islands.get(islands.size() - 1).add(current);
-				Complex voltageDrop = new Complex(0, 0);
-	        	if (current.getIncoming().containsKey(previous.get(current))) {
-	        		voltageDrop = current.getIncoming().get(previous.get(current)).getVoltageDrop(); 
-	        	}
-	        	else if (current.getOutgoing().containsKey(previous.get(current))) {
-	        		voltageDrop = current.getOutgoing().get(previous.get(current)).getVoltageDrop().negate();
-	        	}
-	        	else {
-	        		throw new RuntimeException("Wrong previous vertex!");
-	        	}
-	        	Complex potential = Complex.subtract(potentials.at(vertices.indexOf(previous.get(current))), voltageDrop);
-	        	//System.out.println("Potential: " + potential);
-	        	potentials.setAt(vertices.indexOf(current), potential);
+				double voltageDrop = 0;
+				if (current.getIncoming().containsKey(previous.get(current))) {
+					voltageDrop = current.getIncoming().get(previous.get(current)).getTimeDomainVoltageDrop();
+				}
+				else if (current.getOutgoing().containsKey(previous.get(current))) {
+					voltageDrop = -current.getOutgoing().get(previous.get(current)).getTimeDomainVoltageDrop();
+				}
+				else {
+					throw new RuntimeException("Wrong previous vertex!");
+				}
+				double potential = potentials.get(vertices.indexOf(previous.get(current))) - voltageDrop;
+				//System.out.println("Potential: " + potential);
+				potentials.set(vertices.indexOf(current), potential);
 	        }
 	    }
 		
@@ -1026,7 +1031,7 @@ public class Network {
 			BufferedReader reader = new BufferedReader(input);
 			
 			Map<String, Class<?>> type = new HashMap<>();
-			type.put("VoltageSource", VoltageSource.class);
+			type.put("VoltageSource", DCVoltageSource.class);
 			type.put("Wire", Wire.class);
 			type.put("Resistance", Resistance.class);
 			
@@ -1080,7 +1085,19 @@ public class Network {
 	 * HUN: Minden komponensen meghívja a draw metódust.
 	 * @param ctx	{@link GraphicsContext}, where the network should be drawn.
 	 */
-	public void draw(GraphicsContext ctx) {
+	public void draw(GraphicsContext ctx, double totalTimeSec) {
+		for (Edge e : edges) {
+			e.updateTimeDomainParameters(angularFrequencies, totalTimeSec);
+		}
+		for (Vertex v : vertices) {
+			v.updateTimeDomainParameters(angularFrequencies, totalTimeSec);
+		}
+
+		ArrayList<Double> potentials = discoverPotential_BFS();
+		for (int i = 0; i < vertices.size(); i++) {
+			vertices.get(i).setTimeDomainPotential(potentials.get(i));
+		}
+
 		for (Component component : components) {
 			component.draw(ctx);
 		}
