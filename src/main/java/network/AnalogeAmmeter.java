@@ -7,8 +7,7 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
-import math.Coordinate;
-import math.Line;
+import math.*;
 
 /**
  * Amper meter.
@@ -36,23 +35,23 @@ public class AnalogeAmmeter extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Complex getVoltagePhasor() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public double getResistance() {
-		return e.getResistance();
+	public Complex getImpedancePhasor() {
+		return e.getImpedance();
 	}
 
 	public void setResistance(double resistance) {
 		this.resistance = resistance;
-		e.setResistance(resistance);
+		e.setImpedance(new Complex(resistance, 0));
 	}
 
 	// Build/Destroy:------------------------------------------------------------------------------------
@@ -64,9 +63,9 @@ public class AnalogeAmmeter extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(resistance); // !
-		e.setSourceVoltage(0);
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(resistance, 0)); // !
+		e.setSourceVoltage(new Complex(0, 0));
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -92,7 +91,7 @@ public class AnalogeAmmeter extends Component {
 		prop.editable = true;
 		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
-		prop.value = String.valueOf(getResistance());
+		prop.value = String.valueOf(getImpedancePhasor());
 		getProperties().put("resistance", prop);
 
 		prop = new ComponentProperty();
@@ -112,9 +111,8 @@ public class AnalogeAmmeter extends Component {
 	// Update:-------------------------------------------------------------------------------------------
 
 	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
+	public void update(double omega) {
+
 	}
 
 	// Persistence:-----------------------------------------------------------------------------------
@@ -226,7 +224,7 @@ public class AnalogeAmmeter extends Component {
 				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
 				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
 
-		angle = 1.5708 + (float)getCurrent() * scale * 0.017453;
+		angle = 1.5708 + (float) getCurrentPhasor().getRe() * scale * 0.017453;
 		angle = (angle + needlePrevAngle) / 2.0;
 		if (2.7489 < angle) {
 			angle = 2.7489;
@@ -251,8 +249,8 @@ public class AnalogeAmmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -269,7 +267,7 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.setCurrent(new Complex(0, 0));
 		updatePropertyView(false);
 
 	}
@@ -286,7 +284,7 @@ public class AnalogeAmmeter extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			getProperties().get("resistance").value = String.valueOf(getResistance());
+			getProperties().get("resistance").value = String.valueOf(getImpedancePhasor());
 		}
 
 		str = getProperties().get("scale").value;
@@ -304,11 +302,11 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		//setProperty("voltage", this::getVoltagePhasor);
+		//setProperty("current", this::getCurrentPhasor);
 		if (updateEditable) {
-			setProperty("resistance", this::getResistance);
-			setProperty("scale", this::getScale);
+			//setProperty("resistance", this::getImpedancePhasor);
+			//setProperty("scale", this::getScale);
 		}		
 	}
 

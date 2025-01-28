@@ -194,9 +194,9 @@ public class DrawingHelper {
 			ctx.fillRect(0, 0, W, H);
 			network.Component selected = network.getSelected();
 			if (selected != null) {
-				double I = selected.getCurrent();
-				double U = selected.getVoltage();
-				double R = selected.getResistance();
+				double I = selected.getCurrentPhasor().getRe();
+				double U = selected.getVoltagePhasor().getRe();
+				double R = selected.getImpedancePhasor().getRe();
 				scopeCurrentBuffer.add(I);
 				scopeVoltageBuffer.add(U);
 				scopeResistanceBuffer.add(R);
@@ -261,7 +261,7 @@ public class DrawingHelper {
 		
 		Vector orientation = MyMath.subtract(vOutput, vInput);
 		float scale = (float)MyMath.magnitude(orientation) / default_length;
-		float angle = (float)Math.atan2(orientation.at(1), orientation.at(0));
+		float angle = (float)Math.atan2(orientation.at(1).getRe(), orientation.at(0).getRe());
 		
 		//------------------------------------------------------
 		if (lines != null && !lines.isEmpty()) {
@@ -277,10 +277,10 @@ public class DrawingHelper {
 			for (Line line : lines) {
 				Line.transform(line, scale, angle, vInput);
 
-				float aX = (float)line.a.at(0);
-				float aY = (float)line.a.at(1);
-				float bX = (float)line.b.at(0);
-				float bY = (float)line.b.at(1);
+				float aX = (float)line.a.at(0).getRe();
+				float aY = (float)line.a.at(1).getRe();
+				float bX = (float)line.b.at(0).getRe();
+				float bY = (float)line.b.at(1).getRe();
 				
 				minX = getNewMin(minX, aX, bX);
 				minY = getNewMin(minY, aY, bY);
@@ -306,7 +306,7 @@ public class DrawingHelper {
 				ctx.setLineWidth(5);
 				ctx.setLineDashes(default_length*0.2, default_length*0.8);
 				ctx.setLineDashOffset(-currentVisualisationOffset);
-				ctx.strokeLine(vInput.at(0),vInput.at(1), vOutput.at(0), vOutput.at(1));
+				ctx.strokeLine(vInput.at(0).getRe(), vInput.at(1).getRe(), vOutput.at(0).getRe(), vOutput.at(1).getRe());
 				ctx.setLineDashOffset(0);
 			}
 

@@ -8,7 +8,7 @@ package math;
  *
  */
 public class Matrix {
-	double n[];
+	Complex n[];
     public int row;
     public int column;
 
@@ -23,7 +23,7 @@ public class Matrix {
     public Matrix(int r,int c) {
     	row = r;
     	column = c;
-        n = new double[row * column];
+        n = new Complex[row * column];
         /*if (n == nullptr) {
             throw runtime_error("Initialisation failed!");
         }*/
@@ -36,8 +36,8 @@ public class Matrix {
     public Matrix(Matrix M) {
     	row = M.row;
     	column = M.column;
-        n = new double[row * column];
-/*        if (n == nullptr) {
+        n = new Complex[row * column];
+        /*if (n == nullptr) {
             throw std::runtime_error("Initialisation failed!");
         }*/
         for (int c = 0; c < column; c++) {
@@ -89,7 +89,7 @@ public class Matrix {
      * @param c - columns index
      * @return	value
      */
-    public double at(int r, int c) { //indexeles (sor, oszlop)
+    public Complex at(int r, int c) { //indexeles (sor, oszlop)
     	return n[c * row + r];
     }
     
@@ -99,8 +99,8 @@ public class Matrix {
      * @param c column index
      * @param val new value at given position.
      */
-    public void setAt(int r, int c, double val) {
-    	n[c * row + r] = val;
+    public void setAt(int r, int c, Complex val) {
+    	n[c * row + r] = val.copy();
     }
 
     /**
@@ -108,10 +108,10 @@ public class Matrix {
      * HUN: Mátrix feltöltése a kapott értékkel.
      * @param val - to fill with
      */
-    public void fill(double val) {
+    public void fill(Complex val) {
         for (int c = 0; c < column; c++) {
             for (int r = 0; r < row; r++) {
-            	n[c * row + r] = val;
+            	n[c * row + r] = val.copy();
             }
         }
     }
@@ -126,7 +126,7 @@ public class Matrix {
         if (!this.equals(M)) {
             for (int c = 0; c < column; c++) {
                 for (int r = 0; r < row; r++) {
-                	n[c * row + r] = M.at(r, c);
+                	n[c * row + r] = M.at(r, c).copy();
                 }
             }
         }
@@ -143,11 +143,11 @@ public class Matrix {
         if (!this.equals(M)) {
             row = M.row;
             column = M.column;
-            n = new double[row * column];
+            n = new Complex[row * column];
             
             for (int c = 0; c < column; c++) {
                 for (int r = 0; r < row; r++) {
-                	n[c * row + r] = M.at(r, c);
+                	n[c * row + r] = M.at(r, c).copy();
                 }
             }
         }

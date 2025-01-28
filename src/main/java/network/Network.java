@@ -10,12 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.scene.canvas.GraphicsContext;
-import math.Coordinate;
-import math.Gauss;
-import math.GaussException;
-import math.Matrix;
-import math.MyMath;
-import math.Vector;
+import math.*;
 
 
 /**
@@ -93,17 +88,17 @@ public class Network {
 	//--------------------------------------------------------------------
 	
 	/**
-	 * Returns the resistance of all the edges.
+	 * Returns the impedance of all the edges.
 	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt ellenállás értékei vannak felsorolva
 	 * az élek, "edges" listában szereplő sorrendje szerint. 
 	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 */
-	private Vector gatherResistances() {
-    	Vector resistances = new Vector(edges.size());
+	private Vector gatherImpedance() {
+    	Vector impedances = new Vector(edges.size());
     	for (int i = 0; i < edges.size(); i++) {
-    		resistances.setAt(i, edges.get(i).getResistance());
+			impedances.setAt(i, edges.get(i).getImpedance());
     	}		
-    	return resistances;
+    	return impedances;
 	}
 	
 	/**
@@ -153,16 +148,17 @@ public class Network {
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
 	 * @param deltaTime	The time spent since the last call of this method.
 	 */
-	public void simulate (Duration deltaTime) {
-		if (null == deltaTime) {
-			deltaTime = new Duration(0);
-		}
-		Duration originalDelta = deltaTime;
-		Duration performedDelta = new Duration(0.0);
-		deltaTime = new Duration(1.0);	// Overwrite
-		while (performedDelta.toSeconds() < originalDelta.toSeconds()) {	// Finer time resolution
-			//ManageLinearSystem:
+	public void simulate () {
+		double angularFrequencyStep = 0.1;
+		int resolution = 1024;
+		for (int k = 0; k < resolution; k++) {	// Finer time resolution
+			double omega = (double)(k - resolution / 2) * angularFrequencyStep;
 
+			for (Component component : components) {
+				component.update(omega);
+			}
+
+			//ManageLinearSystem:
 			if (updateGraph || linSystem == null) {
 
 				//Graph representations:
@@ -172,7 +168,7 @@ public class Network {
 					DFS(incidence, cycle);
 
 					//Parameters:
-					Vector resistances = gatherResistances();
+					Vector resistances = gatherImpedance();
 					Vector sourceVoltage = gatherSourceVoltages();
 					Vector inputCurrents = gatherInputCurrent();
 
@@ -196,7 +192,7 @@ public class Network {
 			else {
 				if (updateResistance) {
 					updateResistance = false;
-					linSystem.updateResistances(gatherResistances());
+					linSystem.updateImpedances(gatherImpedance());
 					updateCurrent = true;
 				}
 				if (updateVoltage) {
@@ -225,7 +221,7 @@ public class Network {
 				else {
 					validNetwork = false;
 					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).setCurrent(0.0f);
+						edges.get(i).setCurrent(new Complex(0, 0));
 					}
 				}
 
@@ -234,10 +230,6 @@ public class Network {
 					vertices.get(i).setPotential(potentials.at(i));
 				}
 			}
-			for (Component component : components) {
-				component.update(deltaTime);
-			}
-			performedDelta = performedDelta.add(deltaTime);
 		}
 	}
 	
@@ -333,12 +325,12 @@ public class Network {
 	    }
 	    
 	    incidence.copyWithResize(new Matrix(edges.size(), vertices.size()));
-	    incidence.fill(0);
+	    incidence.fill(new Complex(0, 0));
 	    int noOfCycles = 0;             //First count the cycles:
 	    for (int i = 0; i < edges.size(); i++) {
 	    	Edge edge = edges.get(i);
-            incidence.setAt(i, vertices.indexOf(edge.getInput()), 1);
-            incidence.setAt(i, vertices.indexOf(edge.getOutput()), -1);
+            incidence.setAt(i, vertices.indexOf(edge.getInput()), new Complex(1, 0));
+            incidence.setAt(i, vertices.indexOf(edge.getOutput()), new Complex(-1, 0));
 	        if (edge.getOutput() != previous.get(edge.getInput()) &&
 	        		edge.getInput() != previous.get(edge.getOutput())) {
             	noOfCycles++;       	
@@ -347,7 +339,7 @@ public class Network {
 	    
 	    
 	    cycle.copyWithResize(new Matrix(edges.size(), noOfCycles));
-	    cycle.fill(0);
+	    cycle.fill(new Complex(0, 0));
 	    int currentCycle = 0;
 	    for (int i = 0; i < edges.size() && currentCycle < noOfCycles; i++) {
 
@@ -360,7 +352,7 @@ public class Network {
 	        	int dOut = depth.get(out);
 	        	if (dIn > dOut) {
 	        		//Backward edge
-        			cycle.setAt(i, currentCycle, 1);
+        			cycle.setAt(i, currentCycle, new Complex(1, 0));
 	        		Vertex step = in;
 	        		while (step != out) {
 	        			if (previous.get(step) == null) {
@@ -368,11 +360,11 @@ public class Network {
 	        			}
 	        			Edge e = step.getIncoming().get(previous.get(step));
 	        			if (e != null) {
-		        			cycle.setAt(edges.indexOf(e), currentCycle, 1);	        				
+		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(1, 0));
 	        			}
 	        			else {
 	        				e = step.getOutgoing().get(previous.get(step));
-		        			cycle.setAt(edges.indexOf(e), currentCycle, -1);	        					        				
+		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(-1, 0));
 	        			}
 	        				        			
         				step = previous.get(step);
@@ -380,16 +372,16 @@ public class Network {
 	        	}
 	        	else if (dIn < dOut) {
 	        		//Forward edge
-        			cycle.setAt(i, currentCycle, -1);
+        			cycle.setAt(i, currentCycle, new Complex(-1, 0));
 	        		Vertex step = out;
 	        		while (step != in) {
 	        			Edge e = step.getIncoming().get(previous.get(step));
 	        			if (e != null) {
-		        			cycle.setAt(edges.indexOf(e), currentCycle, 1);	        				
+		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(1, 0));
 	        			}
 	        			else {
 	        				e = step.getOutgoing().get(previous.get(step));
-		        			cycle.setAt(edges.indexOf(e), currentCycle, -1);	        					        				
+		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(-1, 0));
 	        			}
 
 	        			step = previous.get(step);
@@ -419,20 +411,24 @@ public class Network {
 	private void offsetAndNormalizePotentialsToZeroMinimum(Vector potentials, List<List<Vertex>> islands) {
 		for (var island : islands) {
 			int i = vertices.indexOf(island.get(0));
-			double min = potentials.at(i);
-			double max = potentials.at(i);
+			Complex min = potentials.at(i);
+			Complex max = potentials.at(i);
 			for (var vertex : island) {
 				int j = vertices.indexOf(vertex);
-				if (min > potentials.at(j)) {
+				if (potentials.at(j).compareTo(min) < 0) {
 					min = potentials.at(j);
 				}
-				if (max < potentials.at(j)) {
+				if (potentials.at(j).compareTo(max) > 0) {
 					max = potentials.at(j);
 				}
 			}
 			for (var vertex : island) {
 				int j = vertices.indexOf(vertex);
-				potentials.setAt(j, (potentials.at(j) - min) / (max - min));
+				potentials.setAt(j,
+					Complex.divide(
+						Complex.subtract(potentials.at(j), min),
+						Complex.subtract(max, min)
+					));
 			}
 		}
 	}
@@ -445,7 +441,7 @@ public class Network {
 			throw new RuntimeException("No nodes to work with.");
 		}
 		Vector potentials = new Vector(vertices.size());
-		potentials.fill(0.5f);
+		potentials.fill(new Complex(0.5, 0.0));
 				
 	    Vertex s = vertices.iterator().next();  //Starting vertex
 
@@ -528,17 +524,17 @@ public class Network {
 	        }
 	        else {
 				islands.get(islands.size() - 1).add(current);
-				double voltageDrop = 0.0;
+				Complex voltageDrop = new Complex(0, 0);
 	        	if (current.getIncoming().containsKey(previous.get(current))) {
 	        		voltageDrop = current.getIncoming().get(previous.get(current)).getVoltageDrop(); 
 	        	}
 	        	else if (current.getOutgoing().containsKey(previous.get(current))) {
-	        		voltageDrop = -current.getOutgoing().get(previous.get(current)).getVoltageDrop(); 
+	        		voltageDrop = current.getOutgoing().get(previous.get(current)).getVoltageDrop().negate();
 	        	}
 	        	else {
 	        		throw new RuntimeException("Wrong previous vertex!");
 	        	}
-	        	double potential = potentials.at(vertices.indexOf(previous.get(current))) - voltageDrop;
+	        	Complex potential = Complex.subtract(potentials.at(vertices.indexOf(previous.get(current))), voltageDrop);
 	        	//System.out.println("Potential: " + potential);
 	        	potentials.setAt(vertices.indexOf(current), potential);
 	        }

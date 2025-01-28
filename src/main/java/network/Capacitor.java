@@ -8,6 +8,7 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
 
@@ -48,22 +49,22 @@ public class Capacitor extends Component {
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public double getSourceVoltage() {
-		return -(1/capacity) * charge;
-	}
+	//public Complex getSourceVoltage() {
+	//	return -(1/capacity);
+	//}
 
 	public void setCapacity(double capacity) {
 		this.capacity = capacity;
 	}
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
-		return getSourceVoltage();
+	public Complex getVoltagePhasor() {
+		return e.getVoltageDrop();
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -75,9 +76,9 @@ public class Capacitor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(this.getSourceVoltage());
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -90,7 +91,7 @@ public class Capacitor extends Component {
 		prop.editable = false;
 		prop.name = "forrás feszültség:";
 		prop.unit = "V";
-		prop.value = String.valueOf(getSourceVoltage());
+		prop.value = String.valueOf(getVoltagePhasor().getRe());
 		getProperties().put("voltage", prop);
 
 		prop = new ComponentProperty();
@@ -118,15 +119,16 @@ public class Capacitor extends Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
-		double I = e.getCurrent();
-		charge += (I + prevCurrent) * duration.toSeconds();
-		prevCurrent = I;
-		e.setSourceVoltage(this.getSourceVoltage());
-		//System.out.println(e.getSourceVoltage());
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
-		getParent().setUpdateAll();
+	public void update(double omega) {
+		if (0.0 != omega) {
+			e.setImpedance(new Complex(0.0, omega * capacity).inverse());
+		}
+		else if (omega > 0.0) {
+			e.setImpedance(new Complex(0.0, Double.POSITIVE_INFINITY));
+		}
+		else {
+			e.setImpedance(new Complex(0.0, Double.NEGATIVE_INFINITY));
+		}
 	}
 
 
@@ -204,8 +206,8 @@ public class Capacitor extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 	}
 
 
@@ -222,8 +224,8 @@ public class Capacitor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
-		e.setSourceVoltage(0.0F);
+		e.setCurrent(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 		setCharge(0.0F);
 		updatePropertyView(false);
 	}
@@ -249,8 +251,8 @@ public class Capacitor extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		//setProperty("voltage", this::getVoltagePhasor);
+		//setProperty("current", this::getCurrentPhasor);
 		if (updateEditable) {
 			setProperty("capacity", this::getCapacity);
 		}		
@@ -258,8 +260,8 @@ public class Capacitor extends Component {
 
 
 	@Override
-	public double getResistance() {
-		return 0;
+	public Complex getImpedancePhasor() {
+		return e.getImpedance();
 	}
 
 	

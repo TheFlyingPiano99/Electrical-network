@@ -1,5 +1,5 @@
 package network;
-
+import math.*;
 
 /**
  * The edge of the graph representation of the network.
@@ -15,9 +15,9 @@ public class Edge {
 	private Vertex input;
 	private Vertex output;
 	
-	double resistance = 0;
-	double current = 0;
-	double sourceVoltage = 0;
+	Complex impedance = new Complex(0, 0);
+	Complex current = new Complex(0, 0);
+	Complex sourceVoltage = new Complex(0, 0);
 	
 	boolean grabbed = false;
 
@@ -28,11 +28,11 @@ public class Edge {
 		id = gen;
 	}
 
-	public Edge(double r, double i) {
+	public Edge(Complex impedance, Complex current) {
 		gen++;
 		id = gen;
-		resistance = r;
-		current = i;
+		this.impedance = impedance;
+		this.current = current;
 	}
 	
 	//Getters/Setters:----------------------------------------------------------
@@ -50,16 +50,16 @@ public class Edge {
 		return id;
 	}
 
-	public double getSourceVoltage() {
+	public Complex getSourceVoltage() {
 		return sourceVoltage;
 	}
 
-	public void setSourceVoltage(double sourceVoltage) {
+	public void setSourceVoltage(Complex sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 	}
 
-	public double getVoltageDrop() {
-		return (sourceVoltage == 0.0f)? current * resistance : -sourceVoltage;
+	public Complex getVoltageDrop() {
+		return (sourceVoltage.equals(new Complex(0, 0)))? Complex.multiply(current, impedance) : (sourceVoltage).negate();
 	}
 	
 	public Vertex getInput() {
@@ -78,19 +78,19 @@ public class Edge {
 		this.output = output;
 	}
 
-	public double getResistance() {
-		return resistance;
+	public math.Complex getImpedance() {
+		return impedance;
 	}
 
-	public void setResistance(double resistance) {
-		this.resistance = resistance;			
+	public void setImpedance(Complex impedance) {
+		this.impedance = impedance;
 	}
 
-	public double getCurrent() {
+	public Complex getCurrent() {
 		return current;
 	}
 
-	public void setCurrent(double current) {
+	public void setCurrent(Complex current) {
 		this.current = current;
 	}
 

@@ -7,8 +7,7 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
-import math.Coordinate;
-import math.Line;
+import math.*;
 
 /**
  *	Ideal wire, with zero resistance.
@@ -22,17 +21,17 @@ public class Wire extends Component {
 	//Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getVoltage() {
+	public Complex getVoltagePhasor() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public double getResistance() {
-		return e.getResistance();
+	public Complex getImpedancePhasor() {
+		return e.getImpedance();
 	}
 	
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 	
@@ -45,9 +44,9 @@ public class Wire extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);		
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -86,9 +85,8 @@ public class Wire extends Component {
 	//Update:---------------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
+	public void update(double omega) {
+
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------
@@ -154,8 +152,8 @@ public class Wire extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 
 /*
 		//Construction:
@@ -194,7 +192,7 @@ public class Wire extends Component {
 	@Override
 	public
 	void reset() {		
-		e.setCurrent(0.0F);
+		e.setCurrent(new Complex(0, 0));
 		updatePropertyView(false);
 
 	}
@@ -206,7 +204,7 @@ public class Wire extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("current", this::getCurrent);		
+		//setProperty("current", this::getCurrentPhasor);
 	}
 
 }

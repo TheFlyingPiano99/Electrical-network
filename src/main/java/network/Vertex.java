@@ -1,6 +1,7 @@
 package network;
 
 import java.util.HashMap;
+import math.*;
 
 /**
  * Vertex of the graph representation of the network.
@@ -32,8 +33,8 @@ public class Vertex {
 	
 	static int gen = 0;
 	private int id;
-	private double inputCurrent = 0.0f;
-	private double potential = 0.0f;
+	private Complex inputCurrent = new Complex(0, 0);
+	private Complex potential = new Complex(0, 0);
 	
 	//Constructor:-----------------------------------------------------
 	
@@ -82,11 +83,11 @@ public class Vertex {
 		return id;
 	}
 
-	public double getInputCurrent() {
+	public Complex getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(double inputCurrent) {
+	public void setInputCurrent(Complex inputCurrent) {
 		this.inputCurrent = inputCurrent;
 	}
 
@@ -127,11 +128,11 @@ public class Vertex {
 				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));
 	}
 
-	public double getPotential() {
+	public Complex getPotential() {
 		return potential;
 	}
 
-	public void setPotential(double potential) {
+	public void setPotential(Complex potential) {
 		this.potential = potential;
 	}
 

@@ -1,5 +1,6 @@
 package network;
 
+import math.Complex;
 import math.Matrix;
 import math.Vector;
 
@@ -54,7 +55,7 @@ public class LinearSystemForCurrent extends Matrix {
 				if (r < incidence.row) {
 					this.setAt(r, c, incidence.at(r, c));					
 				} else {
-					this.setAt(r, c, 0);					
+					this.setAt(r, c, new Complex(0, 0));
 				}
 			}
 		}
@@ -64,13 +65,13 @@ public class LinearSystemForCurrent extends Matrix {
 				if (r < this.cycle.row) {
 					this.setAt(r, cycleOffset + c, this.cycle.at(r, c));					
 				} else {
-					this.setAt(r, c, 0);					
+					this.setAt(r, c, new Complex(0, 0));
 				}
 			}
 		}
 		
 		if (resistances != null) {
-			updateResistances(resistances);
+			updateImpedances(resistances);
 		}
 		if (sourceVoltage != null) {
 			updateSourceVoltage(sourceVoltage);
@@ -88,13 +89,13 @@ public class LinearSystemForCurrent extends Matrix {
 	 */
 	public void updateSourceVoltage(Vector sourceVoltages) {
 		for (int c = 0; c < this.cycle.column; c++) {
-			double sumOfVoltages = 0;
+			Complex sumOfVoltages = new Complex(0, 0);
 			for (int r = 0; r < sourceVoltages.dimension; r++) {
-				if (this.cycle.at(r, c) > 0) {
-					sumOfVoltages += sourceVoltages.at(r);
+				if (this.cycle.at(r, c).compareTo(new Complex(0, 0)) > 0) {
+					sumOfVoltages.add(sourceVoltages.at(r));
 				}
-				else if (this.cycle.at(r, c) < 0) {
-					sumOfVoltages -= sourceVoltages.at(r);
+				else if (this.cycle.at(r, c).compareTo(new Complex(0, 0)) < 0) {
+					sumOfVoltages.subtract(sourceVoltages.at(r));
 				}
 			}
 			this.setAt(this.row-1, cycleOffset + c, sumOfVoltages);
@@ -103,21 +104,21 @@ public class LinearSystemForCurrent extends Matrix {
 	
 	
 	/**
-	 * Updates only the "resistances" part of the matrix.
-	 * HUN: Frissíti a mátrix ellenállásokat leíró részét.
+	 * Updates only the "impedances" part of the matrix.
+	 * HUN: Frissíti a mátrix impedanciákat leíró részét.
 	 * @param resistances {@link Vector} of resistances.
 	 */
-	public void updateResistances(Vector resistances) {
+	public void updateImpedances(Vector impedances) {
 		for (int c = 0; c < this.cycle.column; c++) {
-			for (int r = 0; r < resistances.dimension; r++) {
-				if (this.cycle.at(r, c) > 0) {
-					this.setAt(r, cycleOffset + c, resistances.at(r));									
+			for (int r = 0; r < impedances.dimension; r++) {
+				if (this.cycle.at(r, c).compareTo(new Complex(0, 0)) > 0) {
+					this.setAt(r, cycleOffset + c, impedances.at(r));
 				}
-				else if (this.cycle.at(r, c) < 0) {
-					this.setAt(r, cycleOffset + c, -resistances.at(r));														
+				else if (this.cycle.at(r, c).compareTo(new Complex(0, 0)) < 0) {
+					this.setAt(r, cycleOffset + c, impedances.at(r).negate());
 				}
 				else {
-					this.setAt(r, cycleOffset + c, 0);																			
+					this.setAt(r, cycleOffset + c, new Complex(0, 0));
 				}
 			}
 		}		
@@ -130,13 +131,12 @@ public class LinearSystemForCurrent extends Matrix {
 	 * @param inputCurrent
 	 */
 	public void updateInputCurrents(Vector inputCurrent) {
-		double sum = 0.0f;
+		Complex sum = new Complex(0, 0);
 		for (int c = 1; c < cycleOffset; c++) {
 			this.setAt(this.row-1, c, inputCurrent.at(c));
-			sum += inputCurrent.at(c);
+			sum.add(inputCurrent.at(c));
 		}
-		this.setAt(this.row-1, 0, -sum);
-		
+		this.setAt(this.row-1, 0, sum.negate());
 	}
 	
 }

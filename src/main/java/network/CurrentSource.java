@@ -9,6 +9,7 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
 
@@ -22,7 +23,7 @@ import math.Line;
 
 public class CurrentSource extends Component {
 	private Edge e;
-	private double inputCurrent = 1.0f;
+	private Complex inputCurrent = new Complex(1.0 ,0);
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -30,17 +31,17 @@ public class CurrentSource extends Component {
 	}
 	
 	
-	public CurrentSource(double i) {
+	public CurrentSource(Complex i) {
 		inputCurrent = i;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
-	public double getInputCurrent() {
+
+	public Complex getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(double inputCurrent) {
+	public void setInputCurrent(Complex inputCurrent) {
 		this.inputCurrent = inputCurrent;
 		if (e != null) {
 			e.getInput().setInputCurrent(inputCurrent);
@@ -57,9 +58,9 @@ public class CurrentSource extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 		e.getInput().setInputCurrent(getInputCurrent()); //!
 
 		
@@ -87,7 +88,7 @@ public class CurrentSource extends Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
+	public void update(double omega) {
 		increaseCurrentVisualisationOffset();
 		updatePropertyView(false);
 	}
@@ -113,7 +114,7 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setInputCurrent(Double.valueOf(pairs[1].split(":")[1]));
+		setInputCurrent(new Complex(Double.valueOf(pairs[1].split(":")[1]), 0));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -168,8 +169,8 @@ public class CurrentSource extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 	}
 
 
@@ -186,7 +187,7 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.setCurrent(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -197,7 +198,7 @@ public class CurrentSource extends Component {
 		if (str != null && str.length() > 0) {
 			try {
 				double val = Double.parseDouble(str);
-				setInputCurrent(val);
+				setInputCurrent(new Complex(val, 0));
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -211,26 +212,26 @@ public class CurrentSource extends Component {
 	@Override
 	public void updatePropertyView(boolean updateEditable) {		
 		if (updateEditable) {
-			setProperty("current", this::getInputCurrent);
+			//setProperty("current", this::getInputCurrent);
 		}
 	}
 
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 
 	@Override
-	public double getVoltage() {
-		return 0;
+	public Complex getVoltagePhasor() {
+		return new Complex(0, 0);
 	}
 
 
 	@Override
-	public double getResistance() {
-		return 0;
+	public Complex getImpedancePhasor() {
+		return new Complex(0, 0);
 	}
 
 

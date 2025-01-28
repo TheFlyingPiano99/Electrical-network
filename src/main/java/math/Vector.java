@@ -8,7 +8,7 @@ package math;
  *
  */
 public class Vector {
-	private double n[];
+	private Complex n[];
     public int dimension;
 
 
@@ -16,12 +16,12 @@ public class Vector {
 	
     public Vector(int d) {
     	dimension = d;
-        n = new double[dimension];
+        n = new Complex[dimension];
     }
 
     public Vector(Vector v) {
     	dimension = v.dimension; 
-        n = new double[dimension];
+        n = new Complex[dimension];
         for (int i = 0; i < dimension; i++) {
             n[i] = v.at(i);
         }
@@ -63,7 +63,7 @@ public class Vector {
 	 * @param i index
 	 * @return value
 	 */
-	public double at(int i) {
+	public Complex at(int i) {
         return n[i];
     }
     
@@ -72,7 +72,7 @@ public class Vector {
 	 * @param i index
 	 * @param val new value
 	 */
-	public void setAt(int i, double val) {
+	public void setAt(int i, Complex val) {
 		n[i] = val;		
 	}
 	
@@ -81,7 +81,7 @@ public class Vector {
      * HUN: Vektor feltöltése a kapott értékkel.
 	 * @param val value
 	 */
-    public void fill (double val) {
+    public void fill (Complex val) {
         for (int i = 0; i < dimension; i++) {
             n[i] = val;
         }
@@ -94,9 +94,9 @@ public class Vector {
      * @param s scalar double value to multiply with.
      * @return this
      */
-    public Vector multiply(double s) {
+    public Vector multiply(Complex s) {
         for (int i = 0; i < dimension; i++) {
-            n[i] *= s;
+            n[i].multiply(s);
         }
         return this;
     }
@@ -106,10 +106,9 @@ public class Vector {
      * @param s scalar double value to divide by.
      * @return this
      */
-    public Vector divide(double s) {
-        s = 1.0F / s;
+    public Vector divide(Complex s) {
         for (int i = 0; i < dimension; i++) {
-            n[i] *= s;
+            n[i].divide(s);
         }
         return this;
     }
@@ -121,7 +120,7 @@ public class Vector {
      */
     public Vector add(Vector v) {
         for (int i = 0; i < dimension; i++) {
-            n[i] += v.at(i);
+            n[i].add(v.at(i));
         }
         return this;
     }
@@ -133,7 +132,7 @@ public class Vector {
      */
     public Vector subtract(Vector v) {
         for (int i = 0; i < dimension; i++) {
-            n[i] -= v.at(i);
+            n[i].subtract(v.at(i));
         }
         return this;
     }
@@ -147,7 +146,7 @@ public class Vector {
         if (!this.equals(v)) {
             if (this.dimension != v.dimension) {
                 dimension = v.dimension;
-                n = new double [dimension];
+                n = new Complex [dimension];
             }
             for (int i = 0; i < dimension; i++) {
                 n[i] = v.at(i);

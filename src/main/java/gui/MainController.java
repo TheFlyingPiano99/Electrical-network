@@ -490,7 +490,7 @@ public class MainController {
             ae -> {
         		try {
 					if (simulating != null && simulating && network != null) {
-						network.simulate(duration);
+						network.simulate();
 						if (network.isValid()) {
 							rightStatus.setText("Helyes kapcsolás.");
 						}
