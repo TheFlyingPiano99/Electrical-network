@@ -12,6 +12,7 @@ import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Current input, with adjustable value.
@@ -43,11 +44,19 @@ public class CurrentSource extends Component {
 
 	public void setInputCurrent(Complex inputCurrent) {
 		this.inputCurrent = inputCurrent;
-		if (e != null) {
-			e.getInput().setInputCurrent(inputCurrent);
+		if (null != e) {
+			e.getInput().getInputCurrent().fill(inputCurrent);
 		}
 	}
 
+	@Override
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -58,10 +67,20 @@ public class CurrentSource extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(new Complex(0, 0));
-		e.setSourceVoltage(new Complex(0, 0));
-		e.getInput().setInputCurrent(getInputCurrent()); //!
+		Vector omega = getParent().getAngularFrequencies();
+		Vector current = new Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(omega.dimension);
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(omega.dimension);
+		inputCurrentVector.fill(this.inputCurrent);
+		e.getInput().setInputCurrent(inputCurrentVector);
 
 		
 		getInput().setVertexBinding(e.getInput());
@@ -83,14 +102,6 @@ public class CurrentSource extends Component {
 		super.removeEndNodes();
 		
 		super.getParent().removeEdge(e);
-	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(double omega) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
 	}
 
 
@@ -169,8 +180,8 @@ public class CurrentSource extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -187,7 +198,7 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(new Complex(0, 0));
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -212,29 +223,18 @@ public class CurrentSource extends Component {
 	@Override
 	public void updatePropertyView(boolean updateEditable) {		
 		if (updateEditable) {
-			//setProperty("current", this::getInputCurrent);
+			setProperty("current", e.getInput()::getTimeDomainInputCurrent);
 		}
 	}
 
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 
-	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
 	}
-
-
-	@Override
-	public Complex getVoltagePhasor() {
-		return new Complex(0, 0);
-	}
-
-
-	@Override
-	public Complex getImpedancePhasor() {
-		return new Complex(0, 0);
-	}
-
-
-
 	
 }

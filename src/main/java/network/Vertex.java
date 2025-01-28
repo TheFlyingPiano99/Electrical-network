@@ -33,9 +33,11 @@ public class Vertex {
 	
 	static int gen = 0;
 	private int id;
-	private Complex inputCurrent = new Complex(0, 0);
-	private Complex potential = new Complex(0, 0);
-	
+	private Vector inputCurrent;
+
+	private double timeDomainInputCurrent = 0;
+	private double timeDomainPotential = 0;
+
 	//Constructor:-----------------------------------------------------
 	
 	Vertex () {
@@ -43,6 +45,7 @@ public class Vertex {
 		id = gen;
 		incoming = new HashMap<Vertex, Edge>();
 		outgoing = new HashMap<Vertex, Edge>();
+		inputCurrent = Vector.Zeros(Edge.defaultPhasorSpaceResolution);
 	}
 
 	//Getters/Setters:-------------------------------------------------
@@ -83,11 +86,11 @@ public class Vertex {
 		return id;
 	}
 
-	public Complex getInputCurrent() {
+	public Vector getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(Complex inputCurrent) {
+	public void setInputCurrent(Vector inputCurrent) {
 		this.inputCurrent = inputCurrent;
 	}
 
@@ -128,12 +131,28 @@ public class Vertex {
 				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));
 	}
 
-	public Complex getPotential() {
-		return potential;
+	public void setTimeDomainInputPotential(double potential) {
+		this.timeDomainPotential = potential;
 	}
 
-	public void setPotential(Complex potential) {
-		this.potential = potential;
+    public double getTimeDomainPotential() {
+        return timeDomainPotential;
+    }
+
+	public void setTimeDomainPotential(double potential) {
+		timeDomainPotential = potential;
+	}
+
+    public double getTimeDomainInputCurrent() {
+        return timeDomainInputCurrent;
+    }
+
+	public void updateTimeDomainParameters(Vector omega, double totalTimeSec)
+	{
+		timeDomainInputCurrent = 0;
+		for (int k = 0; k < omega.dimension; k++) {
+			timeDomainInputCurrent += Complex.multiply(inputCurrent.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
+		}
 	}
 
 }

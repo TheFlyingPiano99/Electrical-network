@@ -1,4 +1,4 @@
-class: main.java.network.VoltageSource; voltage: 10.0; inputPos: [210, 90]; outputPos: [300, 90]
+class: main.java.network.DCVoltageSource; voltage: 10.0; inputPos: [210, 90]; outputPos: [300, 90]
 class: main.java.network.Resistance; resistance: 100.0; inputPos: [300, 90]; outputPos: [360, 180]
 class: main.java.network.Resistance; resistance: 100.0; inputPos: [360, 180]; outputPos: [300, 270]
 class: main.java.network.Inductor; inductance: 2.0; inputPos: [150, 180]; outputPos: [360, 180]

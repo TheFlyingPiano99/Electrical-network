@@ -144,7 +144,7 @@ public class Gauss {
             for (int i = c; i < M.column; i++) {    //Iterate on columns
                 boolean foundNotZeroInColumn = false;
                 for (int j = 0; j < M.row; j++) {   //Iterate element in current column
-                    if (M.at(j, i).equals(new Complex(0, 0))) {
+                    if (!M.at(j, i).equals(new Complex(0, 0))) {
                         if (j == M.row-1) {     //Found a forbidden column, where all elements are 0 except the last element.
                             return SingularityFlag.noSolution;
                         }

@@ -1,5 +1,5 @@
-class: main.java.network.VoltageSource; voltage: 1.0; inputPos: [239, 92]; outputPos: [299, 92]
-class: main.java.network.VoltageSource; voltage: 1.0; inputPos: [237, 184]; outputPos: [297, 187]
+class: main.java.network.DCVoltageSource; voltage: 1.0; inputPos: [239, 92]; outputPos: [299, 92]
+class: main.java.network.DCVoltageSource; voltage: 1.0; inputPos: [237, 184]; outputPos: [297, 187]
 class: main.java.network.Wire; inputPos: [299, 92]; outputPos: [346, 135]
 class: main.java.network.Wire; inputPos: [297, 187]; outputPos: [346, 135]
 class: main.java.network.Wire; inputPos: [181, 134]; outputPos: [239, 92]

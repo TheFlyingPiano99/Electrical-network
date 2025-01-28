@@ -82,7 +82,7 @@ public class DrawingHelper {
 	 * @param canvas to draw on
 	 * @param network {@link Network} that provides objects to visualise.
 	 */
-	protected static void updateCanvasContent(Canvas canvas, Network network) {
+	protected static void updateCanvasContent(Canvas canvas, Network network, double totalTimeSec) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -90,7 +90,7 @@ public class DrawingHelper {
 			if (network.isSnapToGrid()) {
 				drawGrid(canvas, network.getGridSize());				
 			}
-			network.draw(ctx);
+			network.draw(ctx, totalTimeSec);
 		}
 	}
 
@@ -194,9 +194,9 @@ public class DrawingHelper {
 			ctx.fillRect(0, 0, W, H);
 			network.Component selected = network.getSelected();
 			if (selected != null) {
-				double I = selected.getCurrentPhasor().getRe();
-				double U = selected.getVoltagePhasor().getRe();
-				double R = selected.getImpedancePhasor().getRe();
+				double I = selected.getTimeDomainCurrent();
+				double U = selected.getTimeDomainVoltageDrop();
+				double R = selected.getTimeDomainResistance();
 				scopeCurrentBuffer.add(I);
 				scopeVoltageBuffer.add(U);
 				scopeResistanceBuffer.add(R);

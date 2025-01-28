@@ -10,6 +10,7 @@ import math.Complex;
 import math.Coordinate;
 import math.Line;
 import math.MyMath;
+import math.Vector;
 
 /**
  * Ideal inductor, with adjustable value and zero resistance.
@@ -36,25 +37,15 @@ public class Inductor extends Component {
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
-	public Complex getSourceVoltage() {
-		return e.getSourceVoltage();
-	}
 
 	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
-	}
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
 
 	@Override
-	public Complex getVoltagePhasor() {
-		return e.getVoltageDrop();
-	}
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
 
 	@Override
-	public Complex getImpedancePhasor() {
-		return e.getImpedance();
-	}
+	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -65,9 +56,21 @@ public class Inductor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(new Complex(wireResistance, 0));
-		e.setSourceVoltage(new Complex(0, 0));
+		math.Vector omega = getParent().getAngularFrequencies();
+		math.Vector current = new math.Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		math.Vector impedance = new math.Vector(omega.dimension);
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+					i,
+					new Complex(0, 2 * Math.PI * omega.at(i).getRe() * inductance)
+			);
+		}
+		e.setImpedance(impedance);
+		math.Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
 		
 		
 		getInput().setVertexBinding(e.getInput());
@@ -105,14 +108,6 @@ public class Inductor extends Component {
 		
 		super.getParent().removeEdge(e);
 	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(double omega) {
-		// Deprecated
-	}
-
 
 	//Persistence:-----------------------------------------------------------------------------------
 	
@@ -154,6 +149,13 @@ public class Inductor extends Component {
 
 	public void setInductance(double inductance) {
 		this.inductance = inductance;
+		Vector omega = getParent().getAngularFrequencies();
+		for (int i = 0; i < e.getImpedance().dimension; i++) {
+			e.getImpedance().setAt(
+					i,
+					new Complex(0, 2 * Math.PI * omega.at(i).getRe() * inductance)
+			);
+		}
 	}
 
 
@@ -255,8 +257,8 @@ public class Inductor extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -273,11 +275,7 @@ public class Inductor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(new Complex(0, 0));
-		e.setSourceVoltage(new Complex(0, 0));
-		e.setImpedance(new Complex(wireResistance, 0));
-		prevCurrents.clear();
-		prevDeltas.clear();
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -302,12 +300,20 @@ public class Inductor extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		//setProperty("voltage", this::getVoltagePhasor);
-		//setProperty("current", this::getCurrentPhasor);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
 			setProperty("inductance", this::getInductance);
 		}		
 	}
 
-	
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
+	}
 }

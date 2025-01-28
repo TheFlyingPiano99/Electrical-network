@@ -21,18 +21,16 @@ public class Wire extends Component {
 	//Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public Complex getVoltagePhasor() {
-		return e.getVoltageDrop();
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() {
+		return e.getTimeDomainVoltageDrop();
 	}
 
 	@Override
-	public Complex getImpedancePhasor() {
-		return e.getImpedance();
-	}
-	
-	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
+	public double getTimeDomainResistance() {
+		return e.getTimeDomainResistance();
 	}
 	
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -44,9 +42,16 @@ public class Wire extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(new Complex(0, 0));
-		e.setSourceVoltage(new Complex(0, 0));
+		Vector omega = getParent().getAngularFrequencies();
+		Vector current = new Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(omega.dimension);
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -80,13 +85,6 @@ public class Wire extends Component {
 	public void destroy() {
 		removeEndNodes();
 		super.getParent().removeEdge(e);
-	}
-	
-	//Update:---------------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(double omega) {
-
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------
@@ -135,6 +133,7 @@ public class Wire extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();		
 		Coordinate inputPos  = getInput().getPos(); 
 		Coordinate outputPos = getOutput().getPos();
@@ -152,8 +151,8 @@ public class Wire extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 
 /*
 		//Construction:
@@ -191,10 +190,9 @@ public class Wire extends Component {
 
 	@Override
 	public
-	void reset() {		
-		e.setCurrent(new Complex(0, 0));
+	void reset() {
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
-
 	}
 
 	@Override
@@ -204,7 +202,17 @@ public class Wire extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		//setProperty("current", this::getCurrentPhasor);
+		setProperty("current", this::getTimeDomainCurrent);
+	}
+
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
 	}
 
 }

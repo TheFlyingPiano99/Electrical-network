@@ -11,6 +11,7 @@ import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Capacitor, with adjustable capacity.
@@ -48,24 +49,26 @@ public class Capacitor extends Component {
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
-	//public Complex getSourceVoltage() {
-	//	return -(1/capacity);
-	//}
 
 	public void setCapacity(double capacity) {
 		this.capacity = capacity;
+		Vector omega = getParent().getAngularFrequencies();
+		for (int i = 0; i < e.getImpedance().dimension; i++) {
+			e.getImpedance().setAt(
+					i,
+					new Complex(0, 1.0 / (2 * Math.PI * omega.at(i).getRe() * capacity))
+			);
+		}
 	}
 
 	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
-	}
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
 
 	@Override
-	public Complex getVoltagePhasor() {
-		return e.getVoltageDrop();
-	}
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -76,10 +79,21 @@ public class Capacitor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(new Complex(0, 0));
-		e.setSourceVoltage(new Complex(0, 0));
-		
+		math.Vector omega = getParent().getAngularFrequencies();
+		math.Vector current = new math.Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		math.Vector impedance = new math.Vector(omega.dimension);
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+				i,
+				new Complex(0, 1.0 / (2 * Math.PI * omega.at(i).getRe() * capacity))
+			);
+		}
+		e.setImpedance(impedance);
+		math.Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		
@@ -91,7 +105,7 @@ public class Capacitor extends Component {
 		prop.editable = false;
 		prop.name = "forrás feszültség:";
 		prop.unit = "V";
-		prop.value = String.valueOf(getVoltagePhasor().getRe());
+		prop.value = String.valueOf(e.getTimeDomainVoltageDrop());
 		getProperties().put("voltage", prop);
 
 		prop = new ComponentProperty();
@@ -115,22 +129,6 @@ public class Capacitor extends Component {
 		
 		super.getParent().removeEdge(e);
 	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(double omega) {
-		if (0.0 != omega) {
-			e.setImpedance(new Complex(0.0, omega * capacity).inverse());
-		}
-		else if (omega > 0.0) {
-			e.setImpedance(new Complex(0.0, Double.POSITIVE_INFINITY));
-		}
-		else {
-			e.setImpedance(new Complex(0.0, Double.NEGATIVE_INFINITY));
-		}
-	}
-
 
 	//Persistence:-----------------------------------------------------------------------------------
 	
@@ -188,6 +186,7 @@ public class Capacitor extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
 		//Construction:
@@ -206,8 +205,8 @@ public class Capacitor extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -224,9 +223,7 @@ public class Capacitor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(new Complex(0, 0));
-		e.setSourceVoltage(new Complex(0, 0));
-		setCharge(0.0F);
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -251,18 +248,21 @@ public class Capacitor extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		//setProperty("voltage", this::getVoltagePhasor);
-		//setProperty("current", this::getCurrentPhasor);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
 			setProperty("capacity", this::getCapacity);
-		}		
+		}
 	}
 
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 
-	@Override
-	public Complex getImpedancePhasor() {
-		return e.getImpedance();
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
 	}
-
 	
 }

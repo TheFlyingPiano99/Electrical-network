@@ -3,6 +3,7 @@ package network;
 import javafx.util.Duration;
 
 import java.util.Map;
+import java.util.Vector;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -28,10 +29,10 @@ public abstract class Component {
 
 	private Map<String, ComponentProperty> properties = null;
 	
-	private float DEFAULT_SIZE = 60.0f;
+	protected float DEFAULT_SIZE = 60.0f;
 
-	private float currentVisualisationOffset = 0;
-	private static float currentVisualisationSpeed = 100;
+	protected float currentVisualisationOffset = 0;
+	protected static float currentVisualisationSpeed = 100;
 	
 	private ComponentNode input;
 	public float getDEFAULT_SIZE() {
@@ -46,6 +47,7 @@ public abstract class Component {
 		
 	//Manipulation related:
 	boolean grabbed = false;
+
 
 	/**
 	 * When the component is grabbed, the actual position of the cursor and the position of the components input node may not match.
@@ -192,19 +194,11 @@ public abstract class Component {
 		parent.tryToMergeComponentNode(getOutput());
 	}
 
-	//CUrrentVisualisation:-------------------------------------------------------
+	//CurrentVisualisation:-------------------------------------------------------
 	
 	
-	public void increaseCurrentVisualisationOffset() {
-		float pres = currentVisualisationOffset;
-		currentVisualisationOffset = (currentVisualisationOffset + (float) getCurrentPhasor().getRe() * currentVisualisationSpeed) % DEFAULT_SIZE;
-		
-		Double test =Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
-	}	
-		
+	abstract public void increaseCurrentVisualisationOffset();
+
 	//To override:---------------------------------------------------------------
 	
 	/**
@@ -219,13 +213,6 @@ public abstract class Component {
 	 * HUN: Megszünteti a komponens belső struktúráját.
 	 */
 	abstract public void destroy ();
-	
-	/**
-	 * Updates the inner structure of the component, including elements of the graph representation.
-	 * HUN: Frissíti a belső struktúrát. Nem lineáris komponensek esetén különösen fontos!
-	 * @param omega	angular frequency of the AC signal
-	 */
-	abstract public void update(double omega);
 	
 	/**
 	 * Adds the persistent content of the component to the given builder.
@@ -248,21 +235,21 @@ public abstract class Component {
 	 * HUN: Visszaadja az áramszintet amperben.
 	 * @return current ampere
 	 */
-	abstract public Complex getCurrentPhasor();
+	abstract public double getTimeDomainCurrent();
 	
 	/**
 	 * Returns electric voltage drop in volt.
 	 * HUN: Visszaadja az elektromos feszültég esést voltban.  
 	 * @return voltage volt
 	 */
-	abstract public Complex getVoltagePhasor();
+	abstract public double getTimeDomainVoltageDrop();
 	
 	/**
 	 * Returns electric resistance of component in ohm.
 	 * HUN: Visszaadja az elektromos ellenállást ohmban. 
 	 * @return resistance ohm
 	 */
-	abstract public Complex getImpedancePhasor();
+	abstract public double getTimeDomainResistance();
 
 	/**
 	 * Draws the component's visual representation to the given GraphicsContext.
@@ -290,7 +277,7 @@ public abstract class Component {
 	abstract public void updatePropertyModel(); 
 
 	/**
-	 * Updates the {@link ComponentProperty} map according to the inner values of the component. 
+	 * Updates the {@link ComponentProperty} map according to the inner values of the component.
 	 * HUN: Frissíti a {@link ComponentProperty} mapot a belső változók szerint.
 	 * @param updateEditable TODO
 	 */

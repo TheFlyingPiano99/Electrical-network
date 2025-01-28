@@ -1,6 +1,6 @@
 class: main.java.network.Inductor; inductance: 6.0; inputPos: [300, 270]; outputPos: [390, 270]
 class: main.java.network.Resistance; resistance: 200.0; inputPos: [300, 270]; outputPos: [150, 270]
 class: main.java.network.Capacitor; capacity: 0.001; inputPos: [390, 120]; outputPos: [390, 270]
-class: main.java.network.VoltageSource; voltage: 3.3; inputPos: [300, 120]; outputPos: [390, 120]
+class: main.java.network.DCVoltageSource; voltage: 3.3; inputPos: [300, 120]; outputPos: [390, 120]
 class: main.java.network.Wire; inputPos: [150, 120]; outputPos: [150, 270]
 class: main.java.network.AnalogeAmmeter; resistance: 1.0E-6; scale: 1000.0; inputPos: [150, 120]; outputPos: [300, 120]

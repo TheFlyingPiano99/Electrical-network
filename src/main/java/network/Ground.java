@@ -12,6 +12,7 @@ import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Current input, with adjustable value.
@@ -28,7 +29,15 @@ public class Ground extends Component {
 	}
 			
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
+
+	@Override
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -39,9 +48,16 @@ public class Ground extends Component {
 		e = new Edge();
 		super.getParent().addEdgeWithGroundedOutput(e);
 
-		e.setCurrent(new Complex(0, 0));
-		e.setImpedance(new Complex(0, 0));
-		e.setSourceVoltage(new Complex(0, 0));
+		Vector omega = getParent().getAngularFrequencies();
+		Vector current = new Vector(omega.dimension);
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(omega.dimension);
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(omega.dimension);
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
 
 		
 		getInput().setVertexBinding(e.getInput());
@@ -54,7 +70,7 @@ public class Ground extends Component {
 		prop.editable = false;
 		prop.name = "elnyelt áram:";
 		prop.unit = "A";
-		prop.value = String.valueOf(getCurrentPhasor());
+		prop.value = String.valueOf(getTimeDomainCurrent());
 		getProperties().put("current", prop);
 	}
 	
@@ -64,13 +80,6 @@ public class Ground extends Component {
 		
 		super.getParent().removeEdge(e);
 	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(double omega) {
-	}
-
 
 	//Persistence:-----------------------------------------------------------------------------------
 	
@@ -122,6 +131,7 @@ public class Ground extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
 		float  defaultSize = getDEFAULT_SIZE();
@@ -142,8 +152,8 @@ public class Ground extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential().getRe(),
-				(float)e.getOutput().getPotential().getRe());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -160,7 +170,7 @@ public class Ground extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(new Complex(0, 0));
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -173,28 +183,17 @@ public class Ground extends Component {
 	@Override
 	public void updatePropertyView(boolean updateEditable)
 	{
-		// setProperty("current", this::getCurrentPhasor);
+		setProperty("current", this::getTimeDomainCurrent);
 	}
 
+	public void increaseCurrentVisualisationOffset() {
+		float pres = currentVisualisationOffset;
+		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 
-	@Override
-	public Complex getCurrentPhasor() {
-		return e.getCurrent();
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
 	}
 
-
-	@Override
-	public Complex getVoltagePhasor() {
-		return new Complex(0, 0);
-	}
-
-
-	@Override
-	public Complex getImpedancePhasor() {
-		return new Complex(0, 0);
-	}
-
-
-
-	
 }
