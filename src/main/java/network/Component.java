@@ -1,9 +1,6 @@
 package network;
 
-import javafx.util.Duration;
-
 import java.util.Map;
-import java.util.Vector;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -197,7 +194,7 @@ public abstract class Component {
 	//CurrentVisualisation:-------------------------------------------------------
 	
 	
-	abstract public void increaseCurrentVisualisationOffset(double totalTimeSec);
+	abstract public void updateCurrentVisualisationOffset(double totalTimeSec);
 
 	//To override:---------------------------------------------------------------
 	

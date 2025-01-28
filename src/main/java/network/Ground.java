@@ -186,7 +186,7 @@ public class Ground extends Component {
 		setProperty("current", this::getTimeDomainCurrent);
 	}
 
-	public void increaseCurrentVisualisationOffset(double totalTimeSec) {
+	public void updateCurrentVisualisationOffset(double totalTimeSec) {
 		double pres = currentVisualisationOffset;
 		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 

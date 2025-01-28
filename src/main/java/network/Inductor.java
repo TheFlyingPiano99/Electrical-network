@@ -307,7 +307,7 @@ public class Inductor extends Component {
 		}		
 	}
 
-	public void increaseCurrentVisualisationOffset(double totalTimeSec) {
+	public void updateCurrentVisualisationOffset(double totalTimeSec) {
 		double pres = currentVisualisationOffset;
 		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 

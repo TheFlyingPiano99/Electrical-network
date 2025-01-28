@@ -1098,6 +1098,7 @@ public class Network {
 		}
 
 		for (Component component : components) {
+			component.updateCurrentVisualisationOffset(totalTimeSec);
 			component.draw(ctx);
 		}
 	}
