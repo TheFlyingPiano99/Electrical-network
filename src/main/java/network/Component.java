@@ -6,8 +6,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
-import math.Coordinate;
-import math.MyMath;
+import math.*;
 
 /**
  * Abstract parent of all network components.
@@ -198,7 +197,7 @@ public abstract class Component {
 	
 	public void increaseCurrentVisualisationOffset() {
 		float pres = currentVisualisationOffset;
-		currentVisualisationOffset = (currentVisualisationOffset + (float)getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+		currentVisualisationOffset = (currentVisualisationOffset + (float) getCurrentPhasor().getRe() * currentVisualisationSpeed) % DEFAULT_SIZE;
 		
 		Double test =Double.valueOf(currentVisualisationOffset);
 		if (test.isNaN()) {
@@ -223,11 +222,10 @@ public abstract class Component {
 	
 	/**
 	 * Updates the inner structure of the component, including elements of the graph representation.
-	 * In case of nonlinear components this method changes parameters of the graph representation. In this case it must set related flags of the parent network!
-	 * HUN: Frissíti a belső struktúrát. Nem lineáris komponensek esetén különösen fontos! 
-	 * @param deltaTime	The time spent since the last call of update.
+	 * HUN: Frissíti a belső struktúrát. Nem lineáris komponensek esetén különösen fontos!
+	 * @param omega	angular frequency of the AC signal
 	 */
-	abstract public void update(Duration deltaTime);
+	abstract public void update(double omega);
 	
 	/**
 	 * Adds the persistent content of the component to the given builder.
@@ -250,22 +248,22 @@ public abstract class Component {
 	 * HUN: Visszaadja az áramszintet amperben.
 	 * @return current ampere
 	 */
-	abstract public double getCurrent();
+	abstract public Complex getCurrentPhasor();
 	
 	/**
 	 * Returns electric voltage drop in volt.
 	 * HUN: Visszaadja az elektromos feszültég esést voltban.  
 	 * @return voltage volt
 	 */
-	abstract public double getVoltage();
+	abstract public Complex getVoltagePhasor();
 	
 	/**
 	 * Returns electric resistance of component in ohm.
 	 * HUN: Visszaadja az elektromos ellenállást ohmban. 
 	 * @return resistance ohm
 	 */
-	abstract public double getResistance();
-	
+	abstract public Complex getImpedancePhasor();
+
 	/**
 	 * Draws the component's visual representation to the given GraphicsContext.
 	 * HUN: Kirajzolja a komponens grafikus reprezentációját a megadott rajzfelületre. 

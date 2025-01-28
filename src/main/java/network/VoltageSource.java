@@ -3,8 +3,7 @@ package network;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.util.Duration;
 import gui.DrawingHelper;
-import math.Coordinate;
-import math.Line;
+import math.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,49 +16,44 @@ import java.util.List;
  */
 public class VoltageSource extends network.Component {
 	private network.Edge e;
-	private double sourceVoltage = 1.0;
-	private double fadeIn = 0.0;
-	
+	private Complex sourceVoltage = new Complex(1.0, 0);
+
 	//Constructors:---------------------------------------------------------------------------------------
 	
 	public VoltageSource() {
 	}
 	
 	
-	public VoltageSource(double u) {
+	public VoltageSource(Complex u) {
 		sourceVoltage = u;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public double getSourceVoltage() {
-		return fadeIn * sourceVoltage;
-	}
-
-	public double getSourceVoltageForView() {
+	public Complex getSourceVoltage() {
 		return sourceVoltage;
 	}
 
-	public void setSourceVoltage(double sourceVoltage) {
+	public void setSourceVoltage(Complex sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 		if (e != null) {
-			e.setSourceVoltage(fadeIn * sourceVoltage);
+			e.setSourceVoltage(sourceVoltage);
 		}
 	}
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Complex getVoltagePhasor() {
 		return getSourceVoltage();
 	}
 
 	@Override
-	public double getResistance() {
-		return getSourceVoltage() / e.getCurrent();
+	public Complex getImpedancePhasor() {
+		return Complex.divide(getSourceVoltage(), e.getCurrent());
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -71,8 +65,8 @@ public class VoltageSource extends network.Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(0, 0));
 		e.setSourceVoltage(getSourceVoltage());	//!
 
 		
@@ -116,20 +110,7 @@ public class VoltageSource extends network.Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		if (fadeIn < 1.0) {
-			fadeIn += duration.toSeconds() * 2.0;
-			if (fadeIn > 1.0) {
-				fadeIn = 1.0;
-			}
-			e.setSourceVoltage(getSourceVoltage());	//!
-			updatePropertyView(true);
-			getParent().setUpdateAll();
-		}
-		else {
-			updatePropertyView(false);
-		}
+	public void update(double omega) {
 	}
 
 
@@ -153,7 +134,7 @@ public class VoltageSource extends network.Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setSourceVoltage(Double.valueOf(pairs[1].split(":")[1]));
+		setSourceVoltage(new Complex(Double.valueOf(pairs[1].split(":")[1]), 0));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -227,8 +208,8 @@ public class VoltageSource extends network.Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 	}
 
 
@@ -245,9 +226,8 @@ public class VoltageSource extends network.Component {
 
 	@Override
 	public void reset() {
-		fadeIn = 0.0;
-		e.setCurrent(0.0F);
-		e.setSourceVoltage(0);
+		e.setCurrent(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 		updatePropertyView(true);
 	}
 
@@ -258,7 +238,7 @@ public class VoltageSource extends network.Component {
 		if (str != null && str.length() > 0) {
 			try {
 				double val = Double.parseDouble(str);
-				setSourceVoltage(val);
+				setSourceVoltage(new Complex(val, 0));
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -274,10 +254,10 @@ public class VoltageSource extends network.Component {
 	public void updatePropertyView(boolean updateEditable) {
 		
 		if (updateEditable) {
-			setProperty("voltage", this::getSourceVoltageForView);
+			//setProperty("voltage", this::getSourceVoltageForView);
 		}
-		setProperty("current", this::getCurrent);
-		setProperty("resistance", this::getResistance);
+		//setProperty("current", this::getCurrentPhasor);
+		//setProperty("resistance", this::getImpedancePhasor);
 	}
 
 

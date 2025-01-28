@@ -7,6 +7,7 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
 
@@ -33,23 +34,23 @@ public class Resistance extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Complex getVoltagePhasor() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public double getResistance() {
-		return e.getResistance();
+	public Complex getImpedancePhasor() {
+		return e.getImpedance();
 	}
 
 	public void setResistance(double resistance) {
 		this.resistance = resistance;
-		e.setResistance(resistance);
+		e.setImpedance(new Complex(resistance, 0));
 	}
 
 	// Build/Destroy:------------------------------------------------------------------------------------
@@ -61,9 +62,9 @@ public class Resistance extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(resistance); // !
-		e.setSourceVoltage(0);
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(resistance, 0)); // !
+		e.setSourceVoltage(new Complex(0, 0));
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -89,7 +90,7 @@ public class Resistance extends Component {
 		prop.editable = true;
 		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
-		prop.value = String.valueOf(getResistance());
+		prop.value = String.valueOf(getImpedancePhasor());
 		getProperties().put("resistance", prop);
 
 	}
@@ -103,9 +104,7 @@ public class Resistance extends Component {
 	// Update:-------------------------------------------------------------------------------------------
 
 	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
+	public void update(double omega) {
 	}
 
 	// Persistence:-----------------------------------------------------------------------------------
@@ -184,8 +183,8 @@ public class Resistance extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -202,7 +201,7 @@ public class Resistance extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.setCurrent(new Complex(0, 0));
 		updatePropertyView(false);
 
 	}
@@ -219,17 +218,17 @@ public class Resistance extends Component {
 				e.printStackTrace();
 			}
 			getParent().setUpdateAll();
-			getProperties().get("resistance").value = String.valueOf(getResistance());
+			getProperties().get("resistance").value = String.valueOf(getImpedancePhasor());
 		}
 
 	}
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		//setProperty("voltage", this::getVoltagePhasor);
+		//setProperty("current", this::getCurrentPhasor);
 		if (updateEditable) {
-			setProperty("resistance", this::getResistance);
+			//setProperty("resistance", this::getImpedancePhasor);
 		}
 	}
 

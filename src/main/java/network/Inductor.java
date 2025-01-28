@@ -6,6 +6,7 @@ import java.util.*;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
 import math.MyMath;
@@ -36,23 +37,23 @@ public class Inductor extends Component {
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public double getSourceVoltage() {
-		return -inductance * derivativeOfCurrent;
+	public Complex getSourceVoltage() {
+		return e.getSourceVoltage();
 	}
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Complex getVoltagePhasor() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public double getResistance() {
-		return e.getResistance();
+	public Complex getImpedancePhasor() {
+		return e.getImpedance();
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -64,9 +65,9 @@ public class Inductor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(wireResistance);
-		e.setSourceVoltage(0);		
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(wireResistance, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 		
 		
 		getInput().setVertexBinding(e.getInput());
@@ -108,36 +109,8 @@ public class Inductor extends Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
-		double delta = (double)duration.toSeconds();
-		double I = e.getCurrent();
-		prevCurrents.add(I);
-		prevDeltas.add(delta);
-
-		int maxUsedSampleCount = 10;
-		if (maxUsedSampleCount < prevCurrents.size()) {	// Pop first
-			prevCurrents.remove(0);
-		}
-		if (maxUsedSampleCount < prevDeltas.size()) {	// Pop first
-			prevDeltas.remove(0);
-		}
-		double derivativeOfCurrent = 0.0;
-		for (int k = 0; k < prevCurrents.size(); k++) {
-			double sample = prevCurrents.get(prevCurrents.size() - 1 - k);
-			derivativeOfCurrent += ((k % 2 == 0)? 1 : -1) * MyMath.binomial(prevCurrents.size() - 1, k) * sample;
-		}
-		derivativeOfCurrent /= delta;
-
-		double reactance = 0.0;
-		if (Math.abs(I) > 0.0) {
-			reactance = inductance * derivativeOfCurrent / I;
-		}
-		double impedance = Math.sqrt(Math.pow(wireResistance, 2) + Math.pow(reactance, 2));
-		e.setResistance(impedance);
-
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
-		getParent().setUpdateAll();	
+	public void update(double omega) {
+		// Deprecated
 	}
 
 
@@ -282,8 +255,8 @@ public class Inductor extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 	}
 
 
@@ -300,9 +273,9 @@ public class Inductor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0);
-		e.setSourceVoltage(0.0);
-		e.setResistance(wireResistance);
+		e.setCurrent(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
+		e.setImpedance(new Complex(wireResistance, 0));
 		prevCurrents.clear();
 		prevDeltas.clear();
 		updatePropertyView(false);
@@ -329,8 +302,8 @@ public class Inductor extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		//setProperty("voltage", this::getVoltagePhasor);
+		//setProperty("current", this::getCurrentPhasor);
 		if (updateEditable) {
 			setProperty("inductance", this::getInductance);
 		}		

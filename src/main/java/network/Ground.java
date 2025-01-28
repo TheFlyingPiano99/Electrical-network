@@ -9,6 +9,7 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
 
@@ -17,8 +18,6 @@ import math.Line;
  * @author Simon Zoltán
  *
  */
-
-
 
 public class Ground extends Component {
 	private Edge e;
@@ -40,9 +39,9 @@ public class Ground extends Component {
 		e = new Edge();
 		super.getParent().addEdgeWithGroundedOutput(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);
+		e.setCurrent(new Complex(0, 0));
+		e.setImpedance(new Complex(0, 0));
+		e.setSourceVoltage(new Complex(0, 0));
 
 		
 		getInput().setVertexBinding(e.getInput());
@@ -55,7 +54,7 @@ public class Ground extends Component {
 		prop.editable = false;
 		prop.name = "elnyelt áram:";
 		prop.unit = "A";
-		prop.value = String.valueOf(getCurrent());
+		prop.value = String.valueOf(getCurrentPhasor());
 		getProperties().put("current", prop);
 	}
 	
@@ -69,9 +68,7 @@ public class Ground extends Component {
 	//Update:----------------------------------------------------------------------------------------
 	
 	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
+	public void update(double omega) {
 	}
 
 
@@ -145,8 +142,8 @@ public class Ground extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getPotential().getRe(),
+				(float)e.getOutput().getPotential().getRe());
 	}
 
 
@@ -163,7 +160,7 @@ public class Ground extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.setCurrent(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -174,26 +171,27 @@ public class Ground extends Component {
 
 
 	@Override
-	public void updatePropertyView(boolean updateEditable) {		
-		setProperty("current", this::getCurrent);
+	public void updatePropertyView(boolean updateEditable)
+	{
+		// setProperty("current", this::getCurrentPhasor);
 	}
 
 
 	@Override
-	public double getCurrent() {
+	public Complex getCurrentPhasor() {
 		return e.getCurrent();
 	}
 
 
 	@Override
-	public double getVoltage() {
-		return 0;
+	public Complex getVoltagePhasor() {
+		return new Complex(0, 0);
 	}
 
 
 	@Override
-	public double getResistance() {
-		return 0;
+	public Complex getImpedancePhasor() {
+		return new Complex(0, 0);
 	}
 
 

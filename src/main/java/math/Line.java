@@ -22,11 +22,11 @@ public class Line {
 		a = new Vector(2);
 		b = new Vector(2);
 		
-		a.setAt(0, ax);
-		a.setAt(1, ay);
+		a.setAt(0, new Complex(ax, 0));
+		a.setAt(1, new Complex(ay, 0));
 
-		b.setAt(0, bx);
-		b.setAt(1, by);
+		b.setAt(0, new Complex(bx, 0));
+		b.setAt(1, new Complex(by, 0));
 		
 	}
 
@@ -40,15 +40,15 @@ public class Line {
 	 */
 	public static void transform(Line line, float scale, float angle, Vector offset) {
 
-		line.a = MyMath.multiply(scale, line.a);
-		line.b = MyMath.multiply(scale, line.b);
+		line.a = MyMath.multiply(new Complex(scale, 0), line.a);
+		line.b = MyMath.multiply(new Complex(scale, 0), line.b);
 		
 		Matrix rotation = new Matrix(2,2);
-		rotation.setAt(0, 0, (float)Math.cos(angle));
-		rotation.setAt(0, 1, (float)-Math.sin(angle));
+		rotation.setAt(0, 0, new Complex(Math.cos(angle), 0));
+		rotation.setAt(0, 1, new Complex(-Math.sin(angle), 0));
 
-		rotation.setAt(1, 0, (float)Math.sin(angle));
-		rotation.setAt(1, 1, (float)Math.cos(angle));
+		rotation.setAt(1, 0, new Complex(Math.sin(angle), 0));
+		rotation.setAt(1, 1, new Complex(Math.cos(angle), 0));
 
 		line.a = MyMath.multiply(rotation, line.a);
 		line.b = MyMath.multiply(rotation, line.b);
