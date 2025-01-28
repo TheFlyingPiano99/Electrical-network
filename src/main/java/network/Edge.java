@@ -155,6 +155,6 @@ public class Edge {
 
 	public final double getTimeDomainVoltageDrop()
 	{
-		return timeDomainResistance / timeDomainCurrent;
+		return timeDomainResistance * timeDomainCurrent;
 	}
 }
