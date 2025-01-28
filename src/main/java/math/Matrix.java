@@ -24,6 +24,11 @@ public class Matrix {
     	row = r;
     	column = c;
         n = new Complex[row * column];
+        for (int j = 0; j < column; j++) {
+            for (int i = 0; i < row; i++) {
+                n[j * row + i] = new Complex(0, 0);
+            }
+        }
         /*if (n == nullptr) {
             throw runtime_error("Initialisation failed!");
         }*/
@@ -42,7 +47,7 @@ public class Matrix {
         }*/
         for (int c = 0; c < column; c++) {
             for  (int r = 0; r < row; r++) {
-                n[c * row + r] = M.at(r, c);
+                n[c * row + r] = M.at(r, c).copy();
             }
         }
     }
