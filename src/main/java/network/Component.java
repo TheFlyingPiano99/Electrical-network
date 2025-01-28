@@ -19,7 +19,7 @@ public abstract class Component {
 		
 	private Network parent;
 	
-	public float getCurrentVisualisationOffset() {
+	public double getCurrentVisualisationOffset() {
 		return currentVisualisationOffset;
 	}
 
@@ -31,8 +31,8 @@ public abstract class Component {
 	
 	protected float DEFAULT_SIZE = 60.0f;
 
-	protected float currentVisualisationOffset = 0;
-	protected static float currentVisualisationSpeed = 100;
+	protected double currentVisualisationOffset = 0;
+	protected static double currentVisualisationSpeed = 100;
 	
 	private ComponentNode input;
 	public float getDEFAULT_SIZE() {
@@ -197,7 +197,7 @@ public abstract class Component {
 	//CurrentVisualisation:-------------------------------------------------------
 	
 	
-	abstract public void increaseCurrentVisualisationOffset();
+	abstract public void increaseCurrentVisualisationOffset(double totalTimeSec);
 
 	//To override:---------------------------------------------------------------
 	
@@ -287,7 +287,7 @@ public abstract class Component {
 		return currentVisualisationSpeed;
 	}
 
-	public static void setCurrentVisualisationSpeed(float currentVisualisationSpeed) {
+	public static void setCurrentVisualisationSpeed(double currentVisualisationSpeed) {
 		Component.currentVisualisationSpeed = currentVisualisationSpeed;
 	}
 	

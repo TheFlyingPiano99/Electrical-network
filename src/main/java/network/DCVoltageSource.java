@@ -47,7 +47,7 @@ public class DCVoltageSource extends network.Component {
 	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+	public double getTimeDomainVoltageDrop() { return sourceVoltage; }
 
 	@Override
 	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
@@ -257,9 +257,9 @@ public class DCVoltageSource extends network.Component {
 		setProperty("resistance", this::getTimeDomainResistance);
 	}
 
-	public void increaseCurrentVisualisationOffset() {
-		float pres = currentVisualisationOffset;
-		currentVisualisationOffset = (currentVisualisationOffset + (float)e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
+	public void increaseCurrentVisualisationOffset(double totalTimeSec) {
+		double pres = currentVisualisationOffset;
+		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 
 		Double test = Double.valueOf(currentVisualisationOffset);
 		if (test.isNaN()) {
