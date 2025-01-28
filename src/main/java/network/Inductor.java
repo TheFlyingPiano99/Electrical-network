@@ -8,6 +8,7 @@ import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
 import math.Coordinate;
 import math.Line;
+import math.MyMath;
 
 /**
  * Ideal inductor, with adjustable value and zero resistance.
@@ -18,11 +19,10 @@ public class Inductor extends Component {
 	private Edge e;
 	private double inductance = 0.000001;
 	private List<Double> prevCurrents = new ArrayList<>();
-	double prevDelta = 0;
-	double prevToPrevDelta = 0;
-	double prevToPrevToPrevDelta = 0;
+	private List<Double> prevDeltas = new ArrayList<>();
 	private double derivativeOfCurrent = 0;
 	private final float DEFAULT_SIZE = 60.0f;
+	private double wireResistance = 0.0;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -47,12 +47,12 @@ public class Inductor extends Component {
 
 	@Override
 	public double getVoltage() {
-		return getSourceVoltage();
+		return e.getVoltageDrop();
 	}
 
 	@Override
 	public double getResistance() {
-		return 0;
+		return e.getResistance();
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ public class Inductor extends Component {
 		super.getParent().addEdge(e);
 
 		e.setCurrent(0);
-		e.setResistance(0);
+		e.setResistance(wireResistance);
 		e.setSourceVoltage(0);		
 		
 		
@@ -109,37 +109,32 @@ public class Inductor extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		double delta = (double) duration.toSeconds();
-		if (delta > 1.0) {
-			throw new RuntimeException("Large delta!");
-		}
+		double delta = (double)duration.toSeconds();
 		double I = e.getCurrent();
-		if (prevCurrents.size() == 4) {
-			derivativeOfCurrent = (25.0 * I - 48.0 * prevCurrents.get(3) + 36.0 * prevCurrents.get(2)
-					- 16.0 * prevCurrents.get(1) + 3.0 * prevCurrents.get(0))
-					/ 3.0 / (delta + prevDelta + prevToPrevDelta + prevToPrevToPrevDelta);
-		}
-		else if (prevCurrents.size() == 3) {
-			derivativeOfCurrent = (11.0 * I - 18.0 * prevCurrents.get(2) + 9.0 * prevCurrents.get(1) - 2.0 * prevCurrents.get(0))
-					/ 2.0 / (delta + prevDelta + prevToPrevDelta);
-		}
-		else if (prevCurrents.size() == 2) {
-			derivativeOfCurrent = (-3.0 * prevCurrents.get(0)  + 4.0 * prevCurrents.get(1) - I) / 2.0 / (delta + prevDelta);
-		}
-		else if (prevCurrents.size() == 1) {
-			derivativeOfCurrent = (I - prevCurrents.get(0)) / delta;
-		}
-
 		prevCurrents.add(I);
-		if (4 < prevCurrents.size()) {
+		prevDeltas.add(delta);
+
+		int maxUsedSampleCount = 10;
+		if (maxUsedSampleCount < prevCurrents.size()) {	// Pop first
 			prevCurrents.remove(0);
 		}
-		prevToPrevToPrevDelta = prevToPrevDelta;
-		prevToPrevDelta = prevDelta;
-		prevDelta = delta;
+		if (maxUsedSampleCount < prevDeltas.size()) {	// Pop first
+			prevDeltas.remove(0);
+		}
+		double derivativeOfCurrent = 0.0;
+		for (int k = 0; k < prevCurrents.size(); k++) {
+			double sample = prevCurrents.get(prevCurrents.size() - 1 - k);
+			derivativeOfCurrent += ((k % 2 == 0)? 1 : -1) * MyMath.binomial(prevCurrents.size() - 1, k) * sample;
+		}
+		derivativeOfCurrent /= delta;
 
-		e.setSourceVoltage(this.getSourceVoltage());
-		
+		double reactance = 0.0;
+		if (Math.abs(I) > 0.0) {
+			reactance = inductance * derivativeOfCurrent / I;
+		}
+		double impedance = Math.sqrt(Math.pow(wireResistance, 2) + Math.pow(reactance, 2));
+		e.setResistance(impedance);
+
 		increaseCurrentVisualisationOffset();
 		updatePropertyView(false);
 		getParent().setUpdateAll();	
@@ -307,8 +302,9 @@ public class Inductor extends Component {
 	public void reset() {
 		e.setCurrent(0.0);
 		e.setSourceVoltage(0.0);
+		e.setResistance(wireResistance);
 		prevCurrents.clear();
-		prevDelta = 0.0; prevToPrevDelta = 0.0; prevToPrevToPrevDelta= 0.0;
+		prevDeltas.clear();
 		updatePropertyView(false);
 	}
 

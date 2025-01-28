@@ -17,7 +17,8 @@ import java.util.List;
  */
 public class VoltageSource extends network.Component {
 	private network.Edge e;
-	private double sourceVoltage = 1.0f;
+	private double sourceVoltage = 1.0;
+	private double fadeIn = 0.0;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -32,13 +33,17 @@ public class VoltageSource extends network.Component {
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
 	public double getSourceVoltage() {
+		return fadeIn * sourceVoltage;
+	}
+
+	public double getSourceVoltageForView() {
 		return sourceVoltage;
 	}
 
 	public void setSourceVoltage(double sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 		if (e != null) {
-			e.setSourceVoltage(sourceVoltage);
+			e.setSourceVoltage(fadeIn * sourceVoltage);
 		}
 	}
 
@@ -54,7 +59,7 @@ public class VoltageSource extends network.Component {
 
 	@Override
 	public double getResistance() {
-		return sourceVoltage / e.getCurrent();
+		return getSourceVoltage() / e.getCurrent();
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -68,12 +73,12 @@ public class VoltageSource extends network.Component {
 
 		e.setCurrent(0);
 		e.setResistance(0);
-		
+		e.setSourceVoltage(getSourceVoltage());	//!
+
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		
-		e.setSourceVoltage(sourceVoltage);	//!		
 
 				
 		//Properties:
@@ -113,7 +118,18 @@ public class VoltageSource extends network.Component {
 	@Override
 	public void update(Duration duration) {
 		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
+		if (fadeIn < 1.0) {
+			fadeIn += duration.toSeconds() * 2.0;
+			if (fadeIn > 1.0) {
+				fadeIn = 1.0;
+			}
+			e.setSourceVoltage(getSourceVoltage());	//!
+			updatePropertyView(true);
+			getParent().setUpdateAll();
+		}
+		else {
+			updatePropertyView(false);
+		}
 	}
 
 
@@ -229,8 +245,10 @@ public class VoltageSource extends network.Component {
 
 	@Override
 	public void reset() {
+		fadeIn = 0.0;
 		e.setCurrent(0.0F);
-		updatePropertyView(false);
+		e.setSourceVoltage(0);
+		updatePropertyView(true);
 	}
 
 
@@ -256,7 +274,7 @@ public class VoltageSource extends network.Component {
 	public void updatePropertyView(boolean updateEditable) {
 		
 		if (updateEditable) {
-			setProperty("voltage", this::getSourceVoltage);
+			setProperty("voltage", this::getSourceVoltageForView);
 		}
 		setProperty("current", this::getCurrent);
 		setProperty("resistance", this::getResistance);
