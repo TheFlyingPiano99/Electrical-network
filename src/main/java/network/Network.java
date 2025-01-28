@@ -146,14 +146,13 @@ public class Network {
 	/**
 	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels.
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
-	 * @param deltaTime	The time spent since the last call of this method.
 	 */
 	public void simulate () {
 		double angularFrequencyStep = 0.1;
 		int resolution = 1024;
 		for (int k = 0; k < resolution; k++) {	// Finer time resolution
 			double omega = (double)(k - resolution / 2) * angularFrequencyStep;
-
+			omega = 0.0;
 			for (Component component : components) {
 				component.update(omega);
 			}
