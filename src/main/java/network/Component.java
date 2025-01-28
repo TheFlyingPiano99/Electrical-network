@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 
@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.math.Coordinate;
-import main.java.math.MyMath;
+import math.Coordinate;
+import math.MyMath;
 
 /**
  * Abstract parent of all network components.
@@ -198,9 +198,9 @@ public abstract class Component {
 	
 	public void increaseCurrentVisualisationOffset() {
 		float pres = currentVisualisationOffset;
-		currentVisualisationOffset = (currentVisualisationOffset + getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;			
+		currentVisualisationOffset = (currentVisualisationOffset + (float)getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
 		
-		Float test =Float.valueOf(currentVisualisationOffset);
+		Double test =Double.valueOf(currentVisualisationOffset);
 		if (test.isNaN()) {
 			currentVisualisationOffset = pres;
 		}
@@ -250,21 +250,21 @@ public abstract class Component {
 	 * HUN: Visszaadja az áramszintet amperben.
 	 * @return current ampere
 	 */
-	abstract public float getCurrent();
+	abstract public double getCurrent();
 	
 	/**
 	 * Returns electric voltage drop in volt.
 	 * HUN: Visszaadja az elektromos feszültég esést voltban.  
 	 * @return voltage volt
 	 */
-	abstract public float getVoltage();
+	abstract public double getVoltage();
 	
 	/**
 	 * Returns electric resistance of component in ohm.
 	 * HUN: Visszaadja az elektromos ellenállást ohmban. 
 	 * @return resistance ohm
 	 */
-	abstract public float getResistance();
+	abstract public double getResistance();
 	
 	/**
 	 * Draws the component's visual representation to the given GraphicsContext.
@@ -298,7 +298,7 @@ public abstract class Component {
 	 */
 	abstract public void updatePropertyView(boolean updateEditable);
 
-	public static float getCurrentVisualisationSpeed() {
+	public static double getCurrentVisualisationSpeed() {
 		return currentVisualisationSpeed;
 	}
 
@@ -306,7 +306,7 @@ public abstract class Component {
 		Component.currentVisualisationSpeed = currentVisualisationSpeed;
 	}
 	
-	protected void setProperty(String propName, Supplier<Float> getter) {
+	protected void setProperty(String propName, Supplier<Double> getter) {
 		if (getProperties().containsKey(propName)) {
 			try {
 				getProperties().get(propName).value = String.valueOf(getter.get());

@@ -10,7 +10,7 @@ import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 
-import main.java.math.Coordinate;
+import math.Coordinate;
 import main.java.math.Gauss;
 import main.java.math.Matrix;
 import main.java.math.Vector;

@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 
 /**
@@ -15,9 +15,9 @@ public class Edge {
 	private Vertex input;
 	private Vertex output;
 	
-	float resistance = 0;
-	float current = 0;
-	float sourceVoltage = 0;
+	double resistance = 0;
+	double current = 0;
+	double sourceVoltage = 0;
 	
 	boolean grabbed = false;
 
@@ -28,7 +28,7 @@ public class Edge {
 		id = gen;
 	}
 
-	public Edge(float r, float i) {
+	public Edge(double r, double i) {
 		gen++;
 		id = gen;
 		resistance = r;
@@ -50,15 +50,15 @@ public class Edge {
 		return id;
 	}
 
-	public float getSourceVoltage() {
+	public double getSourceVoltage() {
 		return sourceVoltage;
 	}
 
-	public void setSourceVoltage(float sourceVoltage) {
+	public void setSourceVoltage(double sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 	}
 
-	public float getVoltageDrop() {
+	public double getVoltageDrop() {
 		return (sourceVoltage == 0.0f)? current * resistance : -sourceVoltage;
 	}
 	
@@ -78,19 +78,19 @@ public class Edge {
 		this.output = output;
 	}
 
-	public float getResistance() {
+	public double getResistance() {
 		return resistance;
 	}
 
-	public void setResistance(float resistance) {
+	public void setResistance(double resistance) {
 		this.resistance = resistance;			
 	}
 
-	public float getCurrent() {
+	public double getCurrent() {
 		return current;
 	}
 
-	public void setCurrent(float current) {
+	public void setCurrent(double current) {
 		this.current = current;
 	}
 

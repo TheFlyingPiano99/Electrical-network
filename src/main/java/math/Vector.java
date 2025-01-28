@@ -1,14 +1,14 @@
-package main.java.math;
+package math;
 
 
 /**
- * Vector of float values.
+ * Vector of double values.
  * HUN: Vektor lebegőpontos értékek tárolására.
  * @author Simon Zoltán
  *
  */
 public class Vector {
-	private float n[];
+	private double n[];
     public int dimension;
 
 
@@ -16,12 +16,12 @@ public class Vector {
 	
     public Vector(int d) {
     	dimension = d;
-        n = new float[dimension];
+        n = new double[dimension];
     }
 
     public Vector(Vector v) {
     	dimension = v.dimension; 
-        n = new float[dimension];
+        n = new double[dimension];
         for (int i = 0; i < dimension; i++) {
             n[i] = v.at(i);
         }
@@ -63,7 +63,7 @@ public class Vector {
 	 * @param i index
 	 * @return value
 	 */
-	public float at(int i) {
+	public double at(int i) {
         return n[i];
     }
     
@@ -72,7 +72,7 @@ public class Vector {
 	 * @param i index
 	 * @param val new value
 	 */
-	public void setAt(int i, float val) {
+	public void setAt(int i, double val) {
 		n[i] = val;		
 	}
 	
@@ -81,7 +81,7 @@ public class Vector {
      * HUN: Vektor feltöltése a kapott értékkel.
 	 * @param val value
 	 */
-    public void fill (float val) {
+    public void fill (double val) {
         for (int i = 0; i < dimension; i++) {
             n[i] = val;
         }
@@ -91,10 +91,10 @@ public class Vector {
 
     /**
      *  Multiply this vector by scalar s.
-     * @param s scalar float value to multiply with.
+     * @param s scalar double value to multiply with.
      * @return this
      */
-    public Vector multiply(float s) {
+    public Vector multiply(double s) {
         for (int i = 0; i < dimension; i++) {
             n[i] *= s;
         }
@@ -103,10 +103,10 @@ public class Vector {
     
     /**
      *  Divide this vector by scalar s.
-     * @param s scalar float value to divide by.
+     * @param s scalar double value to divide by.
      * @return this
      */
-    public Vector divide(float s) {
+    public Vector divide(double s) {
         s = 1.0F / s;
         for (int i = 0; i < dimension; i++) {
             n[i] *= s;
@@ -147,7 +147,7 @@ public class Vector {
         if (!this.equals(v)) {
             if (this.dimension != v.dimension) {
                 dimension = v.dimension;
-                n = new float [dimension];
+                n = new double [dimension];
             }
             for (int i = 0; i < dimension; i++) {
                 n[i] = v.at(i);

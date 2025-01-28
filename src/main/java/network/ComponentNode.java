@@ -1,9 +1,9 @@
-package main.java.network;
+package network;
 
 import java.util.ArrayList;
 
-import main.java.math.Coordinate;
-import main.java.math.MyMath;
+import math.Coordinate;
+import math.MyMath;
 
 /**
  * The end node of components ({@link Component}). Helps establishing connection between components ({@link Component}).

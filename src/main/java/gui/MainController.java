@@ -1,4 +1,4 @@
-package main.java.gui;
+package gui;
 
 import java.io.File;
 import java.net.URL;
@@ -7,8 +7,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
+import javafx.animation.Animation;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -38,20 +38,20 @@ import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
-import main.java.math.Coordinate;
-import main.java.network.AnalogVoltmeter;
-import main.java.network.AnalogeAmmeter;
-import main.java.network.Capacitor;
-import main.java.network.Component;
-import main.java.network.ComponentNode;
-import main.java.network.ComponentProperty;
-import main.java.network.CurrentSource;
-import main.java.network.Ground;
-import main.java.network.Inductor;
-import main.java.network.Network;
-import main.java.network.Resistance;
-import main.java.network.VoltageSource;
-import main.java.network.Wire;
+import math.Coordinate;
+import network.AnalogVoltmeter;
+import network.AnalogeAmmeter;
+import network.Capacitor;
+import network.Component;
+import network.ComponentNode;
+import network.ComponentProperty;
+import network.CurrentSource;
+import network.Ground;
+import network.Inductor;
+import network.Network;
+import network.Resistance;
+import network.VoltageSource;
+import network.Wire;
 
 public class MainController {
 	
@@ -115,7 +115,7 @@ public class MainController {
     private Canvas xCanvas;
 
     @FXML
-    private ListView<?> lvRightListView;
+    private Canvas scopeCanvas;
 
     @FXML
     private Label lblPropertiesTitle;
@@ -248,8 +248,9 @@ public class MainController {
     void miStopAction(ActionEvent event) {
     	network.reset();
     	simulating = null;
-    	leftStatus.setText("Szimuláció leállítva.");    		
-    }
+    	leftStatus.setText("Szimuláció leállítva.");
+		DrawingHelper.clearScopeImage(scopeCanvas);
+	}
 
     //Button actions:--------------------------------------------------------------------------
 
@@ -289,12 +290,13 @@ public class MainController {
         assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lvLeftListView != null : "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert xCanvas != null : "fx:id=\"xCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lvRightListView != null : "fx:id=\"lvRightListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
+        assert scopeCanvas != null : "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lblPropertiesTitle != null : "fx:id=\"lblPropertiesTitle\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert leftStatus != null : "fx:id=\"leftStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert rightStatus != null : "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+
 
         helper = new DrawingHelper();
         
@@ -327,12 +329,7 @@ public class MainController {
 				handleKeyboardPressed(event);
 			}
 		);
-		
-		lvRightListView.setOnKeyPressed(
-			event-> {
-				handleKeyboardPressed(event);
-			}
-		);
+
 
     	
 //Mouse:------------------------------------------------------------------------------------------
@@ -341,7 +338,7 @@ public class MainController {
     		event ->  {
                 ObservableList selectedItems = lvLeftListView.getSelectionModel().getSelectedIndices();
                 for(Object o : selectedItems){
-                    System.out.println("o = " + o + " (" + o.getClass() + ")");
+                    //System.out.println("o = " + o + " (" + o.getClass() + ")");
                 }
             }
         );
@@ -349,7 +346,7 @@ public class MainController {
 
         lvLeftListView.setOnDragDetected(
     		event -> {
-    			System.out.println("src DragDetected");
+    			//System.out.println("src DragDetected");
                 String selectedItem = lvLeftListView.getSelectionModel().getSelectedItem();
 				if (selectedItem != null && !"".equals(selectedItem.trim())) {
 					Dragboard dragboard = lvLeftListView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
@@ -363,7 +360,7 @@ public class MainController {
  
         xCanvas.setOnDragOver(
     		event -> {
-    			System.out.println("target DragOver");
+    			//System.out.println("target DragOver");
     	        Dragboard dragboard = event.getDragboard();
     	        if (dragboard.hasString())
     	        {
@@ -413,10 +410,10 @@ public class MainController {
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
     	            helper.updateCanvasContent(xCanvas, network);
-    	            System.out.println("Successfuly dropped " + dragboard.getString());
+    	            //System.out.println("Successfuly dropped " + dragboard.getString());
     	        } else {
     	            event.setDropCompleted(false);
-    	            System.out.println("Failed!");
+    	            //System.out.println("Failed!");
     	        }
     	        event.consume();        			
     		}
@@ -452,11 +449,11 @@ public class MainController {
     		event -> {
     			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
     			if (grabbedNode != null) {
-        			System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
+        			//System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
     				network.dragComponentNode(grabbedNode, cursorPos);
     				helper.updateCanvasContent(xCanvas, network);
     			} else if (grabbedComponent != null) {
-        			System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
+					//System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
 					network.dragComponent(grabbedComponent, cursorPos);
     				helper.updateCanvasContent(xCanvas, network);
     			}
@@ -481,7 +478,7 @@ public class MainController {
 
         xCanvas.setOnMouseExited(
     		event -> {
-    			System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
+    			//System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
     		}
         );
         
@@ -502,6 +499,9 @@ public class MainController {
 						}
 					}
 					DrawingHelper.updateCanvasContent(xCanvas, network);
+					if (simulating != null && simulating) {
+						DrawingHelper.updateScopeImage(scopeCanvas, network);
+					}
 				} catch (Exception e) {
 					System.out.println("simulate error");
 					e.printStackTrace();
@@ -512,6 +512,7 @@ public class MainController {
         timeline.play();
         
     	DrawingHelper.updateCanvasContent(xCanvas, network);
+		DrawingHelper.clearScopeImage(scopeCanvas);
     }
     
 //PropertyView:---------------------------------------------------------------------------------
@@ -602,6 +603,5 @@ public class MainController {
     			break;
     	} 
     }   
-    
-    
+
 }

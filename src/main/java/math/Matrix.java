@@ -1,14 +1,14 @@
-package main.java.math;
+package math;
 
 
 /**
- * Column major matrix, for float values.
+ * Column major matrix, for double values.
  * HUN: Oszlopfolytonos mátrix, lebegőpontos értékek tárolására.
  * @author Simon Zoltán
  *
  */
 public class Matrix {
-	float n[];
+	double n[];
     public int row;
     public int column;
 
@@ -23,7 +23,7 @@ public class Matrix {
     public Matrix(int r,int c) {
     	row = r;
     	column = c;
-        n = new float[row * column];
+        n = new double[row * column];
         /*if (n == nullptr) {
             throw runtime_error("Initialisation failed!");
         }*/
@@ -36,7 +36,7 @@ public class Matrix {
     public Matrix(Matrix M) {
     	row = M.row;
     	column = M.column;
-        n = new float[row * column];
+        n = new double[row * column];
 /*        if (n == nullptr) {
             throw std::runtime_error("Initialisation failed!");
         }*/
@@ -89,7 +89,7 @@ public class Matrix {
      * @param c - columns index
      * @return	value
      */
-    public float at(int r, int c) { //indexeles (sor, oszlop)
+    public double at(int r, int c) { //indexeles (sor, oszlop)
     	return n[c * row + r];
     }
     
@@ -99,7 +99,7 @@ public class Matrix {
      * @param c column index
      * @param val new value at given position.
      */
-    public void setAt(int r, int c, float val) {
+    public void setAt(int r, int c, double val) {
     	n[c * row + r] = val;
     }
 
@@ -108,7 +108,7 @@ public class Matrix {
      * HUN: Mátrix feltöltése a kapott értékkel.
      * @param val - to fill with
      */
-    public void fill(float val) {
+    public void fill(double val) {
         for (int c = 0; c < column; c++) {
             for (int r = 0; r < row; r++) {
             	n[c * row + r] = val;
@@ -143,7 +143,7 @@ public class Matrix {
         if (!this.equals(M)) {
             row = M.row;
             column = M.column;
-            n = new float[row * column];
+            n = new double[row * column];
             
             for (int c = 0; c < column; c++) {
                 for (int r = 0; r < row; r++) {
@@ -156,6 +156,6 @@ public class Matrix {
 
 
 	//Other
-	//float Determinant (Matrix M);
+	//double Determinant (Matrix M);
     
 }

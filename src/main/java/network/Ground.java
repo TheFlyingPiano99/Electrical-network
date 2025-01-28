@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 
@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  * Current input, with adjustable value.
@@ -127,7 +127,7 @@ public class Ground extends Component {
 	public void draw(GraphicsContext ctx) {
 		List<Line> lines = new ArrayList<Line>();
 
-		float defaultSize = getDEFAULT_SIZE();
+		float  defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.6f, 0.0f));
 
 		lines.add(new Line(defaultSize * 0.6f, -defaultSize * 0.24f, defaultSize * 0.6f, +defaultSize * 0.24f));
@@ -145,8 +145,8 @@ public class Ground extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 	}
 
 
@@ -180,19 +180,19 @@ public class Ground extends Component {
 
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return 0;
 	}
 
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return 0;
 	}
 

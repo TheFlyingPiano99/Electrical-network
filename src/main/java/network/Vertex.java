@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import java.util.HashMap;
 
@@ -32,8 +32,8 @@ public class Vertex {
 	
 	static int gen = 0;
 	private int id;
-	private float inputCurrent = 0.0f;
-	private float potential = 0.0f;
+	private double inputCurrent = 0.0f;
+	private double potential = 0.0f;
 	
 	//Constructor:-----------------------------------------------------
 	
@@ -82,11 +82,11 @@ public class Vertex {
 		return id;
 	}
 
-	public float getInputCurrent() {
+	public double getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(float inputCurrent) {
+	public void setInputCurrent(double inputCurrent) {
 		this.inputCurrent = inputCurrent;
 	}
 
@@ -127,11 +127,11 @@ public class Vertex {
 				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));
 	}
 
-	public float getPotential() {
+	public double getPotential() {
 		return potential;
 	}
 
-	public void setPotential(float potential) {
+	public void setPotential(double potential) {
 		this.potential = potential;
 	}
 

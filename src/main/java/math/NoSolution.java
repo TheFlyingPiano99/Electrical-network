@@ -1,4 +1,4 @@
-package main.java.math;
+package math;
 
 public final class NoSolution extends GaussException {
     /**

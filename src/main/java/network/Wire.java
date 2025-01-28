@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 import java.util.ArrayList;
@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  *	Ideal wire, with zero resistance.
@@ -22,17 +22,17 @@ public class Wire extends Component {
 	//Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return e.getResistance();
 	}
 	
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 	
@@ -154,8 +154,8 @@ public class Wire extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 
 /*
 		//Construction:

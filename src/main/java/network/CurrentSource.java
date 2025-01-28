@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 
@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  * Current input, with adjustable value.
@@ -22,7 +22,7 @@ import main.java.math.Line;
 
 public class CurrentSource extends Component {
 	private Edge e;
-	private float inputCurrent = 1.0f;
+	private double inputCurrent = 1.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -30,17 +30,17 @@ public class CurrentSource extends Component {
 	}
 	
 	
-	public CurrentSource(float i) {
+	public CurrentSource(double i) {
 		inputCurrent = i;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public float getInputCurrent() {
+	public double getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(float inputCurrent) {
+	public void setInputCurrent(double inputCurrent) {
 		this.inputCurrent = inputCurrent;
 		if (e != null) {
 			e.getInput().setInputCurrent(inputCurrent);
@@ -113,7 +113,7 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setInputCurrent(Float.valueOf(pairs[1].split(":")[1]));
+		setInputCurrent(Double.valueOf(pairs[1].split(":")[1]));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -168,8 +168,8 @@ public class CurrentSource extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 	}
 
 
@@ -196,7 +196,7 @@ public class CurrentSource extends Component {
 		String str = getProperties().get("current").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				setInputCurrent(val);
 				
 			} catch (Exception e) {
@@ -217,19 +217,19 @@ public class CurrentSource extends Component {
 
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return 0;
 	}
 
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return 0;
 	}
 

@@ -1,4 +1,4 @@
-package main.java.math;
+package math;
 
 import java.util.ArrayList;
 
@@ -82,14 +82,14 @@ public class Gauss {
         while (true) {
             if (0 != M.at(r,c)) {
                 //Divide column[c] by M(r,c).
-                float divider = 1 / M.at(r, c);
+                double divider = 1 / M.at(r, c);
                 for (int i = 0; i < M.row; i++) {
                     M.setAt(i, c, M.at(i, c)* divider);
                 }
                 if (c < M.column - 1) {
                     //Add the -M(r, i) * M[c] column to all "M[i]" columns:
                     for (int i = c+1; i < M.column; i++) {
-                        float fact = M.at(r, i);
+                        double fact = M.at(r, i);
                         for (int j = 0; j < M.row; j++) {
                             M.setAt(j, i, M.at(j, i) - fact * M.at(j, c));
                         }
@@ -178,7 +178,7 @@ public class Gauss {
      * @param col2 - Column no. 2
      */
     private static void SwapColumn (Matrix M, int col1, int col2) {
-    	float temp;
+    	double temp;
         for (int r = 0; r < M.row; r++) {
             temp = M.at(r, col1);
             M.setAt(r, col1, M.at(r, col2));

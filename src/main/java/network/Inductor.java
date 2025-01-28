@@ -1,15 +1,13 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  * Ideal inductor, with adjustable value and zero resistance.
@@ -18,9 +16,12 @@ import main.java.math.Line;
  */
 public class Inductor extends Component {
 	private Edge e;
-	private float inductance = 1;
-	private ArrayList<Float> prevCurrent = new ArrayList<Float>();
-	private float derivativeOfCurrent = 0;
+	private double inductance = 0.000001;
+	private List<Double> prevCurrents = new ArrayList<>();
+	double prevDelta = 0;
+	double prevToPrevDelta = 0;
+	double prevToPrevToPrevDelta = 0;
+	private double derivativeOfCurrent = 0;
 	private final float DEFAULT_SIZE = 60.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
@@ -29,28 +30,28 @@ public class Inductor extends Component {
 	}
 	
 	
-	public Inductor(float l) {
+	public Inductor(double l) {
 		inductance = l;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public float getSourceVoltage() {
+	public double getSourceVoltage() {
 		return -inductance * derivativeOfCurrent;
 	}
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return getSourceVoltage();
 	}
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return 0;
 	}
 
@@ -108,26 +109,40 @@ public class Inductor extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		float h = (float)duration.toSeconds();
-		float avarage = 0;
-		for (Float float1 : prevCurrent) {
-			avarage += float1;
+		double delta = (double) duration.toSeconds();
+		if (delta > 1.0) {
+			throw new RuntimeException("Large delta!");
 		}
-		if (prevCurrent.size() > 0) {
-			avarage /= prevCurrent.size();			
+		double I = e.getCurrent();
+		if (prevCurrents.size() == 4) {
+			derivativeOfCurrent = (25.0 * I - 48.0 * prevCurrents.get(3) + 36.0 * prevCurrents.get(2)
+					- 16.0 * prevCurrents.get(1) + 3.0 * prevCurrents.get(0))
+					/ 3.0 / (delta + prevDelta + prevToPrevDelta + prevToPrevToPrevDelta);
 		}
-		if (5 < prevCurrent.size()) {
-			prevCurrent.remove(0);
+		else if (prevCurrents.size() == 3) {
+			derivativeOfCurrent = (11.0 * I - 18.0 * prevCurrents.get(2) + 9.0 * prevCurrents.get(1) - 2.0 * prevCurrents.get(0))
+					/ 2.0 / (delta + prevDelta + prevToPrevDelta);
 		}
-		
-		derivativeOfCurrent = (e.getCurrent() - avarage) / h;
+		else if (prevCurrents.size() == 2) {
+			derivativeOfCurrent = (-3.0 * prevCurrents.get(0)  + 4.0 * prevCurrents.get(1) - I) / 2.0 / (delta + prevDelta);
+		}
+		else if (prevCurrents.size() == 1) {
+			derivativeOfCurrent = (I - prevCurrents.get(0)) / delta;
+		}
+
+		prevCurrents.add(I);
+		if (4 < prevCurrents.size()) {
+			prevCurrents.remove(0);
+		}
+		prevToPrevToPrevDelta = prevToPrevDelta;
+		prevToPrevDelta = prevDelta;
+		prevDelta = delta;
 
 		e.setSourceVoltage(this.getSourceVoltage());
 		
 		increaseCurrentVisualisationOffset();
 		updatePropertyView(false);
 		getParent().setUpdateAll();	
-		prevCurrent.add(e.getCurrent());
 	}
 
 
@@ -151,7 +166,7 @@ public class Inductor extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setInductance(Float.valueOf(pairs[1].split(":")[1]));
+		setInductance(Double.valueOf(pairs[1].split(":")[1]));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -164,12 +179,12 @@ public class Inductor extends Component {
 	}
 
 
-	public float getInductance() {
+	public double getInductance() {
 		return inductance;
 	}
 
 
-	public void setInductance(float inductance) {
+	public void setInductance(double inductance) {
 		this.inductance = inductance;
 	}
 
@@ -272,8 +287,8 @@ public class Inductor extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 	}
 
 
@@ -290,9 +305,10 @@ public class Inductor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
-		e.setSourceVoltage(0.0F);
-		prevCurrent.clear();
+		e.setCurrent(0.0);
+		e.setSourceVoltage(0.0);
+		prevCurrents.clear();
+		prevDelta = 0.0; prevToPrevDelta = 0.0; prevToPrevToPrevDelta= 0.0;
 		updatePropertyView(false);
 	}
 
@@ -302,7 +318,7 @@ public class Inductor extends Component {
 		String str = getProperties().get("inductance").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				setInductance(val);
 				
 			} catch (Exception e) {
