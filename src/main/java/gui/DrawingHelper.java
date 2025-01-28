@@ -1,5 +1,6 @@
-package main.java.gui;
+package gui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.canvas.Canvas;
@@ -9,11 +10,11 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.StrokeLineCap;
-import main.java.math.Coordinate;
-import main.java.math.Line;
-import main.java.math.MyMath;
-import main.java.math.Vector;
-import main.java.network.Network;
+import math.Coordinate;
+import math.Line;
+import math.MyMath;
+import math.Vector;
+import network.Network;
 
 /**
  * Auxiliary methods for drawing components.
@@ -31,7 +32,11 @@ public class DrawingHelper {
 	private static final double DASHES_NORMAL = 0.0;
 	private static final double[] DASHES_SELECT = new double[] {10.0, 3.0};
 	private static final double DASH_OFFSET_SELECT = 5.0;
-	
+	private static ArrayList<Double> scopeVoltageBuffer = new ArrayList<>();
+	private static ArrayList<Double> scopeCurrentBuffer = new ArrayList<>();
+	private static ArrayList<Double> scopeResistanceBuffer = new ArrayList<>();
+	private static int maxScopeDataPoints = 64;
+
 	/**
 	 * Sets drawing attributes for normal drawing. (Uses the predefined, static variables.)
 	 * HUN: Beállítja a rajzolás paramétereit normál rajzoláshoz. (Statikus adattagokat használ.)
@@ -85,8 +90,136 @@ public class DrawingHelper {
 			if (network.isSnapToGrid()) {
 				drawGrid(canvas, network.getGridSize());				
 			}
-			
-			network.draw(ctx);			
+			network.draw(ctx);
+		}
+	}
+
+	protected static void clearScopeImage(Canvas canvas) {
+		GraphicsContext ctx;
+		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
+			double W = canvas.getWidth();
+			double H = canvas.getHeight();
+			ctx.setFill(Color.GREY);
+			ctx.fillRect(0, 0, W, H);
+		}
+		scopeCurrentBuffer.clear();
+		scopeVoltageBuffer.clear();
+		scopeResistanceBuffer.clear();
+	}
+
+	private static void drawVoltage(GraphicsContext ctx, double W, double H) {
+		ctx.setStroke(Color.GREEN);
+		ctx.strokeText("U", 10,15);
+		double prevVal = 0;
+		double valOffset = H / 2.0;
+		double valScale = H / 2.0 / 5.0;
+		boolean firstElement = true;
+		int t = 0;
+		double stepSize = W / maxScopeDataPoints;
+		for (Double u : scopeVoltageBuffer) {
+			if (firstElement) {
+				firstElement = false;
+			}
+			else {
+				ctx.strokeLine(
+						(t - 1) * stepSize,
+						Math.min(Math.max(0.0, valOffset - valScale * prevVal), H),
+						t * stepSize,
+						Math.min(Math.max(0.0, valOffset - valScale * u), H)
+				);
+			}
+			prevVal = u;
+			t++;
+		}
+	}
+
+	private static void drawCurrent(GraphicsContext ctx, double W, double H) {
+		ctx.setStroke(Color.YELLOW);
+		ctx.strokeText("I", 10,30);
+
+		double prevVal = 0;
+		double valOffset = H / 2.0;
+		double valScale = H / 2.0 / 5.0;
+		boolean firstElement = true;
+		int t = 0;
+		double stepSize = W / maxScopeDataPoints;
+		for (Double i : scopeCurrentBuffer) {
+			if (firstElement) {
+				firstElement = false;
+			}
+			else {
+				ctx.strokeLine(
+						(t - 1) * stepSize,
+						Math.min(Math.max(0.0, valOffset - valScale * prevVal), H),
+						t * stepSize,
+						Math.min(Math.max(0.0, valOffset - valScale * i), H)
+				);
+			}
+			prevVal = i;
+			t++;
+		}
+	}
+	private static void drawResistance(GraphicsContext ctx, double W, double H) {
+		ctx.setStroke(Color.PURPLE);
+		ctx.strokeText("R", 10,45);
+
+		double prevVal = 0;
+		double valOffset = H / 2.0;
+		double valScale = H / 2.0 / 5.0;
+		boolean firstElement = true;
+		int t = 0;
+		double stepSize = W / maxScopeDataPoints;
+		for (Double r : scopeResistanceBuffer) {
+			if (firstElement) {
+				firstElement = false;
+			}
+			else {
+				ctx.strokeLine(
+						(t - 1) * stepSize,
+						Math.min(Math.max(0.0, valOffset - valScale * prevVal), H),
+						t * stepSize,
+						Math.min(Math.max(0.0, valOffset - valScale * r), H)
+				);
+			}
+			prevVal = r;
+			t++;
+		}
+	}
+	protected static void updateScopeImage(Canvas canvas, Network network) {
+		GraphicsContext ctx;
+		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
+			double W = canvas.getWidth();
+			double H = canvas.getHeight();
+			ctx.setFill(Color.GREY);
+			ctx.fillRect(0, 0, W, H);
+			network.Component selected = network.getSelected();
+			if (selected != null) {
+				double I = selected.getCurrent();
+				double U = selected.getVoltage();
+				double R = selected.getResistance();
+				scopeCurrentBuffer.add(I);
+				scopeVoltageBuffer.add(U);
+				scopeResistanceBuffer.add(R);
+				if (scopeCurrentBuffer.size() > maxScopeDataPoints) {	// Pop first element
+					scopeCurrentBuffer.remove(0);
+				}
+				if (scopeVoltageBuffer.size() > maxScopeDataPoints) {	// Pop first element
+					scopeVoltageBuffer.remove(0);
+				}
+				if (scopeResistanceBuffer.size() > maxScopeDataPoints) {	// Pop first element
+					scopeResistanceBuffer.remove(0);
+				}
+				setNormalDrawingAttributes(ctx);
+				drawVoltage(ctx, W, H);
+				drawCurrent(ctx, W, H);
+				drawResistance(ctx, W, H);
+
+			}
+			else {
+				scopeCurrentBuffer.clear();
+				scopeVoltageBuffer.clear();
+				scopeResistanceBuffer.clear();
+			}
 		}
 	}
 	
@@ -127,7 +260,7 @@ public class DrawingHelper {
 		
 		
 		Vector orientation = MyMath.subtract(vOutput, vInput);
-		float scale = MyMath.magnitude(orientation) / default_length;
+		float scale = (float)MyMath.magnitude(orientation) / default_length;
 		float angle = (float)Math.atan2(orientation.at(1), orientation.at(0));
 		
 		//------------------------------------------------------
@@ -144,10 +277,10 @@ public class DrawingHelper {
 			for (Line line : lines) {
 				Line.transform(line, scale, angle, vInput);
 
-				float aX = line.a.at(0);
-				float aY = line.a.at(1);
-				float bX = line.b.at(0);
-				float bY = line.b.at(1);
+				float aX = (float)line.a.at(0);
+				float aY = (float)line.a.at(1);
+				float bX = (float)line.b.at(0);
+				float bY = (float)line.b.at(1);
 				
 				minX = getNewMin(minX, aX, bX);
 				minY = getNewMin(minY, aY, bY);

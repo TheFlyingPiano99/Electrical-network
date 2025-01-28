@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 
@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  * Capacitor, with adjustable capacity.
@@ -18,51 +18,51 @@ import main.java.math.Line;
  */
 public class Capacitor extends Component {
 	private Edge e;
-	public float getCharge() {
+	public double getCharge() {
 		return charge;
 	}
 
 
-	public void setCharge(float charge) {
+	public void setCharge(double charge) {
 		this.charge = charge;
 	}
 
 
-	public float getCapacity() {
+	public double getCapacity() {
 		return capacity;
 	}
 
 
-	private float charge = 0;
-	private float capacity = 1;
-	
+	private double charge = 0;
+	private double capacity = 1;
+	private double prevCurrent = 0;
 	//Constructors:---------------------------------------------------------------------------------------
 	
 	public Capacitor() {
 	}
 	
 	
-	public Capacitor(float c) {
+	public Capacitor(double c) {
 		capacity = c;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public float getSourceVoltage() {
+	public double getSourceVoltage() {
 		return -(1/capacity) * charge;
 	}
 
-	public void setCapacity(float capacity) {
+	public void setCapacity(double capacity) {
 		this.capacity = capacity;
 	}
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return getSourceVoltage();
 	}
 
@@ -119,9 +119,11 @@ public class Capacitor extends Component {
 	
 	@Override
 	public void update(Duration duration) {
-		charge += e.getCurrent() * duration.toSeconds();
+		double I = e.getCurrent();
+		charge += (I + prevCurrent) * duration.toSeconds();
+		prevCurrent = I;
 		e.setSourceVoltage(this.getSourceVoltage());
-		System.out.println(e.getSourceVoltage());
+		//System.out.println(e.getSourceVoltage());
 		increaseCurrentVisualisationOffset();
 		updatePropertyView(false);
 		getParent().setUpdateAll();
@@ -148,7 +150,7 @@ public class Capacitor extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setCapacity(Float.valueOf(pairs[1].split(":")[1]));
+		setCapacity(Double.valueOf(pairs[1].split(":")[1]));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -202,8 +204,8 @@ public class Capacitor extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 	}
 
 
@@ -232,7 +234,7 @@ public class Capacitor extends Component {
 		String str = getProperties().get("capacity").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				setCapacity(val);
 				
 			} catch (Exception e) {
@@ -256,7 +258,7 @@ public class Capacitor extends Component {
 
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return 0;
 	}
 

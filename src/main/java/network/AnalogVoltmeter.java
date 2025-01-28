@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 import java.util.ArrayList;
@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  * Voltage meter.
@@ -19,38 +19,38 @@ import main.java.math.Line;
 public class AnalogVoltmeter extends Component {
 
 	private Edge e;
-	private float resistance = 100000;
+	private double resistance = 1000000000;
 	
-	private float scale = 0.1f;
-	private float needlePrevAngle = 1.57f;  
+	private double scale = 1;
+	private float needlePrevAngle = 1.57f;
 	
 	// Constructors:---------------------------------------------------------------------------------------
 
 	public AnalogVoltmeter() {
 	}
 
-	public AnalogVoltmeter(float r) {
+	public AnalogVoltmeter(double r) {
 		resistance = r;
 	}
 
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return e.getResistance();
 	}
 
-	public void setResistance(float resistance) {
+	public void setResistance(double resistance) {
 		this.resistance = resistance;
 		e.setResistance(resistance);
 	}
@@ -141,8 +141,8 @@ public class AnalogVoltmeter extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setResistance(Float.valueOf(pairs[1].split(":")[1]));
-		scale = Float.valueOf(pairs[2].split(":")[1]);
+		setResistance(Double.valueOf(pairs[1].split(":")[1]));
+		scale = Double.valueOf(pairs[2].split(":")[1]);
 		String coordIn[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
 
@@ -220,7 +220,7 @@ public class AnalogVoltmeter extends Component {
 				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
 				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
 
-		angle = 1.5708f + getVoltage() * scale * 0.017453f;
+		angle = 1.5708f + (float)(getVoltage() * scale) * 0.017453f;
 		angle = (angle + needlePrevAngle) / 2.0f;
 		if (2.7489f < angle) {
 			angle = 2.7489f; 
@@ -245,8 +245,8 @@ public class AnalogVoltmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -273,7 +273,7 @@ public class AnalogVoltmeter extends Component {
 		String str = getProperties().get("resistance").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				setResistance(val);
 
 			} catch (Exception e) {
@@ -286,7 +286,7 @@ public class AnalogVoltmeter extends Component {
 		str = getProperties().get("scale").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				scale = val;
 
 			} catch (Exception e) {
@@ -306,11 +306,11 @@ public class AnalogVoltmeter extends Component {
 		}		
 	}
 
-	public float getScale() {
+	public double getScale() {
 		return scale;
 	}
 
-	public void setScale(float scale) {
+	public void setScale(double scale) {
 		this.scale = scale;
 	}
 

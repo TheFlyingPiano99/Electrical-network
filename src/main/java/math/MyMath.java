@@ -1,4 +1,4 @@
-package main.java.math;
+package math;
 
 import java.util.*;
 
@@ -18,8 +18,8 @@ public class MyMath {
 	 */
 	public static Vector coordToVector(Coordinate c) {
 		Vector v = new Vector(2);
-		v.setAt(0, (float)c.x);
-		v.setAt(1, (float)c.y);
+		v.setAt(0, (double)c.x);
+		v.setAt(1, (double)c.y);
 		return v; 
 	}
 
@@ -38,13 +38,13 @@ public class MyMath {
 //Multiplication:---------------------------------------------------------------------------
 
 	/**
-	 * Multiply {@link Matrix} by scalar float s.
+	 * Multiply {@link Matrix} by scalar double s.
 	 * HUN: Mátrix és skalár szorzata.
-	 * @param s	scalar, float s. 
+	 * @param s	scalar, double s.
 	 * @param M	{@link Matrix}.
 	 * @return M multiplied by s.
 	 */
-	public static Matrix multiply(float s, Matrix M) {
+	public static Matrix multiply(double s, Matrix M) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    for (int c = 0; c < M.column; c++) {
 	        for (int r = 0; r < M.row; r++) {
@@ -69,7 +69,7 @@ public class MyMath {
 	    Matrix retM = new Matrix(row1, column2);
 	    for (int c = 0; c < column2; c++) {
 	        for (int r = 0; r < row1; r++) {
-	            float n = 0;
+	            double n = 0;
 	            for (int k = 0; k < column1row2; k++) {
 	                n += A.at(r, k) * B.at(k, c);
 	            }
@@ -89,7 +89,7 @@ public class MyMath {
 	public static Vector multiply(Matrix M, Vector v) {
 	    Vector retV = new Vector(M.row);
 	    for ( int r = 0; r < M.row; r++) {
-	        float n = 0;
+	        double n = 0;
 	        for (int c = 0; c < M.column; c++) {
 	            n += M.at(r, c) * v.at(c);
 	        }
@@ -108,7 +108,7 @@ public class MyMath {
 	public static Vector multiply(Vector v, Matrix M) {
 	    Vector retV = new Vector(M.column);
 	    for (int c = 0; c < M.column; c++) {
-            float n = 0;
+            double n = 0;
             for (int r = 0; r < M.row; r++) {
 	                n += v.at(r) * M.at(r, c);
 	        }
@@ -124,7 +124,7 @@ public class MyMath {
 	 * @param s Scalar to multiply with.
 	 * @return solution
 	 */
-	public static Matrix multiply(Matrix M, float s) {
+	public static Matrix multiply(Matrix M, double s) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    for (int c = 0; c < M.column; c++) {
 	        for (int r = 0; r < M.row; r++) {
@@ -281,7 +281,7 @@ public class MyMath {
 	 * @param val - multiplier
 	 * @return matrix with multiplied row
 	 */
-	public static Matrix multiplyRow(Matrix M, int row, float val) {
+	public static Matrix multiplyRow(Matrix M, int row, double val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
 	    for (int c = 0; c < M.column; c++) {
@@ -298,7 +298,7 @@ public class MyMath {
 	 * @param val - multiplier
 	 * @return matrix with multiplied column
 	 */	
-	public static Matrix multipyColumn(Matrix M, int column, float val) {
+	public static Matrix multipyColumn(Matrix M, int column, double val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
 	    for (int r = 0; r < M.row; r++) {
@@ -313,13 +313,13 @@ public class MyMath {
 //Multiply:
 
 	/**
-	 * Multiply {@link Vector} by scalar float.
+	 * Multiply {@link Vector} by scalar double.
 	 * HUN: Vektor és skalár szorzata. 
 	 * @param v Vector to be multiplied.
-	 * @param s Scalar float to multiply by.
+	 * @param s Scalar double to multiply by.
 	 * @return solution
 	 */
-	public static Vector multiply(Vector v, float s) {
+	public static Vector multiply(Vector v, double s) {
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
 	        retV.setAt(i, v.at(i) * s);
@@ -331,13 +331,13 @@ public class MyMath {
 	//V Same, only parameters swapped V 
 	
 	/**
-	 * Multiply {@link Vector} by scalar float. 
+	 * Multiply {@link Vector} by scalar double.
 	 * HUN: Vektor és skalár szorzata. 
-	 * @param s Scalar float to multiply by.
+	 * @param s Scalar double to multiply by.
 	 * @param v Vector to be multiplied.
 	 * @return solution
 	 */
-	public static Vector multiply(float s, Vector v) {
+	public static Vector multiply(double s, Vector v) {
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
 	        retV.setAt(i, v.at(i) * s);
@@ -350,10 +350,10 @@ public class MyMath {
 	 * HUN: Két vektor skaláris szorzata.
 	 * @param a	{@link Vector}
 	 * @param b {@link Vector}
-	 * @return	float
+	 * @return	double
 	 */
-	public static float dot (Vector a, Vector b) {
-	    float sum = 0;
+	public static double dot (Vector a, Vector b) {
+	    double sum = 0;
 	    for (int i = 0; i < a.dimension; i++) {
 	        sum += a.at(i) * b.at(i);
 	    }
@@ -361,13 +361,13 @@ public class MyMath {
 	}
 
 	/**
-	 * Divide vector by scalar float.
+	 * Divide vector by scalar double.
 	 * HUN: Vektor osztása skalárral.
 	 * @param v {@link Vector}
-	 * @param s Scalar float to divide by.
+	 * @param s Scalar double to divide by.
 	 * @return {@link Vector} 
 	 */
-	public static Vector divide(Vector v, float s) {
+	public static Vector divide(Vector v, double s) {
 	    s = 1.0F / s;
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
@@ -409,14 +409,14 @@ public class MyMath {
 	 * Calculates magnitude of given {@link Vector}.
 	 * HUN: Kiszámolja egy adott vektor hosszát.
 	 * @param v vector to calculate magnitude of
-	 * @return	float magnitude
+	 * @return	double magnitude
 	 */
-	public static float magnitude(Vector v) {
-	    float sum = 0;
+	public static double magnitude(Vector v) {
+	    double sum = 0;
 	    for (int i = 0; i < v.dimension; i++) {
 	        sum += v.at(i) * v.at(i);
 	    }
-	    return (float) Math.sqrt(sum);
+	    return (double) Math.sqrt(sum);
 	}
 
 	/**
@@ -426,7 +426,7 @@ public class MyMath {
 	 * @return normalized {@link Vector}
 	 */
 	public static Vector normalize(Vector v) {
-		float mag = magnitude(v);
+		double mag = magnitude(v);
 		if (mag != 0) {
 		    return  divide(v, mag);
 		}
@@ -579,7 +579,7 @@ public class MyMath {
 	 * Magnitude of coordinate as vector.
 	 * HUN: A koordináta hossza, vektorként.
 	 * @param c {@link Coordinate}
-	 * @return	magnitude float
+	 * @return	magnitude double
 	 */
 	public static double magnitude(Coordinate c) {
 		return Math.sqrt(c.x * c.x + c.y * c.y);
@@ -607,7 +607,7 @@ public class MyMath {
 		return new Coordinate(a.x - b.x, a.y - b.y);
 	}
 	
-	public static float min(float val1, float val2) {
+	public static double min(double val1, double val2) {
 		if (val1 < val2) {
 			return val1;
 		}
@@ -616,7 +616,7 @@ public class MyMath {
 		}
 	}
 
-	public static float max(float val1, float val2) {
+	public static double max(double val1, double val2) {
 		if (val1 > val2) {
 			return val1;
 		}

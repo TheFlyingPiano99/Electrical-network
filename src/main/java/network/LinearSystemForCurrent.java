@@ -1,7 +1,7 @@
-package main.java.network;
+package network;
 
-import main.java.math.Matrix;
-import main.java.math.Vector;
+import math.Matrix;
+import math.Vector;
 
 /**
  * Linear system, representing equations for network in matrix form.
@@ -88,7 +88,7 @@ public class LinearSystemForCurrent extends Matrix {
 	 */
 	public void updateSourceVoltage(Vector sourceVoltages) {
 		for (int c = 0; c < this.cycle.column; c++) {
-			float sumOfVoltages = 0;
+			double sumOfVoltages = 0;
 			for (int r = 0; r < sourceVoltages.dimension; r++) {
 				if (this.cycle.at(r, c) > 0) {
 					sumOfVoltages += sourceVoltages.at(r);
@@ -130,7 +130,7 @@ public class LinearSystemForCurrent extends Matrix {
 	 * @param inputCurrent
 	 */
 	public void updateInputCurrents(Vector inputCurrent) {
-		float sum = 0.0f;
+		double sum = 0.0f;
 		for (int c = 1; c < cycleOffset; c++) {
 			this.setAt(this.row-1, c, inputCurrent.at(c));
 			sum += inputCurrent.at(c);

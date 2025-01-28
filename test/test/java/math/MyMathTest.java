@@ -21,11 +21,11 @@ import main.java.math.Vector;
 public class MyMathTest {
 
 	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(float, main.java.math.Matrix)}.
+	 * Test method for {@link main.java.math.MyMath#multiply(double, main.java.math.Matrix)}.
 	 */
 	@Test
-	public void testMultiplyFloatMatrix() {
-		float f = 0;
+	public void testMultiplyDoubleMatrix() {
+		double f = 0;
 		Matrix M = new Matrix(3,3);
 		M.fill(0);
 		
@@ -91,7 +91,7 @@ public class MyMathTest {
 	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, float)}.
 	 */
 	@Test
-	public void testMultiplyMatrixFloat() {
+	public void testMultiplyMatrixDouble() {
 		float f = 0;
 		Matrix M = new Matrix(3,3);
 		M.fill(0);
@@ -268,7 +268,7 @@ public class MyMathTest {
 	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Vector, float)}.
 	 */
 	@Test
-	public void testMultiplyVectorFloat() {
+	public void testMultiplyVectorDouble() {
 		Vector v = new Vector(3);
 		v.fill(2);
 		
@@ -282,7 +282,7 @@ public class MyMathTest {
 	 * Test method for {@link main.java.math.MyMath#multiply(float, main.java.math.Vector)}.
 	 */
 	@Test
-	public void testMultiplyFloatVector() {
+	public void testMultiplyDoubleVector() {
 		Vector v = new Vector(3);
 		v.fill(2);
 		
@@ -312,7 +312,7 @@ public class MyMathTest {
 	 * Test method for {@link main.java.math.MyMath#divide(main.java.math.Vector, float)}.
 	 */
 	@Test
-	public void testDivideVectorFloat() {
+	public void testDivideVectorDouble() {
 		Vector v = new Vector(3);
 		v.fill(4);
 		

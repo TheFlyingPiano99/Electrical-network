@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.scene.canvas.GraphicsContext;
-import main.java.math.Coordinate;
-import main.java.math.Gauss;
-import main.java.math.GaussException;
-import main.java.math.Matrix;
-import main.java.math.MyMath;
-import main.java.math.Vector;
+import math.Coordinate;
+import math.Gauss;
+import math.GaussException;
+import math.Matrix;
+import math.MyMath;
+import math.Vector;
 
 
 /**
@@ -157,84 +157,88 @@ public class Network {
 		if (null == deltaTime) {
 			deltaTime = new Duration(0);
 		}
-		
-		//ManageLinearSystem:
-		
-	    if (updateGraph || linSystem == null) {
-	    	    	
-	    	//Graph representations:
-	    	Matrix incidence = new Matrix(0,0);
-	    	Matrix cycle = new Matrix(0,0);
-	    	try {
-		    	DFS(incidence, cycle);
-	    	
-		    	//Parameters:
-		    	Vector resistances = gatherResistances();
-			    Vector sourceVoltage = gatherSourceVoltages();
-			    Vector inputCurrents = gatherInputCurrent();
-			    
-		    	//Create system:
-		    	linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage, inputCurrents);
+		Duration originalDelta = deltaTime;
+		Duration performedDelta = new Duration(0.0);
+		deltaTime = new Duration(1.0);	// Overwrite
+		while (performedDelta.toSeconds() < originalDelta.toSeconds()) {	// Finer time resolution
+			//ManageLinearSystem:
 
-		    	//Disable flags:
-		    	updateGraph = false;
-		    	updateResistance = false;
-		    	updateVoltage = false;
-		    	updateInputCurrent = false;
-		    	
-		    	//Set flag:
-		    	updateCurrent = true;
-		    	
-		    	
-			} catch (RuntimeException e) {
-				updateCurrent = false;
-			}
-	    }
-	    else {
-	    	if (updateResistance) {
-	    		updateResistance = false;
-		    	linSystem.updateResistances(gatherResistances());
-		    	updateCurrent = true;
-	    	}
-	    	if (updateVoltage) {	    
-	    		updateVoltage = false;
-		    	linSystem.updateSourceVoltage(gatherSourceVoltages());
-		    	updateCurrent = true;
-		    }
-	    	if (updateInputCurrent) {
-	    		updateInputCurrent = false;
-	    		linSystem.updateInputCurrents(gatherInputCurrent());
-	    		updateCurrent = true;
-	    	}
-	    }
-	    
-	    //Calculate-current:
-	    
-	    if (updateCurrent) {
-			Vector current = CalculateCurrent();
-			if (current != null) {
-				updateCurrent = false;
-		    	validNetwork = true;
-				for (int i = 0; i < edges.size(); i++) {
-					edges.get(i).setCurrent(current.at(i));
+			if (updateGraph || linSystem == null) {
+
+				//Graph representations:
+				Matrix incidence = new Matrix(0,0);
+				Matrix cycle = new Matrix(0,0);
+				try {
+					DFS(incidence, cycle);
+
+					//Parameters:
+					Vector resistances = gatherResistances();
+					Vector sourceVoltage = gatherSourceVoltages();
+					Vector inputCurrents = gatherInputCurrent();
+
+					//Create system:
+					linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage, inputCurrents);
+
+					//Disable flags:
+					updateGraph = false;
+					updateResistance = false;
+					updateVoltage = false;
+					updateInputCurrent = false;
+
+					//Set flag:
+					updateCurrent = true;
+
+
+				} catch (RuntimeException e) {
+					updateCurrent = false;
 				}
 			}
 			else {
-				validNetwork = false;
-				for (int i = 0; i < edges.size(); i++) {
-					edges.get(i).setCurrent(0.0f);
+				if (updateResistance) {
+					updateResistance = false;
+					linSystem.updateResistances(gatherResistances());
+					updateCurrent = true;
+				}
+				if (updateVoltage) {
+					updateVoltage = false;
+					linSystem.updateSourceVoltage(gatherSourceVoltages());
+					updateCurrent = true;
+				}
+				if (updateInputCurrent) {
+					updateInputCurrent = false;
+					linSystem.updateInputCurrents(gatherInputCurrent());
+					updateCurrent = true;
 				}
 			}
-			
-			Vector potentials = discoverPotential_BFS();
-			for (int i = 0; i < vertices.size(); i++) {
-				vertices.get(i).setPotential(potentials.at(i));
-			}
-	    }
-		for (Component component : components) {
-			component.update(deltaTime);
-		}
 
+			//Calculate-current:
+
+			if (updateCurrent) {
+				Vector current = CalculateCurrent();
+				if (current != null) {
+					updateCurrent = false;
+					validNetwork = true;
+					for (int i = 0; i < edges.size(); i++) {
+						edges.get(i).setCurrent(current.at(i));
+					}
+				}
+				else {
+					validNetwork = false;
+					for (int i = 0; i < edges.size(); i++) {
+						edges.get(i).setCurrent(0.0f);
+					}
+				}
+
+				Vector potentials = discoverPotential_BFS();
+				for (int i = 0; i < vertices.size(); i++) {
+					vertices.get(i).setPotential(potentials.at(i));
+				}
+			}
+			for (Component component : components) {
+				component.update(deltaTime);
+			}
+			performedDelta = performedDelta.add(deltaTime);
+		}
 	}
 	
 	
@@ -360,7 +364,7 @@ public class Network {
 	        		Vertex step = in;
 	        		while (step != out) {
 	        			if (previous.get(step) == null) {
-	        				System.out.println("Null.");
+	        				//System.out.println("Null.");
 	        			}
 	        			Edge e = step.getIncoming().get(previous.get(step));
 	        			if (e != null) {
@@ -415,8 +419,8 @@ public class Network {
 	private void offsetAndNormalizePotentialsToZeroMinimum(Vector potentials, List<List<Vertex>> islands) {
 		for (var island : islands) {
 			int i = vertices.indexOf(island.get(0));
-			float min = potentials.at(i);
-			float max = potentials.at(i);
+			double min = potentials.at(i);
+			double max = potentials.at(i);
 			for (var vertex : island) {
 				int j = vertices.indexOf(vertex);
 				if (min > potentials.at(j)) {
@@ -471,12 +475,12 @@ public class Network {
 	    ///Cycle:
 	    boolean run = true;
 	    while (run) {
-	    	System.out.println("Begin BFS loop.");
+	    	//System.out.println("Begin BFS loop.");
 	        ///Finding undiscovered adjacent vertex:
 	    	boolean foundChild = false;
 	        for (Vertex child : current.getOutgoing().keySet()) {
 	            if (!traversed.contains(child)) {
-	    	    	System.out.println("Found outgoing: " + vertices.indexOf(child));
+	    	    	//System.out.println("Found outgoing: " + vertices.indexOf(child));
 	    	    	traversed.add(child);
 	            	previous.put(child, current);
 	                current = child;
@@ -488,7 +492,7 @@ public class Network {
 				//Also search in reversed edges:
 		        for (Vertex child : current.getIncoming().keySet()) {
 		            if (!traversed.contains(child)) {
-		    	    	System.out.println("Found incoming: " + vertices.indexOf(child));
+		    	    	//System.out.println("Found incoming: " + vertices.indexOf(child));
 		            	traversed.add(child);
 		            	previous.put(child, current);
 		                current = child;
@@ -498,13 +502,13 @@ public class Network {
 		        }
 			}
 	        if (!foundChild) {
-    	    	System.out.println("Vertex finished: " + vertices.indexOf(current));
+				//System.out.println("Vertex finished: " + vertices.indexOf(current));
     	    	finished.put(current, true);	// No untraversed children left.
 	            if (null != previous.get(current)) {	//Backtracking
-	    	    	System.out.println("Backtracking from " + vertices.indexOf(current));
+	    	    	//System.out.println("Backtracking from " + vertices.indexOf(current));
 	                current = previous.get(current);
 				} else {
-	    	    	System.out.println("No edges from vertex: " + vertices.indexOf(current));
+					//System.out.println("No edges from vertex: " + vertices.indexOf(current));
 	                ///Finding untraversed vertex:
 	                boolean foundUntraversed = false;
 	                for (Vertex iter : vertices) {
@@ -524,7 +528,7 @@ public class Network {
 	        }
 	        else {
 				islands.get(islands.size() - 1).add(current);
-				float voltageDrop = 0.0f;
+				double voltageDrop = 0.0;
 	        	if (current.getIncoming().containsKey(previous.get(current))) {
 	        		voltageDrop = current.getIncoming().get(previous.get(current)).getVoltageDrop(); 
 	        	}
@@ -534,8 +538,8 @@ public class Network {
 	        	else {
 	        		throw new RuntimeException("Wrong previous vertex!");
 	        	}
-	        	float potential = potentials.at(vertices.indexOf(previous.get(current))) - voltageDrop;
-	        	System.out.println("Potential: " + potential);
+	        	double potential = potentials.at(vertices.indexOf(previous.get(current))) - voltageDrop;
+	        	//System.out.println("Potential: " + potential);
 	        	potentials.setAt(vertices.indexOf(current), potential);
 	        }
 	    }
@@ -662,7 +666,7 @@ public class Network {
 	 * @param merge			The vertex, which is merged into the other. 
 	 */
 	protected void mergeVertices(Vertex persistent, Vertex merge)  {
-		System.out.println("Merged vertices.");
+		//System.out.println("Merged vertices.");
 		if (persistent != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
 				incoming.getKey().removeOutgoing(merge);
@@ -978,7 +982,7 @@ public class Network {
 			Vector fromInToOut = MyMath.subtract(outPos, inPos);			
 			
 			if (MyMath.dot(fromInToCursor, fromInToOut) > 0 && MyMath.dot(fromOutToCursor, fromInToOut) < 0) {
-				float distance = MyMath.magnitude(MyMath.reject(fromInToCursor, fromInToOut)); 
+				double distance = MyMath.magnitude(MyMath.reject(fromInToCursor, fromInToOut));
 				if (distance < closeProximity) {
 					return component;
 				}

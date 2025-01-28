@@ -1,10 +1,10 @@
-package main.java.network;
+package network;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.util.Duration;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,9 +15,9 @@ import java.util.List;
  * @author Simon Zoltán
  *
  */
-public class VoltageSource extends main.java.network.Component {
-	private main.java.network.Edge e;
-	private float sourceVoltage = 1.0f;
+public class VoltageSource extends network.Component {
+	private network.Edge e;
+	private double sourceVoltage = 1.0f;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -25,17 +25,17 @@ public class VoltageSource extends main.java.network.Component {
 	}
 	
 	
-	public VoltageSource(float u) {
+	public VoltageSource(double u) {
 		sourceVoltage = u;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 	
-	public float getSourceVoltage() {
+	public double getSourceVoltage() {
 		return sourceVoltage;
 	}
 
-	public void setSourceVoltage(float sourceVoltage) {
+	public void setSourceVoltage(double sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 		if (e != null) {
 			e.setSourceVoltage(sourceVoltage);
@@ -43,17 +43,17 @@ public class VoltageSource extends main.java.network.Component {
 	}
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return getSourceVoltage();
 	}
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return sourceVoltage / e.getCurrent();
 	}
 
@@ -137,7 +137,7 @@ public class VoltageSource extends main.java.network.Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setSourceVoltage(Float.valueOf(pairs[1].split(":")[1]));
+		setSourceVoltage(Double.valueOf(pairs[1].split(":")[1]));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -211,8 +211,8 @@ public class VoltageSource extends main.java.network.Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 	}
 
 
@@ -239,7 +239,7 @@ public class VoltageSource extends main.java.network.Component {
 		String str = getProperties().get("voltage").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				setSourceVoltage(val);
 				
 			} catch (Exception e) {

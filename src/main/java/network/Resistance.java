@@ -1,4 +1,4 @@
-package main.java.network;
+package network;
 
 import javafx.util.Duration;
 import java.util.ArrayList;
@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
-import main.java.gui.DrawingHelper;
-import main.java.math.Coordinate;
-import main.java.math.Line;
+import gui.DrawingHelper;
+import math.Coordinate;
+import math.Line;
 
 /**
  * Resistance with adjustable value.
@@ -19,35 +19,35 @@ import main.java.math.Line;
 public class Resistance extends Component {
 
 	private Edge e;
-	private float resistance = 1000;
+	private double resistance = 1000;
 
 	// Constructors:---------------------------------------------------------------------------------------
 
 	public Resistance() {
 	}
 
-	public Resistance(float r) {
+	public Resistance(double r) {
 		resistance = r;
 	}
 
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public float getCurrent() {
+	public double getCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public float getVoltage() {
+	public double getVoltage() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public float getResistance() {
+	public double getResistance() {
 		return e.getResistance();
 	}
 
-	public void setResistance(float resistance) {
+	public void setResistance(double resistance) {
 		this.resistance = resistance;
 		e.setResistance(resistance);
 	}
@@ -130,7 +130,7 @@ public class Resistance extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setResistance(Float.valueOf(pairs[1].split(":")[1]));
+		setResistance(Double.valueOf(pairs[1].split(":")[1]));
 
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -184,8 +184,8 @@ public class Resistance extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				true,
-				e.getInput().getPotential(),
-				e.getOutput().getPotential());
+				(float)e.getInput().getPotential(),
+				(float)e.getOutput().getPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -212,7 +212,7 @@ public class Resistance extends Component {
 		String str = getProperties().get("resistance").value;
 		if (str != null && str.length() > 0) {
 			try {
-				float val = Float.parseFloat(str);
+				double val = Double.parseDouble(str);
 				setResistance(val);
 
 			} catch (Exception e) {
