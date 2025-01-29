@@ -283,8 +283,8 @@ public class AnalogeAmmeter extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			getProperties().get("resistance").value = String.valueOf(e.getTimeDomainResistance());
+			getParent().simulate();
 		}
 
 		str = getProperties().get("scale").value;

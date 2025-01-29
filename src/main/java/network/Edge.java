@@ -159,6 +159,6 @@ public class Edge {
 
 	public final double getTimeDomainVoltageDrop()
 	{
-		return (timeDomainSourceVoltage == 0.0f)? timeDomainVoltageDrop : -timeDomainSourceVoltage;
+		return (timeDomainSourceVoltage == 0.0f)? timeDomainVoltageDrop : timeDomainSourceVoltage;
 	}
 }

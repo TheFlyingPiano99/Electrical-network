@@ -51,11 +51,6 @@ public class Network {
 	private LinearSystemForCurrent linSystem;
 	
 	//Flags:
-	boolean updateGraph = true;
-	boolean updateVoltage = true;
-	boolean updateResistance = true;
-	boolean updateCurrent = true;
-	boolean updateInputCurrent = true;
 	private Component selected = null;
 	private boolean snapToGrid = true;
 	private boolean validNetwork = false;
@@ -163,74 +158,40 @@ public class Network {
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
 	 */
 	public void simulate () {
-		System.out.println("Calculating system");
+		System.out.println("\nCalculating system");
 		for (int k = 0; k < angularFrequencies.dimension; k++) {	// Finer time resolution
 
-			//ManageLinearSystem:
-			if (updateGraph || linSystem == null) {
 
-				//Graph representations:
-				Matrix incidence = new Matrix(0,0);
-				Matrix cycle = new Matrix(0,0);
-				try {
-					DFS(incidence, cycle);
+			//Graph representations:
+			Matrix incidence = new Matrix(0,0);
+			Matrix cycle = new Matrix(0,0);
+			try {
+				DFS(incidence, cycle);
 
-					//Parameters:
-					Vector resistances = gatherImpedance(k);
-					Vector sourceVoltage = gatherSourceVoltages(k);
-					Vector inputCurrents = gatherInputCurrent(k);
+				//Parameters:
+				Vector impedance = gatherImpedance(k);
+				Vector sourceVoltage = gatherSourceVoltages(k);
+				Vector inputCurrent = gatherInputCurrent(k);
 
-					//Create system:
-					linSystem = new LinearSystemForCurrent(incidence, cycle, resistances, sourceVoltage, inputCurrents);
+				//Create system:
+				linSystem = new LinearSystemForCurrent(incidence, cycle, impedance, sourceVoltage, inputCurrent);
 
-					//Disable flags:
-					updateGraph = false;
-					updateResistance = false;
-					updateVoltage = false;
-					updateInputCurrent = false;
-
-					//Set flag:
-					updateCurrent = true;
-
-
-				} catch (RuntimeException e) {
-					updateCurrent = false;
-				}
-			}
-			else {
-				if (updateResistance) {
-					updateResistance = false;
-					linSystem.updateImpedances(gatherImpedance(k));
-					updateCurrent = true;
-				}
-				if (updateVoltage) {
-					updateVoltage = false;
-					linSystem.updateSourceVoltage(gatherSourceVoltages(k));
-					updateCurrent = true;
-				}
-				if (updateInputCurrent) {
-					updateInputCurrent = false;
-					linSystem.updateInputCurrents(gatherInputCurrent(k));
-					updateCurrent = true;
-				}
+			} catch (RuntimeException e) {
 			}
 
 			//Calculate-current:
 
-			if (updateCurrent) {
-				Vector current = CalculateCurrent();
-				if (current != null) {
-					updateCurrent = false;
-					validNetwork = true;
-					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).getCurrent().setAt(k, current.at(i));
-					}
+			Vector current = CalculateCurrent();
+			if (current != null) {
+				validNetwork = true;
+				for (int i = 0; i < edges.size(); i++) {
+					edges.get(i).getCurrent().setAt(k, current.at(i));
 				}
-				else {
-					validNetwork = false;
-					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
-					}
+			}
+			else {
+				validNetwork = false;
+				for (int i = 0; i < edges.size(); i++) {
+					edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
 				}
 			}
 		}
@@ -604,10 +565,10 @@ public class Network {
 		else {
 			edge.getOutput().removeIncoming(edge.getInput());
 		}
-		
-		setUpdateAll();
-		
+
 		edges.remove(edge);
+
+		simulate();
 	}
 	
 	
@@ -682,7 +643,7 @@ public class Network {
 				persistent.addOutgoing(outgoing.getKey(), outgoing.getValue());
 			}
 			vertices.remove(merge);
-			setUpdateAll();
+			simulate();
 		}
 	}
 	
@@ -708,8 +669,8 @@ public class Network {
 	public void removeComponent (Component component) {
 		component.destroy();
 		components.remove(component);
-		
-		setUpdateAll();
+
+		simulate();
 	}
 	
 	//Move ComponentNode:--------------------------------------------------------------
@@ -725,7 +686,7 @@ public class Network {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
 		componentNode.grab(cursorPos);
-		setUpdateAll();
+		simulate();
 	}
 	
 	/**
@@ -751,7 +712,7 @@ public class Network {
 			throw new RuntimeException("Invalid node released.");
 		}
 		componentNode.release();
-		setUpdateAll();
+		simulate();
 	}
 
 	//---------------------------------------------------------------
@@ -767,15 +728,15 @@ public class Network {
 		addComponent(component);
 		selected = component;
 		if (snapToGrid) {
-			component.getInput().setPos(Coordinate.snapToGrid(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)), gridSize));
+			component.getInput().setPos(Coordinate.snapToGrid(MyMath.subtract(cursorPos, new Coordinate(30, 0)), gridSize));
 			component.getOutput().setPos(Coordinate.snapToGrid(MyMath.add(cursorPos, new Coordinate(30, 0)), gridSize));					
 		}
 		else {
-			component.getInput().setPos(MyMath.subtrackt(cursorPos, new Coordinate(30, 0)));
+			component.getInput().setPos(MyMath.subtract(cursorPos, new Coordinate(30, 0)));
 			component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));					
 		}
 		component.release();
-		setUpdateAll();
+		simulate();
 
 	}
 	
@@ -791,7 +752,7 @@ public class Network {
 		}
 		selected = component;
 		component.grab(cursorPos);
-		setUpdateAll();
+		simulate();
 
 	}
 	
@@ -834,27 +795,10 @@ public class Network {
 			throw new RuntimeException("Invalid component released.");
 		}
 		component.release();
-		setUpdateAll();
+		simulate();
 
 	}
-	//---------------------------------------------------------------
-	
-	/**
-	 * When everything needs to be updated in the network. Sets all update flags:
-	 * updateGraph,
-	 * updateVoltage,
-	 * updateResistance,
-	 * updateCurrent
-	 * HUN: Beállít minden frissítési jelzőt.
-	 */
-	protected void setUpdateAll() {
-		updateGraph = true;
-		updateVoltage = true;
-		updateResistance = true;
-		updateInputCurrent = true;
-		updateCurrent = true;
-	}
-	
+
 	/**
 	 * Disconnects a the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
 	 * HUN: Letkapcsol egy komponenst a többi komponensről. Ez a komponenst két végpontjának lecsatlakoztatásával valósul meg.
@@ -905,7 +849,7 @@ public class Network {
 	protected boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
 			if (iter != componentNode) {
-				if (closeProximity > MyMath.magnitude(MyMath.subtrackt(componentNode.getPos(), iter.getPos()))) {					
+				if (closeProximity > MyMath.magnitude(MyMath.subtract(componentNode.getPos(), iter.getPos()))) {
 					if (!componentNode.isNeighbouring(iter)) {
 						//Merge needed:
 						for (Component incoming : componentNode.getIncoming()) {
@@ -925,7 +869,7 @@ public class Network {
 						}
 
 						componentNodes.remove(componentNode);
-						setUpdateAll();
+						simulate();
 					
 						return true;						
 					}
@@ -954,7 +898,7 @@ public class Network {
 	 */
 	public ComponentNode getNodeAtPos(Coordinate pos) {
 		for (ComponentNode iter : componentNodes) {
-			if (MyMath.magnitude(MyMath.subtrackt(iter.getPos(), pos)) < 10) {
+			if (MyMath.magnitude(MyMath.subtract(iter.getPos(), pos)) < 10) {
 				return iter;
 			}
 		}
@@ -1023,7 +967,7 @@ public class Network {
 	public void load(String fileName) {
 		try {
 			clear();			//Clear current state.
-			setUpdateAll();	
+			simulate();
 
 			FileReader input = new FileReader(fileName);
 			
@@ -1076,7 +1020,7 @@ public class Network {
 		
 		vertices.add(new Vertex());
 		
-		setUpdateAll();
+		simulate();
 	}
 
 	/**
@@ -1115,7 +1059,7 @@ public class Network {
 		for (Component component : components) {
 			component.reset();
 		}
-		setUpdateAll();
+		simulate();
 	}
 	
 	/**

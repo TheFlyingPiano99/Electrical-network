@@ -214,8 +214,8 @@ public class Resistance extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
+			getParent().simulate();
 		}
 
 	}

@@ -37,7 +37,7 @@ public class Gauss {
                 throw new InfiniteSolutions();
             }
             case cleanSolution: {
-    //Second fase of Gauss eliminaton after reducton:----------------------------
+    //Second phase of Gauss elimination after reduction:----------------------------
                 int r = M.row-2;
                 int rightSideRow = M.row-1;     //The right side of the equations.
                 for (int c = M.column-1; c > 0; c--) {    //Reverse iteration on columns
@@ -54,6 +54,7 @@ public class Gauss {
                 for (int c = 0; c < M.column; c++) {
                     ret.setAt(c, M.at(rightSideRow, c));
                 }
+                System.out.println(M + "\n");
                 return ret;
     //---------------------------------------------------------------------------
             }

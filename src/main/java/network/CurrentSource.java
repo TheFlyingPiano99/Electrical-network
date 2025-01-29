@@ -214,8 +214,8 @@ public class CurrentSource extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			getProperties().get("current").value = String.valueOf(getInputCurrent());
+			getParent().simulate();
 		}
 	}
 

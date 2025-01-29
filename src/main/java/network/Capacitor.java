@@ -239,9 +239,9 @@ public class Capacitor extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			//System.out.println("Updated value:" + getCapacity());
 			getProperties().get("capacity").value = String.valueOf(getCapacity());
+			getParent().simulate();
 		}
 	}
 

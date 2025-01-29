@@ -291,9 +291,9 @@ public class Inductor extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			//System.out.println("Updated value:" + getInductance());
 			getProperties().get("inductance").value = String.valueOf(getInductance());
+			getParent().simulate();
 		}
 	}
 

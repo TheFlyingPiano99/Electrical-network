@@ -159,7 +159,7 @@ public class ComponentNode {
 	public void grab(Coordinate cursorPos) {
 		this.setMerge(true);
 		this.setGrabbed(true);
-		grabCursorOffset = MyMath.subtrackt(cursorPos, pos);
+		grabCursorOffset = MyMath.subtract(cursorPos, pos);
 	}
 	
 	/**
@@ -168,7 +168,7 @@ public class ComponentNode {
 	 * @param CursorPos {@link Coordinate} of the new position.
 	 */
 	public void drag(Coordinate CursorPos) {
-		CursorPos = MyMath.subtrackt(CursorPos, grabCursorOffset);
+		CursorPos = MyMath.subtract(CursorPos, grabCursorOffset);
 		if (parent.isSnapToGrid()) {
 			CursorPos = Coordinate.snapToGrid(CursorPos, parent.getGridSize());
 		}

@@ -159,6 +159,24 @@ public class Matrix {
         return this;
     }
 
+    @Override
+    public String toString()
+    {
+        String str = "(";
+        for (int r = 0; r < row; r++) {
+            for (int c = 0; c < column; c++) {
+                str = str + this.at(r, c);
+                if (c != column - 1) {
+                    str += ", ";
+                }
+            }
+            if (r != row - 1) {
+                str += ",\n";
+            }
+        }
+        str += ")";
+        return str;
+    }
 
 	//Other
 	//double Determinant (Matrix M);
