@@ -567,8 +567,6 @@ public class Network {
 		}
 
 		edges.remove(edge);
-
-		simulate();
 	}
 	
 	
@@ -643,7 +641,6 @@ public class Network {
 				persistent.addOutgoing(outgoing.getKey(), outgoing.getValue());
 			}
 			vertices.remove(merge);
-			simulate();
 		}
 	}
 	
@@ -669,8 +666,6 @@ public class Network {
 	public void removeComponent (Component component) {
 		component.destroy();
 		components.remove(component);
-
-		simulate();
 	}
 	
 	//Move ComponentNode:--------------------------------------------------------------
@@ -686,7 +681,6 @@ public class Network {
 			throw new RuntimeException("Invalid node grabbed.");
 		}
 		componentNode.grab(cursorPos);
-		simulate();
 	}
 	
 	/**
@@ -712,7 +706,6 @@ public class Network {
 			throw new RuntimeException("Invalid node released.");
 		}
 		componentNode.release();
-		simulate();
 	}
 
 	//---------------------------------------------------------------
@@ -736,8 +729,6 @@ public class Network {
 			component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));					
 		}
 		component.release();
-		simulate();
-
 	}
 	
 	/**
@@ -752,8 +743,6 @@ public class Network {
 		}
 		selected = component;
 		component.grab(cursorPos);
-		simulate();
-
 	}
 	
 	/**
@@ -795,8 +784,6 @@ public class Network {
 			throw new RuntimeException("Invalid component released.");
 		}
 		component.release();
-		simulate();
-
 	}
 
 	/**
@@ -869,8 +856,7 @@ public class Network {
 						}
 
 						componentNodes.remove(componentNode);
-						simulate();
-					
+
 						return true;						
 					}
 					else {
@@ -967,7 +953,6 @@ public class Network {
 	public void load(String fileName) {
 		try {
 			clear();			//Clear current state.
-			simulate();
 
 			FileReader input = new FileReader(fileName);
 			
