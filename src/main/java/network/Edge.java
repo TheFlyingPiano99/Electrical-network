@@ -25,6 +25,7 @@ public class Edge {
 	double timeDomainCurrent = 0.0;
 	double timeDomainResistance = 0.0;
 	double timeDomainSourceVoltage = 0.0;
+	double timeDomainVoltageDrop = 0.0;
 
 	boolean grabbed = false;
 
@@ -131,10 +132,13 @@ public class Edge {
 		timeDomainCurrent = 0;
 		timeDomainResistance = 0;
 		timeDomainSourceVoltage = 0;
+		timeDomainVoltageDrop = 0;
 		for (int k = 0; k < omega.dimension; k++) {
-			timeDomainCurrent += Complex.multiply(current.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
-			timeDomainResistance += Complex.multiply(impedance.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
-			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
+			Complex e = Complex.euler(1, omega.at(k).getRe() * totalTimeSec);
+			timeDomainCurrent += Complex.multiply(current.at(k), e).getRe();
+			timeDomainResistance += Complex.multiply(impedance.at(k), e).getRe();
+			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), e).getRe();
+			timeDomainVoltageDrop += Complex.multiply(Complex.multiply(current.at(k), impedance.at(k)), e).getRe();
 		}
 	}
 
@@ -155,6 +159,6 @@ public class Edge {
 
 	public final double getTimeDomainVoltageDrop()
 	{
-		return timeDomainResistance * timeDomainCurrent;
+		return timeDomainVoltageDrop;
 	}
 }
