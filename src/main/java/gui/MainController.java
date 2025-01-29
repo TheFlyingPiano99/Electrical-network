@@ -157,8 +157,7 @@ public class MainController {
     @FXML
     void miNewAction(ActionEvent event) {
     	network.clear();
-    	helper.updateCanvasContent(xCanvas, network, totalTimeSec);
-    	selectedComponent = null;
+		selectedComponent = null;
     	grabbedNode = null;
     	grabbedComponent = null;
     	simulating = null;
@@ -185,7 +184,6 @@ public class MainController {
         if (f != null && f.exists()) {
         	String fileName = f.getAbsolutePath();
         	network.load(fileName);
-        	DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
         }
     }
 
@@ -252,6 +250,7 @@ public class MainController {
     	simulating = null;
     	leftStatus.setText("Szimuláció leállítva.");
 		DrawingHelper.clearScopeImage(scopeCanvas);
+		totalTimeSec = 0;
 	}
 
     //Button actions:--------------------------------------------------------------------------
@@ -412,8 +411,6 @@ public class MainController {
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
 					network.simulate();
-    	            helper.updateCanvasContent(xCanvas, network, totalTimeSec);
-    	            //System.out.println("Successfuly dropped " + dragboard.getString());
     	        } else {
     	            event.setDropCompleted(false);
     	            //System.out.println("Failed!");
@@ -430,13 +427,11 @@ public class MainController {
     				if (grabbedNode != null) {
     					network.grabComponentNode(grabbedNode, cursorPos);
 						network.simulate();
-        				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				} else {
     					grabbedComponent = network.getComponentAtPos(cursorPos);
     					if (grabbedComponent != null) {
     						network.grabComponent(grabbedComponent, cursorPos);
 							network.simulate();
-            				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
             				if (null != network.getSelected() &&
             						(selectedComponent == null || selectedComponent != network.getSelected())) {
                 				selectedComponent = network.getSelected();
@@ -456,11 +451,9 @@ public class MainController {
     			if (grabbedNode != null) {
         			//System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
     				network.dragComponentNode(grabbedNode, cursorPos);
-    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			} else if (grabbedComponent != null) {
 					//System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
 					network.dragComponent(grabbedComponent, cursorPos);
-    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     	        event.consume();        			
     		}
@@ -473,12 +466,10 @@ public class MainController {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
 					network.simulate();
-    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
 					network.simulate();
-    				helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     		}
         );
@@ -506,19 +497,18 @@ public class MainController {
 					}
 					DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
 					if (simulating != null && simulating) {
-						DrawingHelper.updateScopeImage(scopeCanvas, network);
+						DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec);
+						totalTimeSec += duration.toSeconds();
 					}
 				} catch (Exception e) {
 					System.out.println("simulate error");
 					e.printStackTrace();
 				}
-				totalTimeSec += duration.toSeconds();
             }
         ));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
         
-    	DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
 		DrawingHelper.clearScopeImage(scopeCanvas);
     }
     
@@ -583,7 +573,6 @@ public class MainController {
         			network.removeComponent(selectedComponent);
         			destroyPropertyView();
 					network.simulate();
-        			helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				selectedComponent = null;
     			}
     			break;
@@ -591,7 +580,6 @@ public class MainController {
     			if (selectedComponent != null) {
     				network.cancelSelection();
         			destroyPropertyView();
-        			helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				selectedComponent = null;
     			}
     			break;
@@ -599,12 +587,10 @@ public class MainController {
     			if (snapToGrid || network.isSnapToGrid()) {
     				this.snapToGrid = false;
     				network.setSnapToGrid(false);
-    				DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
-    			}
+				}
     			else if (!snapToGrid && !network.isSnapToGrid()) {
     				this.snapToGrid = true;
     				network.setSnapToGrid(true);
-    				DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
     			}
     			break;
     		default:
