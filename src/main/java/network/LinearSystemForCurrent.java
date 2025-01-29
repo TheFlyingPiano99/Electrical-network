@@ -34,11 +34,11 @@ public class LinearSystemForCurrent extends Matrix {
 	 * Constructor
 	 * @param incidence		Incidence matrix of the graph representation of network.
 	 * @param cycle			Base cycle matrix of the graph representation of network.
-	 * @param resistances	Vector of resistances of edges in same order as the order of edges in the incidence and cycle matrices.
+	 * @param impedance	Vector of impedance of edges in same order as the order of edges in the incidence and cycle matrices.
 	 * @param sourceVoltage	Vector of source voltages of edges in same order as the order of edges in the incidence and cycle matrices.
 	 * @param inputCurrents Vector of currents inputed to individual vertices.
 	 */
-	public LinearSystemForCurrent(Matrix incidence, Matrix cycle, Vector resistances, Vector sourceVoltage, Vector inputCurrents) {
+	public LinearSystemForCurrent(Matrix incidence, Matrix cycle, Vector impedance, Vector sourceVoltage, Vector inputCurrents) {
 		super(incidence.row + 1, incidence.column + cycle.column);
 		
 		if (incidence.row != cycle.row) {
@@ -70,8 +70,8 @@ public class LinearSystemForCurrent extends Matrix {
 			}
 		}
 		
-		if (resistances != null) {
-			updateImpedances(resistances);
+		if (impedance != null) {
+			updateImpedances(impedance);
 		}
 		if (sourceVoltage != null) {
 			updateSourceVoltage(sourceVoltage);
@@ -106,15 +106,15 @@ public class LinearSystemForCurrent extends Matrix {
 	/**
 	 * Updates only the "impedances" part of the matrix.
 	 * HUN: Frissíti a mátrix impedanciákat leíró részét.
-	 * @param resistances {@link Vector} of resistances.
+	 * @param impedances {@link Vector} of resistances.
 	 */
 	public void updateImpedances(Vector impedances) {
 		for (int c = 0; c < this.cycle.column; c++) {
 			for (int r = 0; r < impedances.dimension; r++) {
-				if (this.cycle.at(r, c).compareTo(new Complex(0, 0)) > 0) {
+				if (this.cycle.at(r, c).getRe() > 0) {
 					this.setAt(r, cycleOffset + c, impedances.at(r));
 				}
-				else if (this.cycle.at(r, c).compareTo(new Complex(0, 0)) < 0) {
+				else if (this.cycle.at(r, c).getRe() < 0) {
 					this.setAt(r, cycleOffset + c, impedances.at(r).negate());
 				}
 				else {
