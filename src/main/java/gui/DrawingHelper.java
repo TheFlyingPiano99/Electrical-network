@@ -35,7 +35,7 @@ public class DrawingHelper {
 	private static ArrayList<Double> scopeVoltageBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeCurrentBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeResistanceBuffer = new ArrayList<>();
-	private static int maxScopeDataPoints = 64;
+	private static int maxScopeDataPoints = 256;
 
 	/**
 	 * Sets drawing attributes for normal drawing. (Uses the predefined, static variables.)
@@ -109,7 +109,7 @@ public class DrawingHelper {
 
 	private static void drawVoltage(GraphicsContext ctx, double U, double W, double H) {
 		ctx.setStroke(Color.GREEN);
-		ctx.strokeText("U = " + U + " V", 10,20);
+		ctx.strokeText("U = " + String.format("%,.5f", U) + " V", 10,20);
 		double prevVal = 0;
 		double valOffset = H / 2.0;
 		double valScale = H / 2.0 / 5.0;
@@ -135,7 +135,7 @@ public class DrawingHelper {
 
 	private static void drawCurrent(GraphicsContext ctx, double I, double W, double H) {
 		ctx.setStroke(Color.YELLOW);
-		ctx.strokeText("I = " + I + " Amp", 10,40);
+		ctx.strokeText("I = " + String.format("%,.5f", I) + " A", 10,40);
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;
@@ -161,7 +161,7 @@ public class DrawingHelper {
 	}
 	private static void drawResistance(GraphicsContext ctx, double R, double W, double H) {
 		ctx.setStroke(Color.PURPLE);
-		ctx.strokeText("R = " + R + " Ohm", 10,60);
+		ctx.strokeText("R = " + String.format("%,.5f", R) + " Ohm", 10,60);
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;

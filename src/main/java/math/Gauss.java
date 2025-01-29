@@ -54,7 +54,6 @@ public class Gauss {
                 for (int c = 0; c < M.column; c++) {
                     ret.setAt(c, M.at(rightSideRow, c));
                 }
-                System.out.println(M + "\n");
                 return ret;
     //---------------------------------------------------------------------------
             }

@@ -65,6 +65,7 @@ public class Network {
 	int closeProximity = (int)(gridSize * 0.4);
 
 	private Vector angularFrequencies;
+	private double angularFrequencyStep;
 
 	public Vector getAngularFrequencies()
 	{
@@ -75,12 +76,12 @@ public class Network {
 	
 	public Network() {
 		// Initialize angular frequencies:
-		int frequencyResolution = 1024;
-		double frequencyStep = 0.1;
+		int frequencyResolution = 4096;
+		angularFrequencyStep = 0.01;
 		Edge.defaultPhasorSpaceResolution = frequencyResolution;
 		angularFrequencies = new Vector(frequencyResolution);
 		for (int k = 0; k < frequencyResolution; k++) {
-			angularFrequencies.setAt(k, new Complex(k * frequencyStep, 0));
+			angularFrequencies.setAt(k, new Complex(k * angularFrequencyStep, 0));
 		}
 
 		vertices = new ArrayList<Vertex>();
@@ -93,6 +94,10 @@ public class Network {
 		
 		//Create ground-node (index 0):
 		vertices.add(new Vertex());
+	}
+
+	public double getAngularFrequencyStep() {
+		return angularFrequencyStep;
 	}
 
 	//--------------------------------------------------------------------

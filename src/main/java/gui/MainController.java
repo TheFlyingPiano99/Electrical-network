@@ -39,19 +39,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
 import math.Coordinate;
-import network.AnalogVoltmeter;
-import network.AnalogeAmmeter;
-import network.Capacitor;
-import network.Component;
-import network.ComponentNode;
-import network.ComponentProperty;
-import network.CurrentSource;
-import network.Ground;
-import network.Inductor;
-import network.Network;
-import network.Resistance;
-import network.DCVoltageSource;
-import network.Wire;
+import network.*;
 
 public class MainController {
 	
@@ -304,6 +292,7 @@ public class MainController {
         mainController = this;
         
         lvLeftListView.getItems().add("Feszültségforrás");
+		lvLeftListView.getItems().add("Szinuszos feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getItems().add("Kondenzátor");
@@ -382,6 +371,9 @@ public class MainController {
     	            if (str.equals("Feszültségforrás")) {
     	            	network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
+					else if (str.equals("Szinuszos feszültségforrás")) {
+						network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+					}
     	            else if (str.equals("Ellenállás")) {
     	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
     	            }
