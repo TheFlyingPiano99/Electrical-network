@@ -107,9 +107,9 @@ public class DrawingHelper {
 		scopeResistanceBuffer.clear();
 	}
 
-	private static void drawVoltage(GraphicsContext ctx, double W, double H) {
+	private static void drawVoltage(GraphicsContext ctx, double U, double W, double H) {
 		ctx.setStroke(Color.GREEN);
-		ctx.strokeText("U", 10,15);
+		ctx.strokeText("U = " + U + " V", 10,20);
 		double prevVal = 0;
 		double valOffset = H / 2.0;
 		double valScale = H / 2.0 / 5.0;
@@ -133,9 +133,9 @@ public class DrawingHelper {
 		}
 	}
 
-	private static void drawCurrent(GraphicsContext ctx, double W, double H) {
+	private static void drawCurrent(GraphicsContext ctx, double I, double W, double H) {
 		ctx.setStroke(Color.YELLOW);
-		ctx.strokeText("I", 10,30);
+		ctx.strokeText("I = " + I + " Amp", 10,40);
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;
@@ -159,9 +159,9 @@ public class DrawingHelper {
 			t++;
 		}
 	}
-	private static void drawResistance(GraphicsContext ctx, double W, double H) {
+	private static void drawResistance(GraphicsContext ctx, double R, double W, double H) {
 		ctx.setStroke(Color.PURPLE);
-		ctx.strokeText("R", 10,45);
+		ctx.strokeText("R = " + R + " Ohm", 10,60);
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;
@@ -185,7 +185,7 @@ public class DrawingHelper {
 			t++;
 		}
 	}
-	protected static void updateScopeImage(Canvas canvas, Network network) {
+	protected static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			double W = canvas.getWidth();
@@ -210,9 +210,12 @@ public class DrawingHelper {
 					scopeResistanceBuffer.remove(0);
 				}
 				setNormalDrawingAttributes(ctx);
-				drawVoltage(ctx, W, H);
-				drawCurrent(ctx, W, H);
-				drawResistance(ctx, W, H);
+				ctx.setLineWidth(0.8);
+				ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
+
+				drawVoltage(ctx, U, W, H);
+				drawCurrent(ctx, I, W, H);
+				drawResistance(ctx, R, W, H);
 
 			}
 			else {
