@@ -50,7 +50,7 @@ public class DCVoltageSource extends network.Component {
 	public double getTimeDomainVoltageDrop() { return sourceVoltage; }
 
 	@Override
-	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
+	public double getTimeDomainResistance() { return sourceVoltage / e.getTimeDomainCurrent(); }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -70,7 +70,7 @@ public class DCVoltageSource extends network.Component {
 		e.setImpedance(impedance);
 		Vector sourceVoltageVector = new Vector(omega.dimension);
 		sourceVoltageVector.fill(new Complex(0, 0));
-		sourceVoltageVector.setAt(0, new Complex(-this.sourceVoltage, 0)); // At zero frequency -- DC source
+		sourceVoltageVector.setAt(0, new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
 		e.setSourceVoltage(sourceVoltageVector);
 
 		
