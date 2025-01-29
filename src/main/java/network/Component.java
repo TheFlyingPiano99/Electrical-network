@@ -159,8 +159,8 @@ public abstract class Component {
 	 */
 	public void grab(Coordinate cursorPos) {
 		grabbed = true;
-		grabCursorOffset = MyMath.subtrackt(cursorPos, getInput().getPos());	//CP - P = RP
-		fromInputToOutput = MyMath.subtrackt(getOutput().getPos(), getInput().getPos());
+		grabCursorOffset = MyMath.subtract(cursorPos, getInput().getPos());	//CP - P = RP
+		fromInputToOutput = MyMath.subtract(getOutput().getPos(), getInput().getPos());
 		parent.disconnectComponent(this);
 		disconnectGraphRepresentation();
 	}
@@ -171,7 +171,7 @@ public abstract class Component {
 	 * @param cursorPos	Position of the cursor.
 	 */
 	public void drag(Coordinate cursorPos) {
-		Coordinate newInputPos = MyMath.subtrackt(cursorPos, grabCursorOffset);
+		Coordinate newInputPos = MyMath.subtract(cursorPos, grabCursorOffset);
 		if (parent.isSnapToGrid()) {
 			newInputPos = Coordinate.snapToGrid(newInputPos, parent.getGridSize());
 		}

@@ -70,7 +70,7 @@ public class DCVoltageSource extends network.Component {
 		e.setImpedance(impedance);
 		Vector sourceVoltageVector = new Vector(omega.dimension);
 		sourceVoltageVector.fill(new Complex(0, 0));
-		sourceVoltageVector.setAt(0, new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
+		sourceVoltageVector.setAt(0, new Complex(-this.sourceVoltage, 0)); // At zero frequency -- DC source
 		e.setSourceVoltage(sourceVoltageVector);
 
 		
@@ -240,9 +240,9 @@ public class DCVoltageSource extends network.Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			//System.out.println("Updated value:" + getSourceVoltage());
 			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
+			getParent().simulate();
 		}
 	}
 

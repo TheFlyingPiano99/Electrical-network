@@ -176,7 +176,7 @@ public class MyMath {
 	 * @param B matrix
 	 * @return difference
 	 */
-	public static Matrix subtrackt(Matrix A, Matrix B) {
+	public static Matrix subtract(Matrix A, Matrix B) {
 	    Matrix retM = new Matrix(A.row, A.column);
 	    for (int c = 0; c < A.column; c++) {
 	        for (int r = 0; r < A.row; r++) {
@@ -602,7 +602,7 @@ public class MyMath {
 	 * @param b second
 	 * @return difference {@link Coordinate}
 	 */
-	public static Coordinate subtrackt(Coordinate a, Coordinate b) {
+	public static Coordinate subtract(Coordinate a, Coordinate b) {
 		return new Coordinate(a.x - b.x, a.y - b.y);
 	}
 	

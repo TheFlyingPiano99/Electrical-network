@@ -275,8 +275,8 @@ public class AnalogVoltmeter extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getParent().setUpdateAll();
 			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
+			getParent().simulate();
 		}
 
 		str = getProperties().get("scale").value;

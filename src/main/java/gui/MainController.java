@@ -496,7 +496,7 @@ public class MainController {
             duration,
             ae -> {
         		try {
-					if (simulating != null && simulating && network != null) {
+					if (network != null) {
 						if (network.isValid()) {
 							rightStatus.setText("Helyes kapcsolás.");
 						}
@@ -582,6 +582,7 @@ public class MainController {
     			if (selectedComponent != null) {
         			network.removeComponent(selectedComponent);
         			destroyPropertyView();
+					network.simulate();
         			helper.updateCanvasContent(xCanvas, network, totalTimeSec);
     				selectedComponent = null;
     			}
