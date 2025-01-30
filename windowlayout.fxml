@@ -20,7 +20,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
+<VBox prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
@@ -54,28 +54,28 @@
             <Button fx:id="btnStop" mnemonicParsing="false" onAction="#btnStopAction" text="Leállít" />
         </items>
       </ToolBar>
-    <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" minHeight="0.0" minWidth="0.0" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" minHeight="0.0" minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
       <items>
-        <AnchorPane>
+        <AnchorPane fx:id="leftPane">
           <children>
                   <ListView fx:id="lvLeftListView" minWidth="-Infinity" prefHeight="504.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
           </children>
         </AnchorPane>
-      <AnchorPane id="Content" fx:id="apCanvas" minHeight="-Infinity" minWidth="-Infinity">
+      <AnchorPane id="Content" fx:id="middlePane" minHeight="0.0" minWidth="0.0">
         <children>
-                  <Canvas height="604.0" width="591.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" fx:id="xCanvas" />
+                  <Canvas fx:id="circuitCanvas" height="611.0" width="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
         </children>
       </AnchorPane>
-        <AnchorPane>
+        <AnchorPane fx:id="rightPane">
           <children>
-                  <SplitPane dividerPositions="0.5" layoutX="-20.0" layoutY="-3.0" minWidth="-Infinity" orientation="VERTICAL" prefHeight="504.0" prefWidth="240.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <SplitPane fx:id="rightSplitPane" dividerPositions="0.5" layoutX="-20.0" layoutY="-3.0" minWidth="-Infinity" orientation="VERTICAL" prefHeight="504.0" prefWidth="240.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <items>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="160.0">
+                        <AnchorPane fx:id="rightTopPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="160.0">
                            <children>
-                              <Canvas fx:id="scopeCanvas" height="302.0" nodeOrientation="INHERIT" width="294.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Canvas fx:id="scopeCanvas" height="302.0" nodeOrientation="INHERIT" width="294.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
                            </children>
                         </AnchorPane>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                      <AnchorPane fx:id="rightBottomPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                            <children>
                               <Label fx:id="lblPropertiesTitle" text="Tulajdonságok" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <font>

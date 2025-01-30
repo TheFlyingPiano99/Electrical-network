@@ -25,12 +25,12 @@ public class Wire extends Component {
 
 	@Override
 	public double getTimeDomainVoltageDrop() {
-		return e.getTimeDomainVoltageDrop();
+		return 0;
 	}
 
 	@Override
 	public double getTimeDomainResistance() {
-		return e.getTimeDomainResistance();
+		return 0;
 	}
 	
 	//Build/Destroy:------------------------------------------------------------------------------------

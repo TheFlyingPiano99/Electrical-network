@@ -37,7 +37,7 @@ public class Ground extends Component {
 	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
 
 	@Override
-	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
+	public double getTimeDomainResistance() { return 0; }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	

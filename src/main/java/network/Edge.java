@@ -23,7 +23,6 @@ public class Edge {
 	Vector sourceVoltage = Vector.Zeros(defaultPhasorSpaceResolution);
 
 	double timeDomainCurrent = 0.0;
-	double timeDomainResistance = 0.0;
 	double timeDomainSourceVoltage = 0.0;
 	double timeDomainVoltageDrop = 0.0;
 
@@ -130,13 +129,11 @@ public class Edge {
 	public void updateTimeDomainParameters(Vector omega, double totalTimeSec)
 	{
 		timeDomainCurrent = 0;
-		timeDomainResistance = 0;
 		timeDomainSourceVoltage = 0;
 		timeDomainVoltageDrop = 0;
 		for (int k = 0; k < omega.dimension; k++) {
 			Complex e = Complex.euler(1, omega.at(k).getRe() * totalTimeSec);
 			timeDomainCurrent += Complex.multiply(current.at(k), e).getRe();
-			timeDomainResistance += Complex.multiply(impedance.at(k), e).getRe();
 			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), e).getRe();
 			timeDomainVoltageDrop += Complex.multiply(Complex.multiply(current.at(k), impedance.at(k)), e).getRe();
 		}
@@ -150,11 +147,6 @@ public class Edge {
 	public final double getTimeDomainSourceVoltage()
 	{
 		return timeDomainSourceVoltage;
-	}
-
-	public final double getTimeDomainResistance()
-	{
-		return timeDomainResistance;
 	}
 
 	public final double getTimeDomainVoltageDrop()

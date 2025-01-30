@@ -53,10 +53,10 @@ public class CurrentSource extends Component {
 	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+	public double getTimeDomainVoltageDrop() { return 0; }
 
 	@Override
-	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
+	public double getTimeDomainResistance() { return 0; }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	

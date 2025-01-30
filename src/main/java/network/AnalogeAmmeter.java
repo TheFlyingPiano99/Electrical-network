@@ -44,7 +44,7 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public double getTimeDomainResistance() {
-		return e.getTimeDomainResistance();
+		return resistance;
 	}
 
 	public void setResistance(double resistance) {
@@ -283,7 +283,7 @@ public class AnalogeAmmeter extends Component {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			getProperties().get("resistance").value = String.valueOf(e.getTimeDomainResistance());
+			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
 			getParent().simulate();
 		}
 

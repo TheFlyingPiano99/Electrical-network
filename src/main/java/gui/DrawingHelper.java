@@ -359,11 +359,11 @@ public class DrawingHelper {
 		ctx.setLineWidth(0.3);
 		ctx.setLineDashes(null);
 		
-		for (int x = 0; x < canvas.getWidth(); x++) {
-			ctx.strokeLine(x * gridSize, 0, x * gridSize, canvas.getHeight());
+		for (int x = 0; x < canvas.getWidth(); x += gridSize) {	// Vertical lines
+			ctx.strokeLine(x, 0, x, canvas.getHeight());
 		}
-		for (int y = 0; y < canvas.getHeight(); y++) {
-			ctx.strokeLine(0, y * gridSize, canvas.getWidth(), y * gridSize);				
+		for (int y = 0; y < canvas.getHeight(); y += gridSize) { // Horizontal lines
+			ctx.strokeLine(0, y, canvas.getWidth(), y);
 		}	
 	}
 	
