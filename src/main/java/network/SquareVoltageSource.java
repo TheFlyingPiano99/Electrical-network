@@ -60,7 +60,7 @@ public class SquareVoltageSource extends Component {
 				idx < source.dimension - 1 && n <= maxN;
 				idx = getParent().getFrequencyIndex(omega * n)
 		) {
-			source.setAt(idx, Complex.euler(4.0 * sourceVoltageAmplitude / (double)n / Math.PI, Math.PI / 2 + sourceVoltagePhase));
+			source.setAt(idx, Complex.euler(4.0 * sourceVoltageAmplitude / (double)n / Math.PI, Math.PI / 2 + sourceVoltagePhase * omega * n));
 			n += 2;
 		}
 		e.setSourceVoltage(source);
