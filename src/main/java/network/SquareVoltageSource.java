@@ -20,7 +20,7 @@ public class SquareVoltageSource extends Component {
 	private Edge e;
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
-	private int frequencyIdx = 0;
+	private double sourceVoltagePhase = 0.0;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
@@ -43,32 +43,38 @@ public class SquareVoltageSource extends Component {
 
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
-		if (e != null) {
-			Vector source = new Vector(e.getImpedance().dimension);
-			source.fill(new Complex(0, 0));
-			source.setAt(frequencyIdx, new Complex(sourceVoltageAmplitude, 0));	// At zero frequency -- constant source
-			e.setSourceVoltage(source);
-		}
+		setSourceVoltageAngularFrequency(sourceVoltageAngularFrequency);
 	}
 
 	public void setSourceVoltageAngularFrequency(double omega) {
 		Vector representedAngularFrequencies = getParent().getAngularFrequencies();
-		boolean foundSimilar = false;
-		for (int i = 0; i < representedAngularFrequencies.dimension; i++)
-		{
-			if (Math.abs(representedAngularFrequencies.at(i).getRe() - omega) < getParent().getAngularFrequencyStep() / 2) {
-				frequencyIdx = i;
-				sourceVoltageAngularFrequency = representedAngularFrequencies.at(i).getRe();
-				foundSimilar = true;
-				break;
-			}
-		}
-		if (!foundSimilar) {	// Set to the highest available
-			frequencyIdx = representedAngularFrequencies.dimension - 1;
-			sourceVoltageAngularFrequency = representedAngularFrequencies.at(frequencyIdx).getRe();
-		}
 
-		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
+		Vector source = new Vector(e.getImpedance().dimension);
+		source.fill(new Complex(0, 0));
+		int n = 1;
+		int maxN = 1000;		// To prevent too long loadings
+		int idx_ = getParent().getFrequencyIndex(omega);
+		sourceVoltageAngularFrequency = representedAngularFrequencies.at(idx_).getRe();
+		for (
+				int idx = idx_;
+				idx < source.dimension - 1 && n <= maxN;
+				idx = getParent().getFrequencyIndex(omega * n)
+		) {
+			source.setAt(idx, Complex.euler(4.0 * sourceVoltageAmplitude / (double)n / Math.PI, Math.PI / 2 + sourceVoltagePhase));
+			n += 2;
+		}
+		e.setSourceVoltage(source);
+	}
+
+	public double getSourceVoltagePhase()
+	{
+		return sourceVoltagePhase;
+	}
+
+	public void setSourceVoltagePhase(double phase)
+	{
+		this.sourceVoltagePhase = phase;
+		setSourceVoltageAngularFrequency(this.sourceVoltageAngularFrequency);
 	}
 
 	@Override
@@ -118,17 +124,24 @@ public class SquareVoltageSource extends Component {
 
 		ComponentProperty prop = new ComponentProperty();
 		prop.editable = true;
-		prop.name = "forrás feszültség amplitúdó:";
+		prop.name = "forrás amplitúdó:";
 		prop.unit = "V";
 		prop.value = String.valueOf(getSourceVoltageAmplitude());
 		getProperties().put("amplitude", prop);
 
 		prop = new ComponentProperty();
 		prop.editable = true;
-		prop.name = "forrás feszültség körfrekvencia:";
-		prop.unit = "1/(2pi s)";
+		prop.name = "forrás körfrekvencia:";
+		prop.unit = "rad/s";
 		prop.value = String.valueOf(getSourceVoltageAngularFrequency());
 		getProperties().put("angularFrequency", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = true;
+		prop.name = "forrás fázis:";
+		prop.unit = "rad";
+		prop.value = String.valueOf(getSourceVoltagePhase());
+		getProperties().put("phase", prop);
 
 		prop = new ComponentProperty();
 		prop.editable = false;
@@ -162,6 +175,8 @@ public class SquareVoltageSource extends Component {
 		writer.append(sourceVoltageAmplitude);
 		writer.append("; frequency: ");
 		writer.append(sourceVoltageAngularFrequency);
+		writer.append("; phase: ");
+		writer.append(sourceVoltagePhase);
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -174,15 +189,17 @@ public class SquareVoltageSource extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setSourceVoltageAmplitude(Double.valueOf(pairs[1].split(":")[1]));
+		sourceVoltageAmplitude = Double.valueOf(pairs[1].split(":")[1]);
 
-		setSourceVoltageAngularFrequency(Double.valueOf(pairs[2].split(":")[1]));
+		sourceVoltageAngularFrequency = Double.valueOf(pairs[2].split(":")[1]);
 
-		String coordIn[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		setSourceVoltagePhase(Double.valueOf(pairs[3].split(":")[1]));
+
+		String coordIn[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
 
 
-		String coordOut[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		String coordOut[] = pairs[5].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 
 		updatePropertyView(true);
@@ -197,6 +214,8 @@ public class SquareVoltageSource extends Component {
 		builder.append(sourceVoltageAmplitude);
 		builder.append("sourceVoltageAngularFrequency=");
 		builder.append(sourceVoltageAngularFrequency);
+		builder.append("sourceVoltagePhase=");
+		builder.append(sourceVoltagePhase);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");
@@ -311,6 +330,20 @@ public class SquareVoltageSource extends Component {
 			getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
 			getParent().simulate();
 		}
+
+		str = getProperties().get("phase").value;
+		if (str != null && str.length() > 0) {
+			try {
+				double val = Double.parseDouble(str);
+				setSourceVoltagePhase(val);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//System.out.println("Updated value:" + getSourceVoltage());
+			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhase());
+			getParent().simulate();
+		}
 	}
 
 
@@ -320,6 +353,7 @@ public class SquareVoltageSource extends Component {
 		if (updateEditable) {
 			setProperty("amplitude", this::getSourceVoltageAmplitude);
 			setProperty("angularFrequency", this::getSourceVoltageAngularFrequency);
+			setProperty("phase", this::getSourceVoltagePhase);
 		}
 		setProperty("current", this::getTimeDomainCurrent);
 		setProperty("resistance", this::getTimeDomainResistance);
