@@ -185,7 +185,7 @@ public class DrawingHelper {
 			t++;
 		}
 	}
-	protected static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec) {
+	protected static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec, boolean running) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			double W = canvas.getWidth();
@@ -197,17 +197,19 @@ public class DrawingHelper {
 				double I = selected.getTimeDomainCurrent();
 				double U = selected.getTimeDomainVoltageDrop();
 				double R = selected.getTimeDomainResistance();
-				scopeCurrentBuffer.add(I);
-				scopeVoltageBuffer.add(U);
-				scopeResistanceBuffer.add(R);
-				if (scopeCurrentBuffer.size() > maxScopeDataPoints) {	// Pop first element
-					scopeCurrentBuffer.remove(0);
-				}
-				if (scopeVoltageBuffer.size() > maxScopeDataPoints) {	// Pop first element
-					scopeVoltageBuffer.remove(0);
-				}
-				if (scopeResistanceBuffer.size() > maxScopeDataPoints) {	// Pop first element
-					scopeResistanceBuffer.remove(0);
+				if (running) {
+					scopeCurrentBuffer.add(I);
+					scopeVoltageBuffer.add(U);
+					scopeResistanceBuffer.add(R);
+					if (scopeCurrentBuffer.size() > maxScopeDataPoints) {	// Pop first element
+						scopeCurrentBuffer.remove(0);
+					}
+					if (scopeVoltageBuffer.size() > maxScopeDataPoints) {	// Pop first element
+						scopeVoltageBuffer.remove(0);
+					}
+					if (scopeResistanceBuffer.size() > maxScopeDataPoints) {	// Pop first element
+						scopeResistanceBuffer.remove(0);
+					}
 				}
 				setNormalDrawingAttributes(ctx);
 				ctx.setLineWidth(0.8);

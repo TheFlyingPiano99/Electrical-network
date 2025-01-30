@@ -295,6 +295,7 @@ public class MainController {
         
         lvLeftListView.getItems().add("Feszültségforrás");
 		lvLeftListView.getItems().add("Szinuszos feszültségforrás");
+		lvLeftListView.getItems().add("Négyszög feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getItems().add("Kondenzátor");
@@ -383,6 +384,9 @@ public class MainController {
     	            }
 					else if (str.equals("Szinuszos feszültségforrás")) {
 						network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+					}
+					else if (str.equals("Négyszög feszültségforrás")) {
+						network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 					}
     	            else if (str.equals("Ellenállás")) {
     	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
@@ -499,12 +503,9 @@ public class MainController {
 					}
 					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec);
 					if (simulating != null && simulating) {
-						DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec);
 						totalTimeSec += duration.toSeconds();
 					}
-					else {
-						DrawingHelper.clearScopeImage(scopeCanvas);
-					}
+					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
 				} catch (Exception e) {
 					System.out.println("simulate error");
 					e.printStackTrace();
