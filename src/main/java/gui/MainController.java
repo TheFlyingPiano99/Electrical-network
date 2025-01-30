@@ -131,6 +131,9 @@ public class MainController {
 	@FXML
 	private AnchorPane rightTopPane;
 
+	@FXML
+	private Button scopeModeToggleBtn;
+
 	//Menu item actions:------------------------------------------------------------------------------------------
     
     /**
@@ -242,7 +245,7 @@ public class MainController {
     	network.reset();
     	simulating = null;
     	leftStatus.setText("Szimuláció leállítva.");
-		DrawingHelper.clearScopeImage(scopeCanvas);
+		DrawingHelper.resetScope(scopeCanvas);
 		totalTimeSec = 0;
 	}
 
@@ -260,6 +263,9 @@ public class MainController {
     void btnStopAction(ActionEvent event) {
     	miStopAction(event);
     }
+
+	@FXML
+	void btnScopeModeToggleAction(ActionEvent event) { DrawingHelper.toggleScopeMode(); };
     
 //Initialize:----------------------------------------------------------------------------------------------
     
@@ -290,6 +296,7 @@ public class MainController {
         assert rightStatus != null : "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert middlePane != null : "fx:id=\"middlePane\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert rightTopPane != null : "fx:id=\"rightTopPane\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert scopeModeToggleBtn != null : "fx:id=\"scopeModeToggleBtn\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
         mainController = this;
         
@@ -515,7 +522,7 @@ public class MainController {
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
         
-		DrawingHelper.clearScopeImage(scopeCanvas);
+		DrawingHelper.resetScope(scopeCanvas);
     }
 
 

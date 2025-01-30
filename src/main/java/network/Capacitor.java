@@ -70,6 +70,16 @@ public class Capacitor extends Component {
 	@Override
 	public double getTimeDomainResistance() { return Double.POSITIVE_INFINITY; }
 
+	@Override
+	public Vector getFrequencyDomainCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
+
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
 	@Override

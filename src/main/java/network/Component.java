@@ -240,7 +240,21 @@ public abstract class Component {
 	 * @return voltage volt
 	 */
 	abstract public double getTimeDomainVoltageDrop();
-	
+
+	/**
+	 * Returns electric current value in ampere as a function of frequency.
+	 * HUN: Visszaadja az áramszintet amperben frekvencia függvényében.
+	 * @return current ampere
+	 */
+	abstract public Vector getFrequencyDomainCurrent();
+
+	/**
+	 * Returns electric voltage drop in volts as a function of frequency.
+	 * HUN: Visszaadja az elektromos feszültég esést voltban frekvencia függvényében.
+	 * @return voltage volt
+	 */
+	abstract public Vector getFrequencyDomainVoltageDrop();
+
 	/**
 	 * Returns electric resistance of component in ohm.
 	 * HUN: Visszaadja az elektromos ellenállást ohmban. 

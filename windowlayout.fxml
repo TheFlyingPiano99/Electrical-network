@@ -73,6 +73,7 @@
                         <AnchorPane fx:id="rightTopPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="160.0">
                            <children>
                               <Canvas fx:id="scopeCanvas" height="302.0" nodeOrientation="INHERIT" width="294.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="scopeModeToggleBtn" layoutX="236.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnScopeModeToggleAction" text="Mód" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
                            </children>
                         </AnchorPane>
                       <AnchorPane fx:id="rightBottomPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

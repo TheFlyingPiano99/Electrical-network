@@ -52,6 +52,16 @@ public class DCVoltageSource extends network.Component {
 	@Override
 	public double getTimeDomainResistance() { return 0; }
 
+	@Override
+	public Vector getFrequencyDomainCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
+
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
 	@Override

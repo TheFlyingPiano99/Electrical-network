@@ -36,6 +36,7 @@ public class DrawingHelper {
 	private static ArrayList<Double> scopeCurrentBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeResistanceBuffer = new ArrayList<>();
 	private static int maxScopeDataPoints = 256;
+	private static boolean scopeInTimeDomain = true;
 
 	/**
 	 * Sets drawing attributes for normal drawing. (Uses the predefined, static variables.)
@@ -94,7 +95,7 @@ public class DrawingHelper {
 		}
 	}
 
-	protected static void clearScopeImage(Canvas canvas) {
+	protected static void resetScope(Canvas canvas) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			double W = canvas.getWidth();
@@ -107,7 +108,43 @@ public class DrawingHelper {
 		scopeResistanceBuffer.clear();
 	}
 
-	private static void drawVoltage(GraphicsContext ctx, double U, double W, double H) {
+	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, Vector voltage, double W, double H)
+	{
+		ctx.setStroke(Color.GREEN);
+		ctx.strokeText("U(omega) [V]", 10,20);
+
+		double valOffset = H * 0.8;
+		double valScale = H / 5.0;
+
+		for (int k = 0; k < voltage.dimension - 1; k++) {
+			ctx.strokeLine(
+					W * (k + 1) / (double)(voltage.dimension + 2),
+					valOffset - valScale * voltage.at(k).getAbs(),
+					W * (k + 2) / (double)(voltage.dimension + 2),
+					valOffset - valScale * voltage.at(k + 1).getAbs()
+			);
+		}
+	}
+
+	private static void drawFrequencyDomainCurrent(GraphicsContext ctx, Vector current, double W, double H)
+	{
+		ctx.setStroke(Color.YELLOW);
+		ctx.strokeText("I(omega) [A]", 10,40);
+
+		double valOffset = H * 0.8;
+		double valScale = H / 5.0;
+
+		for (int k = 0; k < current.dimension - 1; k++) {
+			ctx.strokeLine(
+					W * (k + 1) / (double)(current.dimension + 2),
+					valOffset - valScale * current.at(k).getAbs(),
+					W * (k + 2) / (double)(current.dimension + 2),
+					valOffset - valScale * current.at(k + 1).getAbs()
+			);
+		}
+	}
+
+	private static void drawTimeDomainVoltage(GraphicsContext ctx, double U, double W, double H) {
 		ctx.setStroke(Color.GREEN);
 		ctx.strokeText("U = " + String.format("%,.5f", U) + " V", 10,20);
 		double prevVal = 0;
@@ -133,7 +170,7 @@ public class DrawingHelper {
 		}
 	}
 
-	private static void drawCurrent(GraphicsContext ctx, double I, double W, double H) {
+	private static void drawTimeDomainCurrent(GraphicsContext ctx, double I, double W, double H) {
 		ctx.setStroke(Color.YELLOW);
 		ctx.strokeText("I = " + String.format("%,.5f", I) + " A", 10,40);
 
@@ -159,6 +196,7 @@ public class DrawingHelper {
 			t++;
 		}
 	}
+
 	private static void drawResistance(GraphicsContext ctx, double R, double W, double H) {
 		ctx.setStroke(Color.PURPLE);
 		ctx.strokeText("R = " + String.format("%,.5f", R) + " Ohm", 10,60);
@@ -185,6 +223,7 @@ public class DrawingHelper {
 			t++;
 		}
 	}
+
 	protected static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec, boolean running) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
@@ -192,6 +231,7 @@ public class DrawingHelper {
 			double H = canvas.getHeight();
 			ctx.setFill(Color.GREY);
 			ctx.fillRect(0, 0, W, H);
+
 			network.Component selected = network.getSelected();
 			if (selected != null) {
 				double I = selected.getTimeDomainCurrent();
@@ -211,14 +251,26 @@ public class DrawingHelper {
 						scopeResistanceBuffer.remove(0);
 					}
 				}
-				setNormalDrawingAttributes(ctx);
-				ctx.setLineWidth(0.8);
-				ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
 
-				drawVoltage(ctx, U, W, H);
-				drawCurrent(ctx, I, W, H);
-				drawResistance(ctx, R, W, H);
+				if (scopeInTimeDomain) {
+					setNormalDrawingAttributes(ctx);
+					ctx.setLineWidth(0.8);
+					ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
 
+					drawTimeDomainVoltage(ctx, U, W, H);
+					drawTimeDomainCurrent(ctx, I, W, H);
+					drawResistance(ctx, R, W, H);
+				}
+				else {	// scope mode == frequency domain
+					Vector voltage = selected.getFrequencyDomainVoltageDrop();
+					Vector current = selected.getFrequencyDomainCurrent();
+
+					setNormalDrawingAttributes(ctx);
+					ctx.setLineWidth(0.8);
+					ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
+					drawFrequencyDomainVoltage(ctx, voltage, W, H);
+					drawFrequencyDomainCurrent(ctx, current, W, H);
+				}
 			}
 			else {
 				scopeCurrentBuffer.clear();
@@ -227,7 +279,11 @@ public class DrawingHelper {
 			}
 		}
 	}
-	
+
+	public static void toggleScopeMode()
+	{
+		scopeInTimeDomain = !scopeInTimeDomain;
+	}
 	
 	private static Color getInterpolatedColor(Color color1, Color color2, float t) {
 		//t = MyMath.max(MyMath.min(t, 1.0f), 0.0f);	//Trust domain of t.

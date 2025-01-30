@@ -43,6 +43,16 @@ public class AnalogeAmmeter extends Component {
 	}
 
 	@Override
+	public Vector getFrequencyDomainCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
+
+	@Override
 	public double getTimeDomainResistance() {
 		return resistance;
 	}
