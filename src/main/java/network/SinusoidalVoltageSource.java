@@ -209,10 +209,27 @@ public class SinusoidalVoltageSource extends Component {
 
 		//Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.4f, 0.0f));
-		lines.add(new Line(defaultSize * 0.4f, -defaultSize * 0.08f, defaultSize * 0.4f, +defaultSize * 0.08f));
-		lines.add(new Line(defaultSize * 0.6f, -defaultSize* 0.2f, defaultSize * 0.6f, +defaultSize * 0.2f));
-		lines.add(new Line(defaultSize * 0.6f, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.2f, 0.0f));
+		int resolution = 32;
+		// Circle:
+		for (int i = 0; i < resolution; i++) {
+			double angle0 = i / (double)resolution * 2 * Math.PI;
+			double angle1 = (i + 1) / (double)resolution * 2 * Math.PI;
+			float x0 = (float)Math.cos(angle0) * 0.3f + 0.5f;
+			float y0 = (float)Math.sin(angle0) * 0.3f;
+			float x1 = (float)Math.cos(angle1) * 0.3f + 0.5f;
+			float y1 = (float)Math.sin(angle1) * 0.3f;
+			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
+		}
+		// Waveform:
+		for (int i = 0; i < resolution; i++) {
+			float x0 = 0.2f + i / (float)resolution * 0.6f;
+			float y0 = 0.1f * (float)Math.sin(i / (double)resolution * 2 * Math.PI);
+			float x1 = 0.2f + (i + 1) / (float)resolution * 0.6f;
+			float y1 = 0.1f * (float)Math.sin((i + 1) / (double)resolution * 2 * Math.PI);
+			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
+		}
+		lines.add(new Line(defaultSize * 0.8f, 0.0f, defaultSize, 0.0f));
 
 		// [+] sign
 		lines.add(new Line(
