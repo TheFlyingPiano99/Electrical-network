@@ -29,7 +29,8 @@ public abstract class Component {
 	protected float DEFAULT_SIZE = 60.0f;
 
 	protected double currentVisualisationOffset = 0;
-	protected static double currentVisualisationSpeed = 100;
+	protected static double currentVisualisationSpeedScale = 100;
+	protected static double currentVisualisationSpeedLimit = 100;
 	
 	private ComponentNode input;
 	public float getDEFAULT_SIZE() {
@@ -191,10 +192,19 @@ public abstract class Component {
 		parent.tryToMergeComponentNode(getOutput());
 	}
 
-	//CurrentVisualisation:-------------------------------------------------------
-	
-	
-	abstract public void updateCurrentVisualisationOffset(double totalTimeSec);
+	public void updateCurrentVisualisationOffset(double deltaTimeSec) {
+		double pres = currentVisualisationOffset;
+		double speed = getTimeDomainCurrent() * currentVisualisationSpeedScale;
+		currentVisualisationOffset = (
+				currentVisualisationOffset
+				+ deltaTimeSec * Math.signum(speed) * Math.min(Math.abs(speed), currentVisualisationSpeedLimit)
+		) % DEFAULT_SIZE;
+
+		Double test = Double.valueOf(currentVisualisationOffset);
+		if (test.isNaN()) {
+			currentVisualisationOffset = pres;
+		}
+	}
 
 	//To override:---------------------------------------------------------------
 	
@@ -294,12 +304,12 @@ public abstract class Component {
 	 */
 	abstract public void updatePropertyView(boolean updateEditable);
 
-	public static double getCurrentVisualisationSpeed() {
-		return currentVisualisationSpeed;
+	public static double getCurrentVisualisationSpeedScale() {
+		return currentVisualisationSpeedScale;
 	}
 
-	public static void setCurrentVisualisationSpeed(double currentVisualisationSpeed) {
-		Component.currentVisualisationSpeed = currentVisualisationSpeed;
+	public static void setCurrentVisualisationSpeedScale(double currentVisualisationSpeedScale) {
+		Component.currentVisualisationSpeedScale = currentVisualisationSpeedScale;
 	}
 	
 	protected void setProperty(String propName, Supplier<Double> getter) {

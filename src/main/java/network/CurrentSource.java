@@ -236,15 +236,5 @@ public class CurrentSource extends Component {
 			setProperty("current", e.getInput()::getTimeDomainInputCurrent);
 		}
 	}
-
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
-	}
 	
 }

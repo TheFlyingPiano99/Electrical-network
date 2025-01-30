@@ -240,11 +240,26 @@ public class SquareVoltageSource extends Component {
 		float defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.2f, 0.0f));
 
-		// Bounding box:
-		lines.add(new Line(defaultSize * 0.2f, defaultSize * -0.3f, defaultSize * 0.2f, defaultSize * 0.3f));
-		lines.add(new Line(defaultSize * 0.8f, defaultSize * -0.3f, defaultSize * 0.8f, defaultSize * 0.3f));
-		lines.add(new Line(defaultSize * 0.2f, defaultSize * -0.3f, defaultSize * 0.8f, defaultSize * -0.3f));
-		lines.add(new Line(defaultSize * 0.2f, defaultSize * 0.3f, defaultSize * 0.8f, defaultSize * 0.3f));
+		// Circle:
+		int resolution = 32;
+		for (int i = 0; i < resolution; i++) {
+			double angle0 = i / (double)resolution * 2 * Math.PI;
+			double angle1 = (i + 1) / (double)resolution * 2 * Math.PI;
+			float x0 = (float)Math.cos(angle0) * 0.3f + 0.5f;
+			float y0 = (float)Math.sin(angle0) * 0.3f;
+			float x1 = (float)Math.cos(angle1) * 0.3f + 0.5f;
+			float y1 = (float)Math.sin(angle1) * 0.3f;
+			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
+		}
+
+		// waveform:
+		lines.add(new Line(defaultSize * 0.2f, 0.0f, defaultSize * 0.3f, 0.0f));
+		lines.add(new Line(defaultSize * 0.3f, 0.0f, defaultSize * 0.3f, -defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.3f, -defaultSize * 0.1f, defaultSize * 0.5f, -defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.5f, -defaultSize * 0.1f, defaultSize * 0.5f, -defaultSize * -0.1f));
+		lines.add(new Line(defaultSize * 0.5f, -defaultSize * -0.1f, defaultSize * 0.7f, -defaultSize * -0.1f));
+		lines.add(new Line(defaultSize * 0.7f, -defaultSize * -0.1f, defaultSize * 0.7f, 0.0f));
+		lines.add(new Line(defaultSize * 0.7f, 0.0f, defaultSize * 0.8f, 0.0f));
 
 
 		lines.add(new Line(defaultSize * 0.8f, 0.0f, defaultSize, 0.0f));
@@ -357,16 +372,6 @@ public class SquareVoltageSource extends Component {
 		}
 		setProperty("current", this::getTimeDomainCurrent);
 		setProperty("resistance", this::getTimeDomainResistance);
-	}
-
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
 	}
 
 }

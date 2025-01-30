@@ -1,7 +1,5 @@
 package network;
 
-import javafx.util.Duration;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -265,14 +263,4 @@ public class Capacitor extends Component {
 		}
 	}
 
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
-	}
-	
 }

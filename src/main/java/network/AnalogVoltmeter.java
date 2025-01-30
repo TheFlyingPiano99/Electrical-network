@@ -1,6 +1,5 @@
 package network;
 
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -318,16 +317,6 @@ public class AnalogVoltmeter extends Component {
 
 	public void setScale(double scale) {
 		this.scale = scale;
-	}
-
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
 	}
 
 }

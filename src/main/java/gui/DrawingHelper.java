@@ -83,7 +83,7 @@ public class DrawingHelper {
 	 * @param canvas to draw on
 	 * @param network {@link Network} that provides objects to visualise.
 	 */
-	protected static void updateCanvasContent(Canvas canvas, Network network, double totalTimeSec) {
+	protected static void updateCanvasContent(Canvas canvas, Network network, double totalTimeSec, double deltaTimeSec) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -91,7 +91,7 @@ public class DrawingHelper {
 			if (network.isSnapToGrid()) {
 				drawGrid(canvas, network.getGridSize());				
 			}
-			network.draw(ctx, totalTimeSec);
+			network.draw(ctx, totalTimeSec, deltaTimeSec);
 		}
 	}
 

@@ -244,9 +244,9 @@ public class SinusoidalVoltageSource extends Component {
 		// Waveform:
 		for (int i = 0; i < resolution; i++) {
 			float x0 = 0.2f + i / (float)resolution * 0.6f;
-			float y0 = 0.1f * (float)Math.sin(i / (double)resolution * 2 * Math.PI);
+			float y0 = -0.1f * (float)Math.sin(i / (double)resolution * 2 * Math.PI);
 			float x1 = 0.2f + (i + 1) / (float)resolution * 0.6f;
-			float y1 = 0.1f * (float)Math.sin((i + 1) / (double)resolution * 2 * Math.PI);
+			float y1 = -0.1f * (float)Math.sin((i + 1) / (double)resolution * 2 * Math.PI);
 			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
 		}
 		lines.add(new Line(defaultSize * 0.8f, 0.0f, defaultSize, 0.0f));
@@ -359,16 +359,6 @@ public class SinusoidalVoltageSource extends Component {
 		}
 		setProperty("current", this::getTimeDomainCurrent);
 		setProperty("resistance", this::getTimeDomainResistance);
-	}
-
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
 	}
 
 }
