@@ -1032,7 +1032,7 @@ public class Network {
 	 * HUN: Minden komponensen meghívja a draw metódust.
 	 * @param ctx	{@link GraphicsContext}, where the network should be drawn.
 	 */
-	public void draw(GraphicsContext ctx, double totalTimeSec) {
+	public void draw(GraphicsContext ctx, double totalTimeSec, double deltaTimeSec) {
 		for (Edge e : edges) {
 			e.updateTimeDomainParameters(angularFrequencies, totalTimeSec);
 		}
@@ -1046,7 +1046,7 @@ public class Network {
 		}
 
 		for (Component component : components) {
-			component.updateCurrentVisualisationOffset(totalTimeSec);
+			component.updateCurrentVisualisationOffset(deltaTimeSec);
 			component.draw(ctx);
 		}
 	}

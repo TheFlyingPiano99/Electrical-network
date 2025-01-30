@@ -267,14 +267,5 @@ public class DCVoltageSource extends network.Component {
 		setProperty("resistance", this::getTimeDomainResistance);
 	}
 
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
-	}
 	
 }

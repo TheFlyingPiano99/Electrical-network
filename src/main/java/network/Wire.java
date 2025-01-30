@@ -1,6 +1,5 @@
 package network;
 
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -213,16 +212,6 @@ public class Wire extends Component {
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
 		setProperty("current", this::getTimeDomainCurrent);
-	}
-
-	public void updateCurrentVisualisationOffset(double totalTimeSec) {
-		double pres = currentVisualisationOffset;
-		currentVisualisationOffset = (totalTimeSec * e.getTimeDomainCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-
-		Double test = Double.valueOf(currentVisualisationOffset);
-		if (test.isNaN()) {
-			currentVisualisationOffset = pres;
-		}
 	}
 
 }

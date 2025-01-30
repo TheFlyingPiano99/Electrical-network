@@ -506,7 +506,7 @@ public class MainController {
 					    	rightStatus.setText("Hibás kapcsolás!");    		
 						}
 					}
-					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec);
+					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec, ((simulating != null && simulating)? duration.toSeconds() : 0));
 					if (simulating != null && simulating) {
 						totalTimeSec += duration.toSeconds();
 					}
