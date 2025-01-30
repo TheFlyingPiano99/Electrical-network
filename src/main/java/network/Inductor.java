@@ -47,6 +47,16 @@ public class Inductor extends Component {
 	@Override
 	public double getTimeDomainResistance() { return wireResistance; }
 
+	@Override
+	public Vector getFrequencyDomainCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
+
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
 	@Override
