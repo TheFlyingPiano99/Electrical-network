@@ -439,12 +439,10 @@ public class MainController {
     				grabbedNode = network.getNodeAtPos(cursorPos);
     				if (grabbedNode != null) {
     					network.grabComponentNode(grabbedNode, cursorPos);
-						network.simulate();
     				} else {
     					grabbedComponent = network.getComponentAtPos(cursorPos);
     					if (grabbedComponent != null) {
     						network.grabComponent(grabbedComponent, cursorPos);
-							network.simulate();
             				if (null != network.getSelected() &&
             						(selectedComponent == null || selectedComponent != network.getSelected())) {
                 				selectedComponent = network.getSelected();

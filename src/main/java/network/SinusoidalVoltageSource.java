@@ -57,27 +57,8 @@ public class SinusoidalVoltageSource extends Component {
 	public void setSourceVoltageAngularFrequency(double omega) {
 		Vector representedAngularFrequencies = getParent().getAngularFrequencies();
 
-		if (representedAngularFrequencies.at(0).getRe() > omega) {
-			frequencyIdx = 0;
-			sourceVoltageAngularFrequency = representedAngularFrequencies.at(0).getRe();
-			setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
-			return;
-		}
-
-		boolean foundSimilar = false;
-		for (int i = 0; i < representedAngularFrequencies.dimension; i++)
-		{
-			if (Math.abs(representedAngularFrequencies.at(i).getRe() - omega) < getParent().getAngularFrequencyStep() / 2) {
-				frequencyIdx = i;
-				sourceVoltageAngularFrequency = representedAngularFrequencies.at(i).getRe();
-				foundSimilar = true;
-				break;
-			}
-		}
-		if (!foundSimilar) {	// Set to the highest available
-			frequencyIdx = representedAngularFrequencies.dimension - 1;
-			sourceVoltageAngularFrequency = representedAngularFrequencies.at(frequencyIdx).getRe();
-		}
+		frequencyIdx = getParent().getFrequencyIndex(omega);
+		sourceVoltageAngularFrequency = representedAngularFrequencies.at(frequencyIdx).getRe();
 
 		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
 	}

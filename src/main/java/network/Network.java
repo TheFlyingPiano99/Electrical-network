@@ -76,7 +76,7 @@ public class Network {
 	
 	public Network() {
 		// Initialize angular frequencies:
-		int frequencyResolution = 4096;
+		int frequencyResolution = 16384;
 		angularFrequencyStep = 0.01;
 		Edge.defaultPhasorSpaceResolution = frequencyResolution;
 		angularFrequencies = new Vector(frequencyResolution);
@@ -157,7 +157,21 @@ public class Network {
 			return null;
 		}
 	}
-	
+
+	public int getFrequencyIndex(double omega) {
+		if (angularFrequencies.at(0).getRe() > omega) {
+			return 0;
+		}
+
+		boolean foundSimilar = false;
+		for (int i = 0; i < angularFrequencies.dimension; i++) {
+			if (Math.abs(angularFrequencies.at(i).getRe() - omega) < angularFrequencyStep / 2) {
+				return i;
+			}
+		}
+		return angularFrequencies.dimension - 1;
+	}
+
 	/**
 	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels.
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
