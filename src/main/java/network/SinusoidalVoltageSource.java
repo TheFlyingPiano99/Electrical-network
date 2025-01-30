@@ -20,6 +20,7 @@ public class SinusoidalVoltageSource extends Component {
 	private Edge e;
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
+	private double sourceVoltagePhase = 0;
 	private int frequencyIdx = 0;
 
 	//Constructors:---------------------------------------------------------------------------------------
@@ -41,18 +42,28 @@ public class SinusoidalVoltageSource extends Component {
 
 	public double getSourceVoltageAngularFrequency() { return sourceVoltageAngularFrequency; }
 
+	public double getSourceVoltagePhase() { return sourceVoltagePhase; }
+
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
 		if (e != null) {
 			Vector source = new Vector(e.getImpedance().dimension);
 			source.fill(new Complex(0, 0));
-			source.setAt(frequencyIdx, new Complex(sourceVoltageAmplitude, 0));	// At zero frequency -- constant source
+			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhase));	// At zero frequency -- constant source
 			e.setSourceVoltage(source);
 		}
 	}
 
 	public void setSourceVoltageAngularFrequency(double omega) {
 		Vector representedAngularFrequencies = getParent().getAngularFrequencies();
+
+		if (representedAngularFrequencies.at(0).getRe() > omega) {
+			frequencyIdx = 0;
+			sourceVoltageAngularFrequency = representedAngularFrequencies.at(0).getRe();
+			setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
+			return;
+		}
+
 		boolean foundSimilar = false;
 		for (int i = 0; i < representedAngularFrequencies.dimension; i++)
 		{
@@ -69,6 +80,11 @@ public class SinusoidalVoltageSource extends Component {
 		}
 
 		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
+	}
+
+	public void setSourceVoltagePhase(double phase) {
+		this.sourceVoltagePhase = phase;
+		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);
 	}
 
 	@Override
@@ -108,17 +124,24 @@ public class SinusoidalVoltageSource extends Component {
 
 		ComponentProperty prop = new ComponentProperty();
 		prop.editable = true;
-		prop.name = "forrás feszültség amplitúdó:";
+		prop.name = "forrás amplitúdó:";
 		prop.unit = "V";
 		prop.value = String.valueOf(getSourceVoltageAmplitude());
 		getProperties().put("amplitude", prop);
 
 		prop = new ComponentProperty();
 		prop.editable = true;
-		prop.name = "forrás feszültség körfrekvencia:";
-		prop.unit = "1/(2pi s)";
+		prop.name = "forrás körfrekvencia:";
+		prop.unit = "rad/s";
 		prop.value = String.valueOf(getSourceVoltageAngularFrequency());
 		getProperties().put("angularFrequency", prop);
+
+		prop = new ComponentProperty();
+		prop.editable = true;
+		prop.name = "forrás fázis:";
+		prop.unit = "rad";
+		prop.value = String.valueOf(getSourceVoltagePhase());
+		getProperties().put("phase", prop);
 
 		prop = new ComponentProperty();
 		prop.editable = false;
@@ -152,6 +175,8 @@ public class SinusoidalVoltageSource extends Component {
 		writer.append(sourceVoltageAmplitude);
 		writer.append("; frequency: ");
 		writer.append(sourceVoltageAngularFrequency);
+		writer.append("; phase: ");
+		writer.append(sourceVoltagePhase);
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -164,15 +189,17 @@ public class SinusoidalVoltageSource extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setSourceVoltageAmplitude(Double.valueOf(pairs[1].split(":")[1]));
+		sourceVoltageAmplitude = Double.valueOf(pairs[1].split(":")[1]);
 
 		setSourceVoltageAngularFrequency(Double.valueOf(pairs[2].split(":")[1]));
 
-		String coordIn[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		setSourceVoltagePhase(Double.valueOf(pairs[3].split(":")[1]));
+
+		String coordIn[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
 
 
-		String coordOut[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
+		String coordOut[] = pairs[5].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 
 		updatePropertyView(true);
@@ -187,6 +214,8 @@ public class SinusoidalVoltageSource extends Component {
 		builder.append(sourceVoltageAmplitude);
 		builder.append("sourceVoltageAngularFrequency=");
 		builder.append(sourceVoltageAngularFrequency);
+		builder.append("sourceVoltagePhase=");
+		builder.append(sourceVoltagePhase);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");
@@ -312,6 +341,20 @@ public class SinusoidalVoltageSource extends Component {
 			getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
 			getParent().simulate();
 		}
+
+		str = getProperties().get("phase").value;
+		if (str != null && str.length() > 0) {
+			try {
+				double val = Double.parseDouble(str);
+				setSourceVoltagePhase(val);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			//System.out.println("Updated value:" + getSourceVoltage());
+			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhase());
+			getParent().simulate();
+		}
 	}
 
 
@@ -321,6 +364,7 @@ public class SinusoidalVoltageSource extends Component {
 		if (updateEditable) {
 			setProperty("amplitude", this::getSourceVoltageAmplitude);
 			setProperty("angularFrequency", this::getSourceVoltageAngularFrequency);
+			setProperty("phase", this::getSourceVoltagePhase);
 		}
 		setProperty("current", this::getTimeDomainCurrent);
 		setProperty("resistance", this::getTimeDomainResistance);
