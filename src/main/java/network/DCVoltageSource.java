@@ -50,7 +50,7 @@ public class DCVoltageSource extends network.Component {
 	public double getTimeDomainVoltageDrop() { return sourceVoltage; }
 
 	@Override
-	public double getTimeDomainResistance() { return sourceVoltage / e.getTimeDomainCurrent(); }
+	public double getTimeDomainResistance() { return 0; }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	

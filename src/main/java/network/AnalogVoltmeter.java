@@ -44,7 +44,7 @@ public class AnalogVoltmeter extends Component {
 	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
 
 	@Override
-	public double getTimeDomainResistance() { return e.getTimeDomainResistance(); }
+	public double getTimeDomainResistance() { return resistance; }
 
 	public void setResistance(double r) {
 		this.resistance = r;

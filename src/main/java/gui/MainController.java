@@ -32,6 +32,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -45,7 +46,6 @@ public class MainController {
 	
 	static MainController mainController = null;
 	
-	private DrawingHelper helper;
 	private Network network = new Network();
 	private Component     grabbedComponent = null;
 	private ComponentNode grabbedNode = null;
@@ -102,7 +102,7 @@ public class MainController {
     private ListView<String> lvLeftListView;
 
     @FXML
-    private Canvas xCanvas;
+    private Canvas circuitCanvas;
 
     @FXML
     private Canvas scopeCanvas;
@@ -124,9 +124,14 @@ public class MainController {
 
     @FXML
     private GridPane propertyGrid;
-  
-    
-//Menu item actions:------------------------------------------------------------------------------------------
+
+	@FXML
+	private AnchorPane middlePane;
+
+	@FXML
+	private AnchorPane rightTopPane;
+
+	//Menu item actions:------------------------------------------------------------------------------------------
     
     /**
      * Show about window.
@@ -244,9 +249,7 @@ public class MainController {
     //Button actions:--------------------------------------------------------------------------
 
     @FXML
-    void btnStartAction(ActionEvent event) {
-    	miStartAction(event);
-    }
+    void btnStartAction(ActionEvent event) { miStartAction(event); }
 
     @FXML
     void btnPauseAction(ActionEvent event) {
@@ -278,17 +281,16 @@ public class MainController {
         assert btnPause != null : "fx:id=\"btnPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lvLeftListView != null : "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert xCanvas != null : "fx:id=\"xCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
+        assert circuitCanvas != null : "fx:id=\"circuitCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert scopeCanvas != null : "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lblPropertiesTitle != null : "fx:id=\"lblPropertiesTitle\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert leftStatus != null : "fx:id=\"leftStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert rightStatus != null : "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert middlePane != null : "fx:id=\"middlePane\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert rightTopPane != null : "fx:id=\"rightTopPane\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
-
-        helper = new DrawingHelper();
-        
         mainController = this;
         
         lvLeftListView.getItems().add("Feszültségforrás");
@@ -304,11 +306,19 @@ public class MainController {
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText("Szimuláció leállítva.");    		
-    	rightStatus.setText("Hibás kapcsolás!");    		
+    	rightStatus.setText("Hibás kapcsolás!");
+
+		// Canvas Width / Height binding:
+
+		circuitCanvas.widthProperty().bind(middlePane.widthProperty());
+		circuitCanvas.heightProperty().bind(middlePane.heightProperty());
+
+		scopeCanvas.widthProperty().bind(rightTopPane.widthProperty());
+		scopeCanvas.heightProperty().bind(rightTopPane.heightProperty());
+
+		//Keyboard:
     	
-//Keyboard:---------------------------------------------------------------------------------------
-    	
-		xCanvas.setOnKeyPressed(
+		circuitCanvas.setOnKeyPressed(
 			event-> {
 				handleKeyboardPressed(event);
 			}
@@ -322,7 +332,7 @@ public class MainController {
 
 
     	
-//Mouse:------------------------------------------------------------------------------------------
+		//Mouse:
     	
         lvLeftListView.setOnMouseClicked(
     		event ->  {
@@ -348,7 +358,7 @@ public class MainController {
     		}
         );
  
-        xCanvas.setOnDragOver(
+        circuitCanvas.setOnDragOver(
     		event -> {
     			//System.out.println("target DragOver");
     	        Dragboard dragboard = event.getDragboard();
@@ -361,7 +371,7 @@ public class MainController {
     		}
 		);
     
-        xCanvas.setOnDragDropped(
+        circuitCanvas.setOnDragDropped(
     		event -> {
        			Dragboard dragboard = event.getDragboard();
     	        if (dragboard.hasString())
@@ -411,7 +421,7 @@ public class MainController {
     		}
 		);
         
-        xCanvas.setOnMousePressed(
+        circuitCanvas.setOnMousePressed(
     		event -> {
     			if (event.getButton() ==  MouseButton.PRIMARY) {
     				Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
@@ -437,7 +447,7 @@ public class MainController {
     		}
         );
         
-        xCanvas.setOnMouseDragged(
+        circuitCanvas.setOnMouseDragged(
     		event -> {
     			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
     			if (grabbedNode != null) {
@@ -452,7 +462,7 @@ public class MainController {
         );
         
 
-        xCanvas.setOnMouseReleased(
+        circuitCanvas.setOnMouseReleased(
     		event -> {
     			if (grabbedNode != null) {
     				network.releaseComponentNode(grabbedNode);
@@ -466,13 +476,13 @@ public class MainController {
     		}
         );
 
-        xCanvas.setOnMouseExited(
+        circuitCanvas.setOnMouseExited(
     		event -> {
     			//System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
     		}
         );
         
-//Timer:----------------------------------------------------------------------------------------
+		// Timer
         
         Duration duration = Duration.millis(50);
         Timeline timeline = new Timeline(new KeyFrame(
@@ -487,10 +497,13 @@ public class MainController {
 					    	rightStatus.setText("Hibás kapcsolás!");    		
 						}
 					}
-					DrawingHelper.updateCanvasContent(xCanvas, network, totalTimeSec);
+					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec);
 					if (simulating != null && simulating) {
 						DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec);
 						totalTimeSec += duration.toSeconds();
+					}
+					else {
+						DrawingHelper.clearScopeImage(scopeCanvas);
 					}
 				} catch (Exception e) {
 					System.out.println("simulate error");
@@ -503,8 +516,10 @@ public class MainController {
         
 		DrawingHelper.clearScopeImage(scopeCanvas);
     }
-    
-//PropertyView:---------------------------------------------------------------------------------
+
+
+
+	//PropertyView:
     
 	/**
 	 * Build property view of the given component.

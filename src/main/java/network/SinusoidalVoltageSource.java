@@ -75,10 +75,10 @@ public class SinusoidalVoltageSource extends Component {
 	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return -e.getTimeDomainSourceVoltage(); }
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainSourceVoltage(); }
 
 	@Override
-	public double getTimeDomainResistance() { return sourceVoltageAmplitude / e.getTimeDomainCurrent(); }
+	public double getTimeDomainResistance() { return 0; }
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 
@@ -116,7 +116,7 @@ public class SinusoidalVoltageSource extends Component {
 		prop = new ComponentProperty();
 		prop.editable = true;
 		prop.name = "forrás feszültség körfrekvencia:";
-		prop.unit = "";
+		prop.unit = "1/(2pi s)";
 		prop.value = String.valueOf(getSourceVoltageAngularFrequency());
 		getProperties().put("angularFrequency", prop);
 
