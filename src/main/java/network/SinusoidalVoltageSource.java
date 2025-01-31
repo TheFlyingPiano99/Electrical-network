@@ -49,7 +49,7 @@ public class SinusoidalVoltageSource extends Component {
 		if (e != null) {
 			Vector source = new Vector(e.getImpedance().dimension);
 			source.fill(new Complex(0, 0));
-			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhase));	// At zero frequency -- constant source
+			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhase - Math.PI / 2));	// At zero frequency -- constant source
 			e.setSourceVoltage(source);
 		}
 	}
