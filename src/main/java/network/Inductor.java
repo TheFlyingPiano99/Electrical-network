@@ -92,7 +92,7 @@ public class Inductor extends Component {
 
 		ComponentProperty prop = new ComponentProperty();
 		prop.editable = false;
-		prop.name = "forrás feszültség:";
+		prop.name = "feszültség esés:";
 		prop.unit = "V";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("voltage", prop);
@@ -192,6 +192,8 @@ public class Inductor extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
+
 		List<Line> lines = new ArrayList<Line>();
 
 		//Construction:

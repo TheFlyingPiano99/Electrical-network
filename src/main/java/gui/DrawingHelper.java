@@ -35,6 +35,7 @@ public class DrawingHelper {
 	private static ArrayList<Double> scopeVoltageBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeCurrentBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeResistanceBuffer = new ArrayList<>();
+	private static double scopeStartTimeSec = 0;
 	private static int maxScopeDataPoints = 256;
 	private static boolean scopeInTimeDomain = true;
 
@@ -106,6 +107,7 @@ public class DrawingHelper {
 		scopeCurrentBuffer.clear();
 		scopeVoltageBuffer.clear();
 		scopeResistanceBuffer.clear();
+		scopeStartTimeSec = 0;
 	}
 
 	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, Vector voltage, double W, double H)
@@ -267,9 +269,23 @@ public class DrawingHelper {
 					ctx.setLineWidth(0.8);
 					ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
 
+					double valOffset = H / 2.0;
+					double valScale = H / 2.0 / 5.0;
+					ctx.setLineWidth(1.0);
+					ctx.strokeLine(0, valOffset, W, valOffset);
+					ctx.setLineWidth(0.25);
+					ctx.strokeLine(0, valOffset - valScale * 1, W, valOffset - valScale * 1);
+					ctx.strokeLine(0, valOffset - valScale * 2, W, valOffset - valScale * 2);
+					ctx.strokeLine(0, valOffset - valScale * 3, W, valOffset - valScale * 3);
+					ctx.strokeLine(0, valOffset - valScale * 4, W, valOffset - valScale * 4);
+					ctx.strokeLine(0, valOffset + valScale * 1, W, valOffset + valScale * 1);
+					ctx.strokeLine(0, valOffset + valScale * 2, W, valOffset + valScale * 2);
+					ctx.strokeLine(0, valOffset + valScale * 3, W, valOffset + valScale * 3);
+					ctx.strokeLine(0, valOffset + valScale * 4, W, valOffset + valScale * 4);
+
 					drawTimeDomainVoltage(ctx, U, W, H);
 					drawTimeDomainCurrent(ctx, I, W, H);
-					drawResistance(ctx, R, W, H);
+					//drawResistance(ctx, R, W, H);
 				}
 				else {	// scope mode == frequency domain
 					Vector voltage = selected.getFrequencyDomainVoltageDrop();
@@ -278,6 +294,18 @@ public class DrawingHelper {
 					setNormalDrawingAttributes(ctx);
 					ctx.setLineWidth(0.8);
 					ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
+
+					double valOffset = H * 0.8;
+					double valScale = H / 5.0;
+					ctx.setLineWidth(1.0);
+					ctx.strokeLine(0, valOffset, W, valOffset);
+					ctx.setLineWidth(0.25);
+					ctx.strokeLine(0, valOffset - valScale * 1, W, valOffset - valScale * 1);
+					ctx.strokeLine(0, valOffset - valScale * 2, W, valOffset - valScale * 2);
+					ctx.strokeLine(0, valOffset - valScale * 3, W, valOffset - valScale * 3);
+					ctx.strokeLine(0, valOffset - valScale * 4, W, valOffset - valScale * 4);
+					ctx.strokeLine(0, valOffset - valScale * 5, W, valOffset - valScale * 5);
+
 					drawFrequencyDomainVoltage(ctx, voltage, W, H);
 					drawFrequencyDomainCurrent(ctx, current, W, H);
 				}

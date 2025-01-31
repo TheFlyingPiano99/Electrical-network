@@ -81,13 +81,6 @@ public class Wire extends Component {
 		prop.unit = "A";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("current", prop);
-
-		prop = new ComponentProperty();
-		prop.editable = false;
-		prop.name = "ellenállás:";
-		prop.unit = "Ohm";
-		prop.value = String.valueOf(0.0);
-		getProperties().put("resistance", prop);
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Ideal sinusoidal voltage source, with adjustable amplitude and frequency zero resistance.
+ * Ideal triangle voltage source, with adjustable amplitude and frequency zero resistance.
  * @author Simon Zoltán
  *
  */
@@ -20,7 +20,7 @@ public class SquareVoltageSource extends Component {
 	private Edge e;
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
-	private double sourceVoltagePhase = 0.0;
+	private double sourceVoltagePhaseRad = 0.0;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
@@ -60,20 +60,20 @@ public class SquareVoltageSource extends Component {
 				idx < source.dimension - 1 && n <= maxN;
 				idx = getParent().getFrequencyIndex(omega * n)
 		) {
-			source.setAt(idx, Complex.euler(4.0 * sourceVoltageAmplitude / (double)n / Math.PI, sourceVoltagePhase * n - Math.PI / 2));
+			source.setAt(idx, Complex.euler(4.0 * sourceVoltageAmplitude / (double)n / Math.PI, sourceVoltagePhaseRad * n - Math.PI / 2));
 			n += 2;
 		}
 		e.setSourceVoltage(source);
 	}
 
-	public double getSourceVoltagePhase()
+	public double getSourceVoltagePhaseRad()
 	{
-		return sourceVoltagePhase;
+		return sourceVoltagePhaseRad;
 	}
 
-	public void setSourceVoltagePhase(double phase)
+	public void setSourceVoltagePhaseRad(double phase)
 	{
-		this.sourceVoltagePhase = phase;
+		this.sourceVoltagePhaseRad = phase;
 		setSourceVoltageAngularFrequency(this.sourceVoltageAngularFrequency);
 	}
 
@@ -140,7 +140,7 @@ public class SquareVoltageSource extends Component {
 		prop.editable = true;
 		prop.name = "forrás fázis:";
 		prop.unit = "rad";
-		prop.value = String.valueOf(getSourceVoltagePhase());
+		prop.value = String.valueOf(getSourceVoltagePhaseRad());
 		getProperties().put("phase", prop);
 
 		prop = new ComponentProperty();
@@ -176,7 +176,7 @@ public class SquareVoltageSource extends Component {
 		writer.append("; frequency: ");
 		writer.append(sourceVoltageAngularFrequency);
 		writer.append("; phase: ");
-		writer.append(sourceVoltagePhase);
+		writer.append(sourceVoltagePhaseRad);
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -193,7 +193,7 @@ public class SquareVoltageSource extends Component {
 
 		sourceVoltageAngularFrequency = Double.valueOf(pairs[2].split(":")[1]);
 
-		setSourceVoltagePhase(Double.valueOf(pairs[3].split(":")[1]));
+		setSourceVoltagePhaseRad(Double.valueOf(pairs[3].split(":")[1]));
 
 		String coordIn[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -215,7 +215,7 @@ public class SquareVoltageSource extends Component {
 		builder.append("sourceVoltageAngularFrequency=");
 		builder.append(sourceVoltageAngularFrequency);
 		builder.append("sourceVoltagePhase=");
-		builder.append(sourceVoltagePhase);
+		builder.append(sourceVoltagePhaseRad);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");
@@ -350,13 +350,13 @@ public class SquareVoltageSource extends Component {
 		if (str != null && str.length() > 0) {
 			try {
 				double val = Double.parseDouble(str);
-				setSourceVoltagePhase(val);
+				setSourceVoltagePhaseRad(val);
 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			//System.out.println("Updated value:" + getSourceVoltage());
-			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhase());
+			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
 			getParent().simulate();
 		}
 	}
@@ -368,7 +368,7 @@ public class SquareVoltageSource extends Component {
 		if (updateEditable) {
 			setProperty("amplitude", this::getSourceVoltageAmplitude);
 			setProperty("angularFrequency", this::getSourceVoltageAngularFrequency);
-			setProperty("phase", this::getSourceVoltagePhase);
+			setProperty("phase", this::getSourceVoltagePhaseRad);
 		}
 		setProperty("current", this::getTimeDomainCurrent);
 		setProperty("resistance", this::getTimeDomainResistance);

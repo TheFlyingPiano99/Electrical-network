@@ -12,24 +12,23 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Ideal sinusoidal voltage source, with adjustable amplitude and frequency zero resistance.
+ * Ideal triangle voltage source, with adjustable amplitude and frequency zero resistance.
  * @author Simon Zoltán
  *
  */
-public class SinusoidalVoltageSource extends Component {
+public class TriangleVoltageSource extends Component {
 	private Edge e;
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
-	private double sourceVoltagePhaseRad = 0;
-	private int frequencyIdx = 0;
+	private double sourceVoltagePhaseRad = 0.0;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
-	public SinusoidalVoltageSource() {
+	public TriangleVoltageSource() {
 	}
 
 
-	public SinusoidalVoltageSource(double u, double omega) {
+	public TriangleVoltageSource(double u, double omega) {
 		sourceVoltageAmplitude = u;
 		sourceVoltageAngularFrequency = omega;
 	}
@@ -42,30 +41,42 @@ public class SinusoidalVoltageSource extends Component {
 
 	public double getSourceVoltageAngularFrequency() { return sourceVoltageAngularFrequency; }
 
-	public double getSourceVoltagePhaseRad() { return sourceVoltagePhaseRad; }
-
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
-		if (e != null) {
-			Vector source = new Vector(e.getImpedance().dimension);
-			source.fill(new Complex(0, 0));
-			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
-			e.setSourceVoltage(source);
-		}
+		setSourceVoltageAngularFrequency(sourceVoltageAngularFrequency);
 	}
 
 	public void setSourceVoltageAngularFrequency(double omega) {
 		Vector representedAngularFrequencies = getParent().getAngularFrequencies();
 
-		frequencyIdx = getParent().getFrequencyIndex(omega);
-		sourceVoltageAngularFrequency = representedAngularFrequencies.at(frequencyIdx).getRe();
-
-		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
+		Vector source = new Vector(e.getImpedance().dimension);
+		source.fill(new Complex(0, 0));
+		int n = 1;
+		int maxN = 1000;		// To prevent too long loadings
+		int idx_ = getParent().getFrequencyIndex(omega);
+		sourceVoltageAngularFrequency = representedAngularFrequencies.at(idx_).getRe();
+		for (
+				int idx = idx_;
+				idx < source.dimension - 1 && n <= maxN;
+				idx = getParent().getFrequencyIndex(omega * n)
+		) {
+			source.setAt(idx, Complex.euler(
+					8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+					sourceVoltagePhaseRad * n - Math.PI / 2));
+			n += 2;
+		}
+		e.setSourceVoltage(source);
 	}
 
-	public void setSourceVoltagePhaseRad(double phase) {
+	public double getSourceVoltagePhaseRad()
+	{
+		return sourceVoltagePhaseRad;
+	}
+
+	public void setSourceVoltagePhaseRad(double phase)
+	{
 		this.sourceVoltagePhaseRad = phase;
-		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);
+		setSourceVoltageAngularFrequency(this.sourceVoltageAngularFrequency);
 	}
 
 	@Override
@@ -182,7 +193,7 @@ public class SinusoidalVoltageSource extends Component {
 	public void load(String[] pairs) {
 		sourceVoltageAmplitude = Double.valueOf(pairs[1].split(":")[1]);
 
-		setSourceVoltageAngularFrequency(Double.valueOf(pairs[2].split(":")[1]));
+		sourceVoltageAngularFrequency = Double.valueOf(pairs[2].split(":")[1]);
 
 		setSourceVoltagePhaseRad(Double.valueOf(pairs[3].split(":")[1]));
 
@@ -230,8 +241,9 @@ public class SinusoidalVoltageSource extends Component {
 		//Construction:
 		float defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.2f, 0.0f));
-		int resolution = 32;
+
 		// Circle:
+		int resolution = 32;
 		for (int i = 0; i < resolution; i++) {
 			double angle0 = i / (double)resolution * 2 * Math.PI;
 			double angle1 = (i + 1) / (double)resolution * 2 * Math.PI;
@@ -241,14 +253,13 @@ public class SinusoidalVoltageSource extends Component {
 			float y1 = (float)Math.sin(angle1) * 0.3f;
 			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
 		}
-		// Waveform:
-		for (int i = 0; i < resolution; i++) {
-			float x0 = 0.2f + i / (float)resolution * 0.6f;
-			float y0 = -0.1f * (float)Math.sin(i / (double)resolution * 2 * Math.PI);
-			float x1 = 0.2f + (i + 1) / (float)resolution * 0.6f;
-			float y1 = -0.1f * (float)Math.sin((i + 1) / (double)resolution * 2 * Math.PI);
-			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
-		}
+
+		// waveform:
+		lines.add(new Line(defaultSize * 0.2f, 0.0f, defaultSize * 0.35f, -defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.35f, -defaultSize * 0.1f, defaultSize * 0.65f, defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.65f, defaultSize * 0.1f, defaultSize * 0.8f, 0.0f));
+
+
 		lines.add(new Line(defaultSize * 0.8f, 0.0f, defaultSize, 0.0f));
 
 		// [+] sign
