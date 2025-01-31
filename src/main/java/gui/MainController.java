@@ -303,6 +303,7 @@ public class MainController {
         lvLeftListView.getItems().add("Feszültségforrás");
 		lvLeftListView.getItems().add("Szinuszos feszültségforrás");
 		lvLeftListView.getItems().add("Négyszög feszültségforrás");
+		lvLeftListView.getItems().add("Háromszög feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getItems().add("Kondenzátor");
@@ -394,6 +395,9 @@ public class MainController {
 					}
 					else if (str.equals("Négyszög feszültségforrás")) {
 						network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+					}
+					else if (str.equals("Háromszög feszültségforrás")) {
+						network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 					}
     	            else if (str.equals("Ellenállás")) {
     	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
@@ -583,10 +587,11 @@ public class MainController {
     			break;
     		case DELETE:
     			if (selectedComponent != null) {
+					network.cancelSelection();
         			network.removeComponent(selectedComponent);
         			destroyPropertyView();
+					selectedComponent = null;
 					network.simulate();
-    				selectedComponent = null;
     			}
     			break;
     		case ESCAPE:

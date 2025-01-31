@@ -20,7 +20,7 @@ public class SinusoidalVoltageSource extends Component {
 	private Edge e;
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
-	private double sourceVoltagePhase = 0;
+	private double sourceVoltagePhaseRad = 0;
 	private int frequencyIdx = 0;
 
 	//Constructors:---------------------------------------------------------------------------------------
@@ -42,14 +42,14 @@ public class SinusoidalVoltageSource extends Component {
 
 	public double getSourceVoltageAngularFrequency() { return sourceVoltageAngularFrequency; }
 
-	public double getSourceVoltagePhase() { return sourceVoltagePhase; }
+	public double getSourceVoltagePhaseRad() { return sourceVoltagePhaseRad; }
 
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
 		if (e != null) {
 			Vector source = new Vector(e.getImpedance().dimension);
 			source.fill(new Complex(0, 0));
-			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhase - Math.PI / 2));	// At zero frequency -- constant source
+			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
 			e.setSourceVoltage(source);
 		}
 	}
@@ -63,8 +63,8 @@ public class SinusoidalVoltageSource extends Component {
 		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
 	}
 
-	public void setSourceVoltagePhase(double phase) {
-		this.sourceVoltagePhase = phase;
+	public void setSourceVoltagePhaseRad(double phase) {
+		this.sourceVoltagePhaseRad = phase;
 		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);
 	}
 
@@ -131,7 +131,7 @@ public class SinusoidalVoltageSource extends Component {
 		prop.editable = true;
 		prop.name = "forrás fázis:";
 		prop.unit = "rad";
-		prop.value = String.valueOf(getSourceVoltagePhase());
+		prop.value = String.valueOf(getSourceVoltagePhaseRad());
 		getProperties().put("phase", prop);
 
 		prop = new ComponentProperty();
@@ -167,7 +167,7 @@ public class SinusoidalVoltageSource extends Component {
 		writer.append("; frequency: ");
 		writer.append(sourceVoltageAngularFrequency);
 		writer.append("; phase: ");
-		writer.append(sourceVoltagePhase);
+		writer.append(sourceVoltagePhaseRad);
 
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
@@ -184,7 +184,7 @@ public class SinusoidalVoltageSource extends Component {
 
 		setSourceVoltageAngularFrequency(Double.valueOf(pairs[2].split(":")[1]));
 
-		setSourceVoltagePhase(Double.valueOf(pairs[3].split(":")[1]));
+		setSourceVoltagePhaseRad(Double.valueOf(pairs[3].split(":")[1]));
 
 		String coordIn[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -206,7 +206,7 @@ public class SinusoidalVoltageSource extends Component {
 		builder.append("sourceVoltageAngularFrequency=");
 		builder.append(sourceVoltageAngularFrequency);
 		builder.append("sourceVoltagePhase=");
-		builder.append(sourceVoltagePhase);
+		builder.append(sourceVoltagePhaseRad);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");
@@ -337,13 +337,13 @@ public class SinusoidalVoltageSource extends Component {
 		if (str != null && str.length() > 0) {
 			try {
 				double val = Double.parseDouble(str);
-				setSourceVoltagePhase(val);
+				setSourceVoltagePhaseRad(val);
 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			//System.out.println("Updated value:" + getSourceVoltage());
-			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhase());
+			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
 			getParent().simulate();
 		}
 	}
@@ -355,7 +355,7 @@ public class SinusoidalVoltageSource extends Component {
 		if (updateEditable) {
 			setProperty("amplitude", this::getSourceVoltageAmplitude);
 			setProperty("angularFrequency", this::getSourceVoltageAngularFrequency);
-			setProperty("phase", this::getSourceVoltagePhase);
+			setProperty("phase", this::getSourceVoltagePhaseRad);
 		}
 		setProperty("current", this::getTimeDomainCurrent);
 		setProperty("resistance", this::getTimeDomainResistance);
