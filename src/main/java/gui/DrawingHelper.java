@@ -111,7 +111,9 @@ public class DrawingHelper {
 	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, Vector voltage, double W, double H)
 	{
 		ctx.setStroke(Color.GREEN);
+		ctx.setLineWidth(0.8);
 		ctx.strokeText("U(omega) [V]", 10,20);
+		ctx.setLineWidth(2.0);
 
 		double valOffset = H * 0.8;
 		double valScale = H / 5.0;
@@ -129,7 +131,9 @@ public class DrawingHelper {
 	private static void drawFrequencyDomainCurrent(GraphicsContext ctx, Vector current, double W, double H)
 	{
 		ctx.setStroke(Color.YELLOW);
+		ctx.setLineWidth(0.8);
 		ctx.strokeText("I(omega) [A]", 10,40);
+		ctx.setLineWidth(2.0);
 
 		double valOffset = H * 0.8;
 		double valScale = H / 5.0;
@@ -146,7 +150,9 @@ public class DrawingHelper {
 
 	private static void drawTimeDomainVoltage(GraphicsContext ctx, double U, double W, double H) {
 		ctx.setStroke(Color.GREEN);
+		ctx.setLineWidth(0.8);
 		ctx.strokeText("U = " + String.format("%,.5f", U) + " V", 10,20);
+		ctx.setLineWidth(2.0);
 		double prevVal = 0;
 		double valOffset = H / 2.0;
 		double valScale = H / 2.0 / 5.0;
@@ -172,7 +178,9 @@ public class DrawingHelper {
 
 	private static void drawTimeDomainCurrent(GraphicsContext ctx, double I, double W, double H) {
 		ctx.setStroke(Color.YELLOW);
+		ctx.setLineWidth(0.8);
 		ctx.strokeText("I = " + String.format("%,.5f", I) + " A", 10,40);
+		ctx.setLineWidth(2.0);
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;
@@ -199,7 +207,9 @@ public class DrawingHelper {
 
 	private static void drawResistance(GraphicsContext ctx, double R, double W, double H) {
 		ctx.setStroke(Color.PURPLE);
+		ctx.setLineWidth(0.8);
 		ctx.strokeText("R = " + String.format("%,.5f", R) + " Ohm", 10,60);
+		ctx.setLineWidth(2.0);
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;
