@@ -95,7 +95,7 @@ public class Capacitor extends Component {
 		for (int i = 0; i < impedance.dimension; i++) {
 			impedance.setAt(
 				i,
-				new Complex(0, 1.0 / (2 * Math.PI * omega.at(i).getRe() * capacity))
+				new Complex(0, -1.0 / (Math.max(2 * Math.PI * omega.at(i).getRe() * capacity , 0.0000000000001)))
 			);
 		}
 		e.setImpedance(impedance);
