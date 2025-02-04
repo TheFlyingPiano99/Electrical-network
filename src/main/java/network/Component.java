@@ -1,5 +1,6 @@
 package network;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -207,7 +208,13 @@ public abstract class Component {
 	}
 
 	//To override:---------------------------------------------------------------
-	
+
+	/**
+	 * Must be called after the set of simulated frequencies changes
+	 * @param simulatedAngularFrequencies the array of all the simulated frequencies
+	 */
+	abstract public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies);
+
 	/**
 	 * Build the inner structure of the component, including elements of the graph representation. Must generate end nodes.
 	 * HUN: A komponens belső struktúráját hozza létre: gráf reprezentáció. A végpontok generálását is el kell végeznie. 

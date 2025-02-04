@@ -21,11 +21,32 @@ public class SinusoidalVoltageSource extends Component {
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
 	private double sourceVoltagePhaseRad = 0;
-	private int frequencyIdx = 0;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
 	public SinusoidalVoltageSource() {
+	}
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+
+		Vector source = new Vector(simulatedAngularFrequencies.size());
+		source.fill(new Complex(0, 0));
+		int frequencyIdx = getParent().getAngularFrequencyIndex(this.sourceVoltageAngularFrequency);
+		source.setAt(frequencyIdx,
+				Complex.euler(this.sourceVoltageAmplitude, this.sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
+		e.setSourceVoltage(source);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
 	}
 
 
@@ -47,25 +68,32 @@ public class SinusoidalVoltageSource extends Component {
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
 		if (e != null) {
+			int frequencyIdx = getParent().getAngularFrequencyIndex(this.sourceVoltageAngularFrequency);
+			e.getSourceVoltage().setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
+		}
+	}
+
+	public void setSourceVoltageAngularFrequency(double omega) {
+		if (omega == this.sourceVoltageAngularFrequency) {
+			return;
+		}
+		getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency);
+		this.sourceVoltageAngularFrequency = omega;
+		if (e != null) {
 			Vector source = new Vector(e.getImpedance().dimension);
 			source.fill(new Complex(0, 0));
+			int frequencyIdx = getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency);
 			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
 			e.setSourceVoltage(source);
 		}
 	}
 
-	public void setSourceVoltageAngularFrequency(double omega) {
-		Vector representedAngularFrequencies = getParent().getAngularFrequencies();
-
-		frequencyIdx = getParent().getFrequencyIndex(omega);
-		sourceVoltageAngularFrequency = representedAngularFrequencies.at(frequencyIdx).getRe();
-
-		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);		// Move amplitude to the correct vector component
-	}
-
 	public void setSourceVoltagePhaseRad(double phase) {
 		this.sourceVoltagePhaseRad = phase;
-		setSourceVoltageAmplitude(this.sourceVoltageAmplitude);
+		if (e != null) {
+			int frequencyIdx = getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency);
+			e.getSourceVoltage().setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
+		}
 	}
 
 	@Override
@@ -96,18 +124,12 @@ public class SinusoidalVoltageSource extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		Vector omega = getParent().getAngularFrequencies();
-		Vector current = new Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		Vector impedance = new Vector(omega.dimension);
-		impedance.fill(new Complex(0, 0));
-		e.setImpedance(impedance);
-		this.setSourceVoltageAngularFrequency(this.sourceVoltageAngularFrequency);
+		getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency);
+
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
-
 
 
 		//Properties:
@@ -152,8 +174,8 @@ public class SinusoidalVoltageSource extends Component {
 	@Override
 	public void destroy() {
 		super.removeEndNodes();
-
 		super.getParent().removeEdge(e);
+		super.getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency);
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------

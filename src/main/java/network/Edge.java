@@ -1,6 +1,8 @@
 package network;
 import math.*;
 
+import java.util.ArrayList;
+
 
 /**
  * The edge of the graph representation of the network.
@@ -126,13 +128,13 @@ public class Edge {
 		return true;
 	}
 
-	public void updateTimeDomainParameters(Vector omega, double totalTimeSec)
+	public void updateTimeDomainParameters(ArrayList<Double> omega, double totalTimeSec)
 	{
 		timeDomainCurrent = 0;
 		timeDomainSourceVoltage = 0;
 		timeDomainVoltageDrop = 0;
-		for (int k = 0; k < omega.dimension; k++) {
-			Complex e = Complex.euler(1, omega.at(k).getRe() * totalTimeSec);
+		for (int k = 0; k < omega.size(); k++) {
+			Complex e = Complex.euler(1, omega.get(k) * totalTimeSec);
 			timeDomainCurrent += Complex.multiply(current.at(k), e).getRe();
 			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), e).getRe();
 			timeDomainVoltageDrop += Complex.multiply(Complex.multiply(current.at(k), impedance.at(k)), e).getRe();

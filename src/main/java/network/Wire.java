@@ -45,23 +45,32 @@ public class Wire extends Component {
 	//Build/Destroy:------------------------------------------------------------------------------------
 
 	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
+	@Override
 	public void build() {
 		generateEndNodes();
 
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		Vector omega = getParent().getAngularFrequencies();
-		Vector current = new Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		Vector impedance = new Vector(omega.dimension);
-		impedance.fill(new Complex(0, 0));
-		e.setImpedance(impedance);
-		Vector sourceVoltage = new Vector(omega.dimension);
-		sourceVoltage.fill(new Complex(0, 0));
-		e.setSourceVoltage(sourceVoltage);
-		
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
+
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		

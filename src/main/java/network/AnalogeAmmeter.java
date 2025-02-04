@@ -1,6 +1,5 @@
 package network;
 
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +27,27 @@ public class AnalogeAmmeter extends Component {
 	public AnalogeAmmeter() {
 	}
 
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(resistance, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
 	public AnalogeAmmeter(double r) {
 		resistance = r;
+		e.getImpedance().fill(new Complex(resistance, 0));
 	}
 
 	// Getters/Setters:------------------------------------------------------------------------------------
@@ -59,9 +77,7 @@ public class AnalogeAmmeter extends Component {
 
 	public void setResistance(double resistance) {
 		this.resistance = resistance;
-		Vector imp = new Vector(e.getImpedance().dimension);
-		imp.fill(new Complex(resistance, 0));
-		e.setImpedance(imp);
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 	}
 
 	// Build/Destroy:------------------------------------------------------------------------------------
@@ -73,16 +89,7 @@ public class AnalogeAmmeter extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		Vector omega = getParent().getAngularFrequencies();
-		Vector current = new Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		Vector impedance = new Vector(omega.dimension);
-		impedance.fill(new Complex(resistance, 0));
-		e.setImpedance(impedance);
-		Vector sourceVoltage = new Vector(omega.dimension);
-		sourceVoltage.fill(new Complex(0, 0));
-		e.setSourceVoltage(sourceVoltage);
+		updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());

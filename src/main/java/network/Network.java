@@ -54,7 +54,7 @@ public class Network {
 	private Component selected = null;
 	private boolean snapToGrid = true;
 	private boolean validNetwork = false;
-	
+	private boolean changedSetOfAngularFrequencies = false;
 	private int gridSize = 30;
 	//--------------------------------------------------
 	
@@ -64,26 +64,17 @@ public class Network {
 	 */
 	int closeProximity = (int)(gridSize * 0.4);
 
-	private Vector angularFrequencies;
-	private double angularFrequencyStep;
+	private final ArrayList<Double> simulatedAngularFrequencies = new ArrayList<Double>();
+	private final ArrayList<Integer> angularFrequencyReferenceCounter = new ArrayList<Integer>();
 
-	public Vector getAngularFrequencies()
+	public ArrayList<Double> getSimulatedAngularFrequencies()
 	{
-		return angularFrequencies;
+		return simulatedAngularFrequencies;
 	}
 	
 	//Constructor:------------------------------------------------------
 	
 	public Network() {
-		// Initialize angular frequencies:
-		int frequencyResolution = 16384;
-		angularFrequencyStep = 0.01;
-		Edge.defaultPhasorSpaceResolution = frequencyResolution;
-		angularFrequencies = new Vector(frequencyResolution);
-		for (int k = 0; k < frequencyResolution; k++) {
-			angularFrequencies.setAt(k, new Complex(k * angularFrequencyStep, 0));
-		}
-
 		vertices = new ArrayList<Vertex>();
 		edges = new ArrayList<Edge>();
 		
@@ -94,10 +85,52 @@ public class Network {
 		
 		//Create ground-node (index 0):
 		vertices.add(new Vertex());
+
+		simulatedAngularFrequencies.add(0.0);	// DC compoenent is always simulated
+		angularFrequencyReferenceCounter.add(1);
 	}
 
-	public double getAngularFrequencyStep() {
-		return angularFrequencyStep;
+	/**
+	 * Adds the requested frequency to the simulated frequencies if not already there.
+	 * @return The index of the new frequency
+	 */
+	public int requestAngularFrequency(double omega)
+	{
+		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
+			if (simulatedAngularFrequencies.get(i) == omega) {	// Already among simulated frequencies
+				angularFrequencyReferenceCounter.set(i, angularFrequencyReferenceCounter.get(i) + 1);
+				return i;
+			}
+			else if (simulatedAngularFrequencies.get(i) > omega)
+			{
+				simulatedAngularFrequencies.add(i, omega);	// Insert before the first larger frequency
+				angularFrequencyReferenceCounter.add(i, 1);
+				changedSetOfAngularFrequencies = true;
+				return i;
+			}
+		}
+		simulatedAngularFrequencies.add(omega);		// Append to the end
+		angularFrequencyReferenceCounter.add(1);
+		changedSetOfAngularFrequencies = true;
+		return simulatedAngularFrequencies.size() - 1;
+	}
+
+	public void releaseAngularFrequency(double omega)
+	{
+		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
+			if (simulatedAngularFrequencies.get(i) == omega) {	//  Among simulated frequencies
+				int refCount = angularFrequencyReferenceCounter.get(i);
+				if (refCount > 1) {		// Other components also require the same frequency
+					angularFrequencyReferenceCounter.set(i, refCount - 1);
+				}
+				else {					// No other components require this frequency
+					angularFrequencyReferenceCounter.remove(i);
+					simulatedAngularFrequencies.remove(i);
+					changedSetOfAngularFrequencies = true;
+				}
+				return;
+			}
+		}
 	}
 
 	//--------------------------------------------------------------------
@@ -158,18 +191,19 @@ public class Network {
 		}
 	}
 
-	public int getFrequencyIndex(double omega) {
-		if (angularFrequencies.at(0).getRe() > omega) {
-			return 0;
-		}
-
-		boolean foundSimilar = false;
-		for (int i = 0; i < angularFrequencies.dimension; i++) {
-			if (Math.abs(angularFrequencies.at(i).getRe() - omega) < angularFrequencyStep / 2) {
+	/**
+	 *
+	 * @param omega the angular frequency to search for
+	 * @return The index of the angularFrequency or -1 if the specific angular frequency
+	 * is not among simulated frequencies
+	 */
+	public int getAngularFrequencyIndex(double omega) {
+		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
+			if (simulatedAngularFrequencies.get(i) == omega) {
 				return i;
 			}
 		}
-		return angularFrequencies.dimension - 1;
+		return -1;
 	}
 
 	/**
@@ -178,7 +212,13 @@ public class Network {
 	 */
 	public void simulate () {
 		System.out.println("\nCalculating system");
-		for (int k = 0; k < angularFrequencies.dimension; k++) {	// Finer time resolution
+		if (changedSetOfAngularFrequencies) {
+			changedSetOfAngularFrequencies = false;
+			for (Component c : components) {
+				c.updateFrequencyDependentParameters(simulatedAngularFrequencies);
+			}
+		}
+		for (int k = 0; k < simulatedAngularFrequencies.size(); k++) {	// Finer time resolution
 
 
 			//Graph representations:
@@ -1034,10 +1074,10 @@ public class Network {
 	 */
 	public void draw(GraphicsContext ctx, double totalTimeSec, double deltaTimeSec) {
 		for (Edge e : edges) {
-			e.updateTimeDomainParameters(angularFrequencies, totalTimeSec);
+			e.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
 		}
 		for (Vertex v : vertices) {
-			v.updateTimeDomainParameters(angularFrequencies, totalTimeSec);
+			v.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
 		}
 
 		ArrayList<Double> potentials = discoverPotential_BFS();
