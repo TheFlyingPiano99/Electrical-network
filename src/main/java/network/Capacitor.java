@@ -50,13 +50,15 @@ public class Capacitor extends Component {
 
 	public void setCapacity(double capacity) {
 		this.capacity = capacity;
-		Vector omega = getParent().getAngularFrequencies();
-		for (int i = 0; i < e.getImpedance().dimension; i++) {
-			e.getImpedance().setAt(
+        ArrayList<Double> simulatedAngularFrequencies = getParent().getSimulatedAngularFrequencies();
+		math.Vector impedance = new math.Vector(simulatedAngularFrequencies.size());
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
 					i,
-					new Complex(0, 1.0 / (2 * Math.PI * omega.at(i).getRe() * capacity))
+					new Complex(0, -1.0 / (Math.max(2 * Math.PI * simulatedAngularFrequencies.get(i) * capacity , 0.0000000000001)))
 			);
 		}
+		e.setImpedance(impedance);
 	}
 
 	@Override
@@ -78,8 +80,33 @@ public class Capacitor extends Component {
 		return e.getVoltageDrop();
 	}
 
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		math.Vector impedance = new math.Vector(simulatedAngularFrequencies.size());
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+					i,
+					new Complex(0, -1.0 / (Math.max(2 * Math.PI * simulatedAngularFrequencies.get(i) * capacity , 0.0000000000001)))
+			);
+		}
+		e.setImpedance(impedance);
+
+		math.Vector current = new math.Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		math.Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
+
 	//Build/Destroy:------------------------------------------------------------------------------------
-	
+
 	@Override
 	public void build() {
 		super.generateEndNodes();
@@ -87,21 +114,8 @@ public class Capacitor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		math.Vector omega = getParent().getAngularFrequencies();
-		math.Vector current = new math.Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		math.Vector impedance = new math.Vector(omega.dimension);
-		for (int i = 0; i < impedance.dimension; i++) {
-			impedance.setAt(
-				i,
-				new Complex(0, -1.0 / (Math.max(2 * Math.PI * omega.at(i).getRe() * capacity , 0.0000000000001)))
-			);
-		}
-		e.setImpedance(impedance);
-		math.Vector sourceVoltage = new Vector(omega.dimension);
-		sourceVoltage.fill(new Complex(0, 0));
-		e.setSourceVoltage(sourceVoltage);
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
+
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		

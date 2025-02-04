@@ -1,5 +1,6 @@
 package network;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import math.*;
 
@@ -92,6 +93,7 @@ public class Vertex {
 
 	public void setInputCurrent(Vector inputCurrent) {
 		this.inputCurrent = inputCurrent;
+		
 	}
 
 	//HashCode/Equals:--------------------------------------------------------------
@@ -147,11 +149,14 @@ public class Vertex {
         return timeDomainInputCurrent;
     }
 
-	public void updateTimeDomainParameters(Vector omega, double totalTimeSec)
+	public void updateTimeDomainParameters(ArrayList<Double> omega, double totalTimeSec)
 	{
 		timeDomainInputCurrent = 0;
-		for (int k = 0; k < omega.dimension; k++) {
-			timeDomainInputCurrent += Complex.multiply(inputCurrent.at(k), Complex.euler(1, omega.at(k).getRe() * totalTimeSec)).getRe();
+		for (int k = 0; k < omega.size(); k++) {
+			timeDomainInputCurrent += Complex.multiply(
+					inputCurrent.at(k),
+					Complex.euler(1, omega.get(k) * totalTimeSec)
+			).getRe();
 		}
 	}
 

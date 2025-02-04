@@ -21,8 +21,27 @@ public class DCVoltageSource extends network.Component {
 	
 	public DCVoltageSource() {
 	}
-	
-	
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltageVector = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltageVector.fill(new Complex(0, 0));
+		sourceVoltageVector.setAt(getParent().getAngularFrequencyIndex(0.0), new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
+		e.setSourceVoltage(sourceVoltageVector);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
+
 	public DCVoltageSource(double u) {
 		sourceVoltage = u;
 	}
@@ -35,12 +54,7 @@ public class DCVoltageSource extends network.Component {
 
 	public void setSourceVoltage(double sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
-		if (e != null) {
-			Vector source = new Vector(e.getImpedance().dimension);
-			source.fill(new Complex(0, 0));
-			source.setAt(0, new Complex(sourceVoltage, 0));	// At zero frequency -- constant source
-			e.setSourceVoltage(source);
-		}
+		e.getSourceVoltage().setAt(getParent().getAngularFrequencyIndex(0.0), new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
 	}
 
 	@Override
@@ -71,18 +85,7 @@ public class DCVoltageSource extends network.Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		Vector omega = getParent().getAngularFrequencies();
-		Vector current = new Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		Vector impedance = new Vector(omega.dimension);
-		impedance.fill(new Complex(0, 0));
-		e.setImpedance(impedance);
-		Vector sourceVoltageVector = new Vector(omega.dimension);
-		sourceVoltageVector.fill(new Complex(0, 0));
-		sourceVoltageVector.setAt(0, new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
-		e.setSourceVoltage(sourceVoltageVector);
-
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());

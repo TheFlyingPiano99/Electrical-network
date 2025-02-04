@@ -110,7 +110,7 @@ public class DrawingHelper {
 		scopeStartTimeSec = 0;
 	}
 
-	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, Vector voltage, double W, double H)
+	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, ArrayList<Double> angularFrequencies, Vector voltage, double W, double H)
 	{
 		ctx.setStroke(Color.GREEN);
 		ctx.setLineWidth(0.8);
@@ -120,17 +120,27 @@ public class DrawingHelper {
 		double valOffset = H * 0.8;
 		double valScale = H / 5.0;
 
-		for (int k = 0; k < voltage.dimension - 1; k++) {
+		if (angularFrequencies.isEmpty())
+		{
+			return;
+		}
+		double minFrequency = angularFrequencies.getFirst();
+		double maxFrequency = Math.min(angularFrequencies.getLast(), 100);
+
+		for (int k = 0; k < angularFrequencies.size() - 1; k++) {
+			if (angularFrequencies.get(k) > maxFrequency) {
+				break;
+			}
 			ctx.strokeLine(
-					W * (k + 1) / (double)(voltage.dimension + 2),
+					W * (angularFrequencies.get(k)) / (double)(maxFrequency - minFrequency),
 					valOffset - valScale * voltage.at(k).getAbs(),
-					W * (k + 2) / (double)(voltage.dimension + 2),
+					W * (angularFrequencies.get(k + 1)) / (double)(maxFrequency - minFrequency),
 					valOffset - valScale * voltage.at(k + 1).getAbs()
 			);
 		}
 	}
 
-	private static void drawFrequencyDomainCurrent(GraphicsContext ctx, Vector current, double W, double H)
+	private static void drawFrequencyDomainCurrent(GraphicsContext ctx, ArrayList<Double> angularFrequencies, Vector current, double W, double H)
 	{
 		ctx.setStroke(Color.YELLOW);
 		ctx.setLineWidth(0.8);
@@ -140,11 +150,21 @@ public class DrawingHelper {
 		double valOffset = H * 0.8;
 		double valScale = H / 5.0;
 
+		if (angularFrequencies.isEmpty())
+		{
+			return;
+		}
+		double minFrequency = angularFrequencies.getFirst();
+		double maxFrequency = Math.min(angularFrequencies.getLast(), 100);
+
 		for (int k = 0; k < current.dimension - 1; k++) {
+			if (angularFrequencies.get(k) > maxFrequency) {
+				break;
+			}
 			ctx.strokeLine(
-					W * (k + 1) / (double)(current.dimension + 2),
+					W * (angularFrequencies.get(k)) / (double)(maxFrequency - minFrequency),
 					valOffset - valScale * current.at(k).getAbs(),
-					W * (k + 2) / (double)(current.dimension + 2),
+					W * (angularFrequencies.get(k + 1)) / (double)(maxFrequency - minFrequency),
 					valOffset - valScale * current.at(k + 1).getAbs()
 			);
 		}
@@ -288,6 +308,7 @@ public class DrawingHelper {
 					//drawResistance(ctx, R, W, H);
 				}
 				else {	// scope mode == frequency domain
+					ArrayList<Double> angularFrequency = network.getSimulatedAngularFrequencies();
 					Vector voltage = selected.getFrequencyDomainVoltageDrop();
 					Vector current = selected.getFrequencyDomainCurrent();
 
@@ -306,8 +327,8 @@ public class DrawingHelper {
 					ctx.strokeLine(0, valOffset - valScale * 4, W, valOffset - valScale * 4);
 					ctx.strokeLine(0, valOffset - valScale * 5, W, valOffset - valScale * 5);
 
-					drawFrequencyDomainVoltage(ctx, voltage, W, H);
-					drawFrequencyDomainCurrent(ctx, current, W, H);
+					drawFrequencyDomainVoltage(ctx, angularFrequency, voltage, W, H);
+					drawFrequencyDomainCurrent(ctx, angularFrequency, current, W, H);
 				}
 			}
 			else {

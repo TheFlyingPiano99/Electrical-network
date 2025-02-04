@@ -21,10 +21,37 @@ public class TriangleVoltageSource extends Component {
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
 	private double sourceVoltagePhaseRad = 0.0;
+	private static int maxN = 1000;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
 	public TriangleVoltageSource() {
+	}
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+
+		math.Vector source =  Vector.Zeros(simulatedAngularFrequencies.size());
+		source.fill(new Complex(0, 0));
+		for (int n = 1; n <= maxN; n += 2) {
+			int idx = getParent().getAngularFrequencyIndex(n * this.sourceVoltageAngularFrequency);
+			source.setAt(idx,
+					Complex.euler(
+							8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+							sourceVoltagePhaseRad * n - Math.PI / 2));
+		}
+		e.setSourceVoltage(source);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
 	}
 
 
@@ -43,27 +70,40 @@ public class TriangleVoltageSource extends Component {
 
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
-		setSourceVoltageAngularFrequency(sourceVoltageAngularFrequency);
+		for (int n = 1; n <= maxN; n += 2) {
+			int idx = getParent().getAngularFrequencyIndex(n * this.sourceVoltageAngularFrequency);
+			e.getSourceVoltage().setAt(idx,
+					Complex.euler(
+							8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+							sourceVoltagePhaseRad * n - Math.PI / 2));
+		}
 	}
 
 	public void setSourceVoltageAngularFrequency(double omega) {
-		Vector representedAngularFrequencies = getParent().getAngularFrequencies();
+		if (omega == this.sourceVoltageAngularFrequency) {
+			return;
+		}
 
-		Vector source = new Vector(e.getImpedance().dimension);
+		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
+		}
+
+		this.sourceVoltageAngularFrequency = omega;
+
+		ArrayList<Integer> fourierSeriesFrequencyIndices = new ArrayList<Integer>();
+		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+			fourierSeriesFrequencyIndices.add(getParent().requestAngularFrequency(omega * n));
+		}
+
+		math.Vector source =  Vector.Zeros(getParent().getSimulatedAngularFrequencies().size());
 		source.fill(new Complex(0, 0));
-		int n = 1;
-		int maxN = 1000;		// To prevent too long loadings
-		int idx_ = getParent().getFrequencyIndex(omega);
-		sourceVoltageAngularFrequency = representedAngularFrequencies.at(idx_).getRe();
-		for (
-				int idx = idx_;
-				idx < source.dimension - 1 && n <= maxN;
-				idx = getParent().getFrequencyIndex(omega * n)
-		) {
-			source.setAt(idx, Complex.euler(
-					8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
-					sourceVoltagePhaseRad * n - Math.PI / 2));
-			n += 2;
+		int i = 0;
+		for (int n = 1; n <= maxN; n += 2) {
+			source.setAt(fourierSeriesFrequencyIndices.get(i),
+				Complex.euler(
+				8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+				sourceVoltagePhaseRad * n - Math.PI / 2));
+			i++;
 		}
 		e.setSourceVoltage(source);
 	}
@@ -76,7 +116,13 @@ public class TriangleVoltageSource extends Component {
 	public void setSourceVoltagePhaseRad(double phase)
 	{
 		this.sourceVoltagePhaseRad = phase;
-		setSourceVoltageAngularFrequency(this.sourceVoltageAngularFrequency);
+		for (int n = 1; n <= maxN; n += 2) {
+			int idx = getParent().getAngularFrequencyIndex(n * this.sourceVoltageAngularFrequency);
+			e.getSourceVoltage().setAt(idx,
+					Complex.euler(
+							8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+							sourceVoltagePhaseRad * n - Math.PI / 2));
+		}
 	}
 
 	@Override
@@ -107,14 +153,11 @@ public class TriangleVoltageSource extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		Vector omega = getParent().getAngularFrequencies();
-		Vector current = new Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		Vector impedance = new Vector(omega.dimension);
-		impedance.fill(new Complex(0, 0));
-		e.setImpedance(impedance);
-		this.setSourceVoltageAngularFrequency(this.sourceVoltageAngularFrequency);
+		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+			getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency * n);
+		}
+
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -163,8 +206,10 @@ public class TriangleVoltageSource extends Component {
 	@Override
 	public void destroy() {
 		super.removeEndNodes();
-
 		super.getParent().removeEdge(e);
+		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
+		}
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------

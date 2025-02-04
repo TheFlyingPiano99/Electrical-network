@@ -1,7 +1,5 @@
 package network;
 
-import javafx.util.Duration;
-
 import java.util.*;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -9,7 +7,6 @@ import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
 import math.Line;
-import math.MyMath;
 import math.Vector;
 
 /**
@@ -30,8 +27,31 @@ public class Inductor extends Component {
 	
 	public Inductor() {
 	}
-	
-	
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		math.Vector current = new math.Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		math.Vector impedance = new math.Vector(simulatedAngularFrequencies.size());
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+					i,
+					new Complex(0, 2 * Math.PI * simulatedAngularFrequencies.get(i) * inductance)
+			);
+		}
+		e.setImpedance(impedance);
+		math.Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
+
 	public Inductor(double l) {
 		inductance = l;
 	}
@@ -66,22 +86,7 @@ public class Inductor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		math.Vector omega = getParent().getAngularFrequencies();
-		math.Vector current = new math.Vector(omega.dimension);
-		current.fill(new Complex(0, 0));
-		e.setCurrent(current);
-		math.Vector impedance = new math.Vector(omega.dimension);
-		for (int i = 0; i < impedance.dimension; i++) {
-			impedance.setAt(
-					i,
-					new Complex(0, 2 * Math.PI * omega.at(i).getRe() * inductance)
-			);
-		}
-		e.setImpedance(impedance);
-		math.Vector sourceVoltage = new Vector(omega.dimension);
-		sourceVoltage.fill(new Complex(0, 0));
-		e.setSourceVoltage(sourceVoltage);
-		
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());		
@@ -159,11 +164,11 @@ public class Inductor extends Component {
 
 	public void setInductance(double inductance) {
 		this.inductance = inductance;
-		Vector omega = getParent().getAngularFrequencies();
+		ArrayList<Double> omega = getParent().getSimulatedAngularFrequencies();
 		for (int i = 0; i < e.getImpedance().dimension; i++) {
 			e.getImpedance().setAt(
 					i,
-					new Complex(0, 2 * Math.PI * omega.at(i).getRe() * inductance)
+					new Complex(0, 2 * Math.PI * omega.get(i) * inductance)
 			);
 		}
 	}
