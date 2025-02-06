@@ -21,7 +21,7 @@ public class SquareVoltageSource extends Component {
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
 	private double sourceVoltagePhaseRad = 0.0;
-	private static int maxN = 1000;
+	private static int maxN = 2000;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
