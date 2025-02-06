@@ -124,18 +124,18 @@ public class DrawingHelper {
 		{
 			return;
 		}
-		double minFrequency = angularFrequencies.getFirst();
-		double maxFrequency = Math.min(angularFrequencies.getLast(), 100);
+		double minFrequency = -1.0;
+		double maxFrequency = 100 * Math.PI;
 
-		for (int k = 0; k < angularFrequencies.size() - 1; k++) {
+		for (int k = 0; k < angularFrequencies.size(); k++) {
 			if (angularFrequencies.get(k) > maxFrequency) {
 				break;
 			}
 			ctx.strokeLine(
-					W * (angularFrequencies.get(k)) / (double)(maxFrequency - minFrequency),
-					valOffset - valScale * voltage.at(k).getAbs(),
-					W * (angularFrequencies.get(k + 1)) / (double)(maxFrequency - minFrequency),
-					valOffset - valScale * voltage.at(k + 1).getAbs()
+					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
+					valOffset,
+					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
+					valOffset - valScale * voltage.at(k).getAbs()
 			);
 		}
 	}
@@ -154,18 +154,39 @@ public class DrawingHelper {
 		{
 			return;
 		}
-		double minFrequency = angularFrequencies.getFirst();
-		double maxFrequency = Math.min(angularFrequencies.getLast(), 100);
+		double minFrequency = -1;
+		double maxFrequency = 100 * Math.PI;
 
-		for (int k = 0; k < current.dimension - 1; k++) {
+		for (int k = 0; k < current.dimension; k++) {
 			if (angularFrequencies.get(k) > maxFrequency) {
 				break;
 			}
 			ctx.strokeLine(
-					W * (angularFrequencies.get(k)) / (double)(maxFrequency - minFrequency),
-					valOffset - valScale * current.at(k).getAbs(),
-					W * (angularFrequencies.get(k + 1)) / (double)(maxFrequency - minFrequency),
-					valOffset - valScale * current.at(k + 1).getAbs()
+					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
+					valOffset,
+					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
+					valOffset - valScale * current.at(k).getAbs()
+			);
+		}
+	}
+
+	private static void drawFrequencyDomainLabels(GraphicsContext ctx, double W, double H)
+	{
+		double minFrequency = -1.0;
+		double maxFrequency = 100 * Math.PI;
+
+		double valOffset = H * 0.8;
+		double valScale = H / 5.0;
+
+		ctx.setStroke(Color.BLACK);
+		ctx.setLineWidth(0.5);
+		int labelCount = 5;
+		int piStep = (int)((maxFrequency - minFrequency) / Math.PI) / labelCount;
+		for (int k = 0; k < labelCount; k++) {
+			ctx.strokeText(
+					Integer.toString(k * piStep).concat("Pi"),
+					W * (k * piStep * Math.PI - minFrequency) / (double)(maxFrequency - minFrequency),
+					valOffset + 15
 			);
 		}
 	}
@@ -329,6 +350,7 @@ public class DrawingHelper {
 
 					drawFrequencyDomainVoltage(ctx, angularFrequency, voltage, W, H);
 					drawFrequencyDomainCurrent(ctx, angularFrequency, current, W, H);
+					drawFrequencyDomainLabels(ctx, W, H);
 				}
 			}
 			else {
