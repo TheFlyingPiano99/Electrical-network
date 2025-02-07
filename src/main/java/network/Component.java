@@ -2,6 +2,7 @@ package network;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -13,7 +14,7 @@ import math.*;
  * @author Simon Zoltán
  *
  */
-public abstract class Component {
+public abstract class Component implements Cloneable {
 		
 	private Network parent;
 	
@@ -71,7 +72,17 @@ public abstract class Component {
 	public Component(Network parent) {
 		this.parent = parent;
 	}
-	
+
+	@Override
+	public Component clone() throws CloneNotSupportedException
+	{
+		Component clone = (Component)super.clone();
+		clone.parent = this.parent;
+		clone.input = this.input;
+		clone.output = this.output;
+		return clone;
+	}
+
 	///Getters/Setters:-------------------------------------------------
 	
 	public Network getParent() {
@@ -243,7 +254,13 @@ public abstract class Component {
 	 * @param pairs	flags and values.
 	 */
 	abstract public void load(String[] pairs);
-	
+
+	/**
+	 * Calculate current and voltage values for the given time step
+	 * @param totalTimeSec The total elapsed time since the beginning of the simulation
+	 */
+	abstract public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas);
+
 	/**
 	 * Returns electric current value in ampere.
 	 * HUN: Visszaadja az áramszintet amperben.

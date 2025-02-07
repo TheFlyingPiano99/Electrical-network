@@ -125,6 +125,10 @@ public class Ground extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -203,4 +207,15 @@ public class Ground extends Component {
 	}
 
 
+    @Override
+    public Ground clone() {
+        try {
+            Ground clone = (Ground) super.clone();
+			clone.e = this.e.clone();
+
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

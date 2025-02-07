@@ -157,6 +157,11 @@ public class Resistance extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Resistance [resistance=");
@@ -233,7 +238,7 @@ public class Resistance extends Component {
 				e.printStackTrace();
 			}
 			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 
 	}
@@ -248,4 +253,15 @@ public class Resistance extends Component {
 	}
 
 
+    @Override
+    public Resistance clone() {
+        try {
+            Resistance clone = (Resistance) super.clone();
+            clone.e = this.e.clone();
+			clone.resistance = this.resistance;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

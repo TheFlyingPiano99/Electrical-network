@@ -56,6 +56,7 @@ public class Network {
 	private boolean validNetwork = false;
 	private boolean changedSetOfAngularFrequencies = false;
 	private int gridSize = 30;
+	private final Object accessMutexObj = new Object();
 	//--------------------------------------------------
 	
 	/**
@@ -210,47 +211,49 @@ public class Network {
 	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels.
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
 	 */
-	public void simulate () {
-		System.out.println("\nCalculating system");
-		if (changedSetOfAngularFrequencies) {
-			changedSetOfAngularFrequencies = false;
-			for (Component c : components) {
-				c.updateFrequencyDependentParameters(simulatedAngularFrequencies);
-			}
-		}
-		for (int k = 0; k < simulatedAngularFrequencies.size(); k++) {	// Finer time resolution
-
-
-			//Graph representations:
-			Matrix incidence = new Matrix(0,0);
-			Matrix cycle = new Matrix(0,0);
-			try {
-				DFS(incidence, cycle);
-
-				//Parameters:
-				Vector impedance = gatherImpedance(k);
-				Vector sourceVoltage = gatherSourceVoltages(k);
-				Vector inputCurrent = gatherInputCurrent(k);
-
-				//Create system:
-				linSystem = new LinearSystemForCurrent(incidence, cycle, impedance, sourceVoltage, inputCurrent);
-
-			} catch (RuntimeException e) {
-			}
-
-			//Calculate-current:
-
-			Vector current = CalculateCurrent();
-			if (current != null) {
-				validNetwork = true;
-				for (int i = 0; i < edges.size(); i++) {
-					edges.get(i).getCurrent().setAt(k, current.at(i));
+	public void evaluate() {
+		synchronized (accessMutexObj) {
+			System.out.println("\nCalculating system");
+			if (changedSetOfAngularFrequencies) {
+				changedSetOfAngularFrequencies = false;
+				for (Component c : components) {
+					c.updateFrequencyDependentParameters(simulatedAngularFrequencies);
 				}
 			}
-			else {
-				validNetwork = false;
-				for (int i = 0; i < edges.size(); i++) {
-					edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
+			for (int k = 0; k < simulatedAngularFrequencies.size(); k++) {	// Finer time resolution
+
+
+				//Graph representations:
+				Matrix incidence = new Matrix(0,0);
+				Matrix cycle = new Matrix(0,0);
+				try {
+					DFS(incidence, cycle);
+
+					//Parameters:
+					Vector impedance = gatherImpedance(k);
+					Vector sourceVoltage = gatherSourceVoltages(k);
+					Vector inputCurrent = gatherInputCurrent(k);
+
+					//Create system:
+					linSystem = new LinearSystemForCurrent(incidence, cycle, impedance, sourceVoltage, inputCurrent);
+
+				} catch (RuntimeException e) {
+				}
+
+				//Calculate-current:
+
+				Vector current = CalculateCurrent();
+				if (current != null) {
+					validNetwork = true;
+					for (int i = 0; i < edges.size(); i++) {
+						edges.get(i).getCurrent().setAt(k, current.at(i));
+					}
+				}
+				else {
+					validNetwork = false;
+					for (int i = 0; i < edges.size(); i++) {
+						edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
+					}
 				}
 			}
 		}
@@ -777,17 +780,20 @@ public class Network {
 	 * @param cursorPos	The position to be dropped at. Input node is going to have x =-30 and output x = +30 offset on position.
 	 */
 	public void dropComponent(Component component, Coordinate cursorPos) {
-		addComponent(component);
-		selected = component;
-		if (snapToGrid) {
-			component.getInput().setPos(Coordinate.snapToGrid(MyMath.subtract(cursorPos, new Coordinate(30, 0)), gridSize));
-			component.getOutput().setPos(Coordinate.snapToGrid(MyMath.add(cursorPos, new Coordinate(30, 0)), gridSize));					
+		synchronized (accessMutexObj)
+		{
+			addComponent(component);
+			selected = component;
+			if (snapToGrid) {
+				component.getInput().setPos(Coordinate.snapToGrid(MyMath.subtract(cursorPos, new Coordinate(30, 0)), gridSize));
+				component.getOutput().setPos(Coordinate.snapToGrid(MyMath.add(cursorPos, new Coordinate(30, 0)), gridSize));
+			}
+			else {
+				component.getInput().setPos(MyMath.subtract(cursorPos, new Coordinate(30, 0)));
+				component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));
+			}
+			component.release();
 		}
-		else {
-			component.getInput().setPos(MyMath.subtract(cursorPos, new Coordinate(30, 0)));
-			component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));					
-		}
-		component.release();
 	}
 	
 	/**
@@ -797,11 +803,14 @@ public class Network {
 	 * @param cursorPos The position of the cursor;
 	 */
 	public void grabComponent(Component component, Coordinate cursorPos) {
-		if (!components.contains(component)) {
-			throw new RuntimeException("Invalid node grabbed.");
+		synchronized (accessMutexObj)
+		{
+			if (!components.contains(component)) {
+				throw new RuntimeException("Invalid node grabbed.");
+			}
+			selected = component;
+			component.grab(cursorPos);
 		}
-		selected = component;
-		component.grab(cursorPos);
 	}
 	
 	/**
@@ -811,10 +820,13 @@ public class Network {
 	 * @param cursorPos The new position of the cursor;
 	 */	
 	public void dragComponent(Component component, Coordinate cursorPos) {
-		if (!components.contains(component)) {
-			throw new RuntimeException("Invalid component moved.");
+		synchronized (accessMutexObj)
+		{
+			if (!components.contains(component)) {
+				throw new RuntimeException("Invalid component moved.");
+			}
+			component.drag(cursorPos);
 		}
-		component.drag(cursorPos);
 	}
 	
 	public boolean isSnapToGrid() {
@@ -839,10 +851,13 @@ public class Network {
 	 * @param component The component to release.
 	 */
 	public void releaseComponent(Component component) {
-		if (!components.contains(component)) {
-			throw new RuntimeException("Invalid component released.");
+		synchronized (accessMutexObj)
+		{
+			if (!components.contains(component)) {
+				throw new RuntimeException("Invalid component released.");
+			}
+			component.release();
 		}
-		component.release();
 	}
 
 	/**
@@ -1064,7 +1079,7 @@ public class Network {
 		
 		vertices.add(new Vertex());
 		
-		simulate();
+		evaluate();
 	}
 
 	/**
@@ -1073,21 +1088,24 @@ public class Network {
 	 * @param ctx	{@link GraphicsContext}, where the network should be drawn.
 	 */
 	public void draw(GraphicsContext ctx, double totalTimeSec, double deltaTimeSec) {
-		for (Edge e : edges) {
-			e.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
-		}
-		for (Vertex v : vertices) {
-			v.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
-		}
+		synchronized (accessMutexObj)
+		{
+			for (Edge e : edges) {
+				e.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
+			}
+			for (Vertex v : vertices) {
+				v.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
+			}
 
-		ArrayList<Double> potentials = discoverPotential_BFS();
-		for (int i = 0; i < vertices.size(); i++) {
-			vertices.get(i).setTimeDomainPotential(potentials.get(i));
-		}
+			ArrayList<Double> potentials = discoverPotential_BFS();
+			for (int i = 0; i < vertices.size(); i++) {
+				vertices.get(i).setTimeDomainPotential(potentials.get(i));
+			}
 
-		for (Component component : components) {
-			component.updateCurrentVisualisationOffset(deltaTimeSec);
-			component.draw(ctx);
+			for (Component component : components) {
+				component.updateCurrentVisualisationOffset(deltaTimeSec);
+				component.draw(ctx);
+			}
 		}
 	}
 	
@@ -1103,7 +1121,7 @@ public class Network {
 		for (Component component : components) {
 			component.reset();
 		}
-		simulate();
+		evaluate();
 	}
 	
 	/**

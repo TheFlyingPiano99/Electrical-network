@@ -167,6 +167,11 @@ public class AnalogVoltmeter extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Resistance [resistance=");
@@ -293,7 +298,7 @@ public class AnalogVoltmeter extends Component {
 				e.printStackTrace();
 			}
 			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 
 		str = getProperties().get("scale").value;
@@ -325,6 +330,20 @@ public class AnalogVoltmeter extends Component {
 
 	public void setScale(double scale) {
 		this.scale = scale;
+	}
+
+	@Override
+	public AnalogVoltmeter clone() {
+		try {
+			AnalogVoltmeter clone = (AnalogVoltmeter) super.clone();
+			clone.e = this.e.clone();
+			clone.resistance = this.resistance;
+			clone.scale = this.scale;
+			clone.needlePrevAngle = this.needlePrevAngle;
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
 	}
 
 }

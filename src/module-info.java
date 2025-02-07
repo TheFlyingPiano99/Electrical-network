@@ -4,6 +4,7 @@ module ElectricalNetwork {
     requires javafx.graphics;
 
     requires org.controlsfx.controls;
+    requires java.desktop;
 
     opens gui to javafx.fxml;
     exports gui;

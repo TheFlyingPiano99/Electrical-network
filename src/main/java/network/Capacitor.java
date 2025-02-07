@@ -18,24 +18,12 @@ import math.Vector;
  */
 public class Capacitor extends Component {
 	private Edge e;
-	public double getCharge() {
-		return charge;
-	}
-
-
-	public void setCharge(double charge) {
-		this.charge = charge;
-	}
-
 
 	public double getCapacity() {
 		return capacity;
 	}
 
-
-	private double charge = 0;
 	private double capacity = 1;
-	private double prevCurrent = 0;
 	//Constructors:---------------------------------------------------------------------------------------
 	
 	public Capacitor() {
@@ -184,6 +172,10 @@ public class Capacitor extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -263,7 +255,7 @@ public class Capacitor extends Component {
 			}
 			//System.out.println("Updated value:" + getCapacity());
 			getProperties().get("capacity").value = String.valueOf(getCapacity());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 	}
 
@@ -277,4 +269,15 @@ public class Capacitor extends Component {
 		}
 	}
 
+    @Override
+    public Capacitor clone() {
+        try {
+            Capacitor clone = (Capacitor) super.clone();
+			clone.e = this.e.clone();
+			clone.capacity = this.capacity;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

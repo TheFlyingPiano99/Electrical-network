@@ -10,7 +10,7 @@ import math.*;
  * @author Simon Zoltán
  *
  */
-public class Vertex {
+public class Vertex implements Cloneable {
 
 	/**
 	 * Map of incoming edges.
@@ -160,4 +160,14 @@ public class Vertex {
 		}
 	}
 
+    @Override
+    public Vertex clone() {
+        try {
+            Vertex clone = (Vertex) super.clone();
+			clone.inputCurrent = this.inputCurrent;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

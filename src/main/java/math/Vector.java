@@ -7,7 +7,7 @@ package math;
  * @author Simon Zoltán
  *
  */
-public class Vector {
+public class Vector implements Cloneable {
 	private Complex n[];
     public int dimension;
 
@@ -232,4 +232,15 @@ public class Vector {
         return retVal;
     }
 
+    @Override
+    public Vector clone() {
+        try {
+            Vector clone = (Vector) super.clone();
+            clone.dimension = this.dimension;
+            clone.n = this.n.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

@@ -22,7 +22,7 @@ import math.Vector;
 
 public class CurrentSource extends Component {
 	private Edge e;
-	private Complex inputCurrent = new Complex(1.0 ,0);
+	private double inputCurrent = 1.0;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
@@ -42,26 +42,26 @@ public class CurrentSource extends Component {
 		e.setSourceVoltage(sourceVoltage);
 
 		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
-		inputCurrentVector.fill(this.inputCurrent);
+		inputCurrentVector.fill(new Complex(this.inputCurrent, 0.0));
 		e.getInput().setInputCurrent(inputCurrentVector);
 		e.getOutput().setInputCurrent(Vector.Zeros(simulatedAngularFrequencies.size()));
 	}
 
 
-	public CurrentSource(Complex i) {
+	public CurrentSource(double i) {
 		inputCurrent = i;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
 
-	public Complex getInputCurrent() {
+	public double getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(Complex inputCurrent) {
+	public void setInputCurrent(double inputCurrent) {
 		this.inputCurrent = inputCurrent;
 		if (null != e) {
-			e.getInput().getInputCurrent().fill(inputCurrent);
+			e.getInput().getInputCurrent().fill(new Complex(inputCurrent, 0.0));
 		}
 	}
 
@@ -135,7 +135,7 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		setInputCurrent(new Complex(Double.valueOf(pairs[1].split(":")[1]), 0));
+		setInputCurrent(Double.valueOf(pairs[1].split(":")[1]));
 		
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
@@ -147,6 +147,10 @@ public class CurrentSource extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -219,13 +223,13 @@ public class CurrentSource extends Component {
 		if (str != null && str.length() > 0) {
 			try {
 				double val = Double.parseDouble(str);
-				setInputCurrent(new Complex(val, 0));
+				setInputCurrent(val);
 				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			getProperties().get("current").value = String.valueOf(getInputCurrent());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 	}
 
@@ -236,5 +240,16 @@ public class CurrentSource extends Component {
 			setProperty("current", e.getInput()::getTimeDomainInputCurrent);
 		}
 	}
-	
+
+    @Override
+    public CurrentSource clone() {
+        try {
+            CurrentSource clone = (CurrentSource) super.clone();
+			clone.e = this.e.clone();
+			clone.inputCurrent = this.inputCurrent;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

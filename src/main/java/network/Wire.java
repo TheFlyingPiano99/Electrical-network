@@ -125,6 +125,11 @@ public class Wire extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Wire [");
@@ -216,4 +221,14 @@ public class Wire extends Component {
 		setProperty("current", this::getTimeDomainCurrent);
 	}
 
+    @Override
+    public Wire clone() {
+        try {
+            Wire clone = (Wire) super.clone();
+            clone.e = this.e.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

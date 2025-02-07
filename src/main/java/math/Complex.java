@@ -21,7 +21,7 @@ package math;
  * @version		1.2
  *
  */
-public class Complex implements Comparable<Complex>
+public class Complex implements Comparable<Complex>, Cloneable
 {
     /**
      * Used in <code>format(int)</code> to format the complex number as x+yi
@@ -435,4 +435,15 @@ public class Complex implements Comparable<Complex>
         return out;
     }
 
+    @Override
+    public Complex clone() {
+        try {
+            Complex clone = (Complex) super.clone();
+            clone.real = this.real;
+            clone.imaginary = this.imaginary;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }
