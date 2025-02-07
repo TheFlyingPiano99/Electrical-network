@@ -25,8 +25,15 @@ public class AudioPlayer {
         }
     }
 
+    public static void setVolume(double v) {
+        synchronized (volumeMutexObj)
+        {
+            volume = v;
+        }
+    }
+
     public static void playVoltage(Component selectedComponent) {
-        if (selectedComponent == null) {
+        if (selectedComponent == null || 0 == volume) {
             return;
         }
         synchronized (threadCollectionManipulationMutexObj)
@@ -80,7 +87,11 @@ public class AudioPlayer {
                 fadeOutStartIdx = n;
             }
             selectedComponent.updateTimeDomainParameters(startingTime + n * timeStepSec * playBackSpeed, omegas);
-            double v = volume;
+            double v;
+            synchronized (volumeMutexObj)
+            {
+                v = volume;
+            }
             if (isFadeIn) {
                 v = (n + 1) / (double)dataPoints * volume;
             }

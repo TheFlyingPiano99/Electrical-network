@@ -5,28 +5,22 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Animation;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextField;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyEvent;
@@ -99,6 +93,9 @@ public class MainController {
 
     @FXML
     private Button btnStop;
+
+	@FXML
+	private Slider volumeSlider;
 
     @FXML
     private ListView<String> lvLeftListView;
@@ -291,6 +288,7 @@ public class MainController {
         assert btnStart != null : "fx:id=\"btnStart\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert btnPause != null : "fx:id=\"btnPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert volumeSlider != null : "fx:id=\"volumeSlider\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lvLeftListView != null : "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert circuitCanvas != null : "fx:id=\"circuitCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert scopeCanvas != null : "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
@@ -501,7 +499,20 @@ public class MainController {
     			//System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
     		}
         );
-        
+
+		volumeSlider.setMin(0);
+		volumeSlider.setMax(100);
+		volumeSlider.setBlockIncrement(1);
+		volumeSlider.valueProperty().addListener(
+			(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+				if (!Objects.equals(oldValue, newValue)) {
+					AudioPlayer.setVolume((double)newValue / 100.0);
+				}
+			}
+		);
+		volumeSlider.setValue(0);
+		AudioPlayer.setVolume(0);
+
 		// Timer
         
         Duration duration = Duration.millis(50);
