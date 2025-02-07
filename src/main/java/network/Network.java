@@ -726,8 +726,11 @@ public class Network {
 	 * @param component	The component to be removed.
 	 */
 	public void removeComponent (Component component) {
-		component.destroy();
-		components.remove(component);
+		synchronized (accessMutexObj)
+		{
+			component.destroy();
+			components.remove(component);
+		}
 	}
 	
 	//Move ComponentNode:--------------------------------------------------------------
@@ -739,10 +742,13 @@ public class Network {
  	 * @param cursorPos The position of the cursor;
 	 */
 	public void grabComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
-		if (!componentNodes.contains(componentNode)) {
-			throw new RuntimeException("Invalid node grabbed.");
+		synchronized (accessMutexObj)
+		{
+			if (!componentNodes.contains(componentNode)) {
+				throw new RuntimeException("Invalid node grabbed.");
+			}
+			componentNode.grab(cursorPos);
 		}
-		componentNode.grab(cursorPos);
 	}
 	
 	/**
@@ -752,10 +758,13 @@ public class Network {
  	 * @param cursorPos The new position of the cursor;
 	 */	
 	public void dragComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
-		if (!componentNodes.contains(componentNode)) {
-			throw new RuntimeException("Invalid node moved.");
+		synchronized (accessMutexObj)
+		{
+			if (!componentNodes.contains(componentNode)) {
+				throw new RuntimeException("Invalid node moved.");
+			}
+			componentNode.drag(cursorPos);
 		}
-		componentNode.drag(cursorPos);
 	}
 	
 	/**
@@ -764,10 +773,13 @@ public class Network {
 	 * @param componentNode The node to release.
 	 */
 	public void releaseComponentNode(ComponentNode componentNode) {
-		if (!componentNodes.contains(componentNode)) {
-			throw new RuntimeException("Invalid node released.");
+		synchronized (accessMutexObj)
+		{
+			if (!componentNodes.contains(componentNode)) {
+				throw new RuntimeException("Invalid node released.");
+			}
+			componentNode.release();
 		}
-		componentNode.release();
 	}
 
 	//---------------------------------------------------------------
@@ -830,7 +842,10 @@ public class Network {
 	}
 	
 	public boolean isSnapToGrid() {
-		return snapToGrid;
+		synchronized (accessMutexObj)
+		{
+			return snapToGrid;
+		}
 	}
 
 	public void setSnapToGrid(boolean snapToGrid) {
@@ -957,13 +972,15 @@ public class Network {
 	 * @return	ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
 	 */
 	public ComponentNode getNodeAtPos(Coordinate pos) {
-		for (ComponentNode iter : componentNodes) {
-			if (MyMath.magnitude(MyMath.subtract(iter.getPos(), pos)) < 10) {
-				return iter;
+		synchronized (accessMutexObj)
+		{
+			for (ComponentNode iter : componentNodes) {
+				if (MyMath.magnitude(MyMath.subtract(iter.getPos(), pos)) < 10) {
+					return iter;
+				}
 			}
+			return null;
 		}
-		
-		return null;
 	}
 	
 	/**
@@ -973,26 +990,27 @@ public class Network {
 	 * @return ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
 	 */
 	public Component getComponentAtPos(Coordinate cursorPos) {
-		
-		for (Component component : components) {
-			Vector inPos = MyMath.coordToVector(component.getInput().getPos());
-			Vector outPos = MyMath.coordToVector(component.getOutput().getPos());
-			Vector cursor = MyMath.coordToVector(cursorPos);
-			
-			Vector fromInToCursor = MyMath.subtract(cursor, inPos);
-			Vector fromOutToCursor = MyMath.subtract(cursor, outPos);
+		synchronized (accessMutexObj)
+		{
+			for (Component component : components) {
+				Vector inPos = MyMath.coordToVector(component.getInput().getPos());
+				Vector outPos = MyMath.coordToVector(component.getOutput().getPos());
+				Vector cursor = MyMath.coordToVector(cursorPos);
 
-			Vector fromInToOut = MyMath.subtract(outPos, inPos);			
-			
-			if (MyMath.dot(fromInToCursor, fromInToOut) > 0 && MyMath.dot(fromOutToCursor, fromInToOut) < 0) {
-				double distance = MyMath.magnitude(MyMath.reject(fromInToCursor, fromInToOut));
-				if (distance < closeProximity) {
-					return component;
+				Vector fromInToCursor = MyMath.subtract(cursor, inPos);
+				Vector fromOutToCursor = MyMath.subtract(cursor, outPos);
+
+				Vector fromInToOut = MyMath.subtract(outPos, inPos);
+
+				if (MyMath.dot(fromInToCursor, fromInToOut) > 0 && MyMath.dot(fromOutToCursor, fromInToOut) < 0) {
+					double distance = MyMath.magnitude(MyMath.reject(fromInToCursor, fromInToOut));
+					if (distance < closeProximity) {
+						return component;
+					}
 				}
 			}
-		}		
-		
-		return null;
+			return null;
+		}
 	}
 	
 	/**
@@ -1001,22 +1019,24 @@ public class Network {
 	 * @param fileName	The name of file, where the persistent information gets saved. 
 	 */
 	public void save(String fileName) {
-		try {
+		synchronized (accessMutexObj)
+		{
+			try {
 
-			StringBuilder builder = new StringBuilder();			
-			for (Component component : components) {
-				component.save(builder);
+				StringBuilder builder = new StringBuilder();
+				for (Component component : components) {
+					component.save(builder);
+				}
+
+				FileOutputStream output = new FileOutputStream(fileName);
+				OutputStreamWriter writer = new OutputStreamWriter(output);
+				writer.write(builder.toString());
+				writer.close();
+
+			} catch (Exception e) {
+				throw new RuntimeException("Save error!", e);
 			}
-			
-			FileOutputStream output = new FileOutputStream(fileName);
-			OutputStreamWriter writer = new OutputStreamWriter(output);
-			writer.write(builder.toString());
-			writer.close();
-		
-		} catch (Exception e) {
-			throw new RuntimeException("Save error!", e);
 		}
-	
 	}
 	
 	/**
@@ -1028,43 +1048,46 @@ public class Network {
 		try {
 			clear();			//Clear current state.
 
-			FileReader input = new FileReader(fileName);
-			
-			BufferedReader reader = new BufferedReader(input);
-			
-			Map<String, Class<?>> type = new HashMap<>();
-			type.put("VoltageSource", DCVoltageSource.class);
-			type.put("Wire", Wire.class);
-			type.put("Resistance", Resistance.class);
-			
-			String row;
-			while (null != (row = reader.readLine())) {
-				row = row.replaceAll(" ", "");
-				String pairs[] = row.split(";");
-				
-				if (pairs.length > 0) {
-					String t[] = pairs[0].split(":");
-					
-					Class c = Class.forName(t[1]);
-				
-					Component comp = (Component) c.getConstructor().newInstance();
-					
-					this.addComponent(comp);				
+			synchronized (accessMutexObj)
+			{
+				FileReader input = new FileReader(fileName);
 
-					comp.load(pairs);
-					comp.getInput().setMerge(true);
-					comp.getOutput().setMerge(true);
-					tryToMergeComponentNode(comp.getInput());
-					tryToMergeComponentNode(comp.getOutput());
+				BufferedReader reader = new BufferedReader(input);
+
+				Map<String, Class<?>> type = new HashMap<>();
+				type.put("VoltageSource", DCVoltageSource.class);
+				type.put("Wire", Wire.class);
+				type.put("Resistance", Resistance.class);
+
+				String row;
+				while (null != (row = reader.readLine())) {
+					row = row.replaceAll(" ", "");
+					String pairs[] = row.split(";");
+
+					if (pairs.length > 0) {
+						String t[] = pairs[0].split(":");
+
+						Class c = Class.forName(t[1]);
+
+						Component comp = (Component) c.getConstructor().newInstance();
+
+						this.addComponent(comp);
+
+						comp.load(pairs);
+						comp.getInput().setMerge(true);
+						comp.getOutput().setMerge(true);
+						tryToMergeComponentNode(comp.getInput());
+						tryToMergeComponentNode(comp.getOutput());
+					}
+
 				}
-				
+				reader.close();
 			}
-			reader.close();
-			
+
 		} catch (Exception e) {
 			throw new RuntimeException("Load error!", e);
 		}
-			
+
 	}
 	
 	/**
@@ -1072,13 +1095,15 @@ public class Network {
 	 * HUN: Kötörli a hálózat tartalmát. A hálózat mentetlen állása el fog veszni! 
 	 */
 	public void clear() {
-		components.clear();
-		componentNodes.clear();
-		edges.clear();
-		vertices.clear();
-		
-		vertices.add(new Vertex());
-		
+		synchronized (accessMutexObj)
+		{
+			components.clear();
+			componentNodes.clear();
+			edges.clear();
+			vertices.clear();
+
+			vertices.add(new Vertex());
+		}
 		evaluate();
 	}
 
@@ -1118,8 +1143,11 @@ public class Network {
 	 * HUN: Minden komponenst visszaállít a kiindulási állapotába.
 	 */
 	public void reset() {
-		for (Component component : components) {
-			component.reset();
+		synchronized (accessMutexObj)
+		{
+			for (Component component : components) {
+				component.reset();
+			}
 		}
 		evaluate();
 	}
@@ -1139,7 +1167,10 @@ public class Network {
 	 * @return The selected component. 
 	 */
 	public Component getSelected() {
-		return selected;
+		synchronized (accessMutexObj)
+		{
+			return selected;
+		}
 	}
 	
 	/**
@@ -1147,7 +1178,10 @@ public class Network {
 	 * HUN: Megszünteti egy komponens kiválasztását.
 	 */
 	public void cancelSelection() {
-		selected = null;
+		synchronized (accessMutexObj)
+		{
+			selected = null;
+		}
 	}
 	
 	/**
@@ -1156,7 +1190,10 @@ public class Network {
 	 * @return boolean
 	 */
 	public boolean isValid () {
-		return validNetwork;
+		synchronized (accessMutexObj)
+		{
+			return validNetwork;
+		}
 	}
 	
 }
