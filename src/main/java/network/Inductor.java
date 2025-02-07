@@ -17,9 +17,6 @@ import math.Vector;
 public class Inductor extends Component {
 	private Edge e;
 	private double inductance = 0.000001;
-	private List<Double> prevCurrents = new ArrayList<>();
-	private List<Double> prevDeltas = new ArrayList<>();
-	private double derivativeOfCurrent = 0;
 	private final float DEFAULT_SIZE = 60.0f;
 	private double wireResistance = 0.0;
 	
@@ -156,6 +153,10 @@ public class Inductor extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
 
 	public double getInductance() {
 		return inductance;
@@ -310,7 +311,7 @@ public class Inductor extends Component {
 			}
 			//System.out.println("Updated value:" + getInductance());
 			getProperties().get("inductance").value = String.valueOf(getInductance());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 	}
 
@@ -324,4 +325,16 @@ public class Inductor extends Component {
 		}		
 	}
 
+    @Override
+    public Inductor clone() {
+        try {
+            Inductor clone = (Inductor) super.clone();
+			clone.e = this.e.clone();
+			clone.inductance = this.inductance;
+			clone.wireResistance = this.wireResistance;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

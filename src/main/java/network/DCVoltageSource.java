@@ -156,6 +156,10 @@ public class DCVoltageSource extends network.Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -255,7 +259,7 @@ public class DCVoltageSource extends network.Component {
 			}
 			//System.out.println("Updated value:" + getSourceVoltage());
 			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 	}
 
@@ -270,5 +274,16 @@ public class DCVoltageSource extends network.Component {
 		setProperty("resistance", this::getTimeDomainResistance);
 	}
 
-	
+
+    @Override
+    public DCVoltageSource clone() {
+        try {
+            DCVoltageSource clone = (DCVoltageSource) super.clone();
+			clone.e = this.e.clone();
+			clone.sourceVoltage = this.sourceVoltage;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

@@ -21,7 +21,7 @@ public class SquareVoltageSource extends Component {
 	private double sourceVoltageAmplitude = 1.0;
 	private double sourceVoltageAngularFrequency = 2.0 * Math.PI;
 	private double sourceVoltagePhaseRad = 0.0;
-	private static int maxN = 2000;
+	private static final int maxN = 2000;
 
 	//Constructors:---------------------------------------------------------------------------------------
 
@@ -243,6 +243,10 @@ public class SquareVoltageSource extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -367,7 +371,7 @@ public class SquareVoltageSource extends Component {
 			}
 			//System.out.println("Updated value:" + getSourceVoltage());
 			getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 
 		str = getProperties().get("angularFrequency").value;
@@ -381,7 +385,7 @@ public class SquareVoltageSource extends Component {
 			}
 			//System.out.println("Updated value:" + getSourceVoltage());
 			getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 
 		str = getProperties().get("phase").value;
@@ -395,7 +399,7 @@ public class SquareVoltageSource extends Component {
 			}
 			//System.out.println("Updated value:" + getSourceVoltage());
 			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
-			getParent().simulate();
+			getParent().evaluate();
 		}
 	}
 
@@ -412,4 +416,17 @@ public class SquareVoltageSource extends Component {
 		setProperty("resistance", this::getTimeDomainResistance);
 	}
 
+	@Override
+	public SquareVoltageSource clone() {
+		try {
+			SquareVoltageSource clone = (SquareVoltageSource) super.clone();
+			clone.e =  this.e.clone();
+			clone.sourceVoltageAmplitude = this.sourceVoltageAmplitude;
+			clone.sourceVoltageAngularFrequency = this.sourceVoltageAngularFrequency;
+			clone.sourceVoltagePhaseRad = this.sourceVoltagePhaseRad;
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }

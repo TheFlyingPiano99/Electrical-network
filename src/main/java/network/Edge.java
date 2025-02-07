@@ -11,7 +11,7 @@ import java.util.ArrayList;
  *
  */
 
-public class Edge {
+public class Edge implements Cloneable {
 	public static int defaultPhasorSpaceResolution = 1024;
 
 	static int gen = 0;
@@ -155,4 +155,16 @@ public class Edge {
 	{
 		return (timeDomainSourceVoltage == 0.0f)? timeDomainVoltageDrop : -timeDomainSourceVoltage;
 	}
+
+    @Override
+    public Edge clone() {
+        try {
+            Edge clone = (Edge) super.clone();
+			clone.input = this.input.clone();
+			clone.output = this.output.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

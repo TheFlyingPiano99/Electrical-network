@@ -38,6 +38,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import math.Coordinate;
 import network.*;
@@ -54,6 +55,7 @@ public class MainController {
 	
 	boolean snapToGrid = true;
 	Boolean simulating = null;
+	boolean playAudio = true;
 
 	double totalTimeSec = 0;
 
@@ -189,7 +191,8 @@ public class MainController {
      */
     @FXML
     void miQuitAction(ActionEvent event) {
-    	Platform.exit();
+		AudioPlayer.closeStream();
+		Platform.exit();
     }
 
     /**
@@ -234,6 +237,7 @@ public class MainController {
         	leftStatus.setText("Szimuláció szüneteltetve.");    		
     	}
     	simulating = false;
+		AudioPlayer.closeStream();
     }
 
     /**
@@ -246,6 +250,7 @@ public class MainController {
     	simulating = null;
     	leftStatus.setText("Szimuláció leállítva.");
 		DrawingHelper.resetScope(scopeCanvas);
+		AudioPlayer.resetAudioPlayback();
 		totalTimeSec = 0;
 	}
 
@@ -427,7 +432,8 @@ public class MainController {
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
-					network.simulate();
+					network.evaluate();
+					AudioPlayer.closeStream();
     	        } else {
     	            event.setDropCompleted(false);
     	            //System.out.println("Failed!");
@@ -452,6 +458,7 @@ public class MainController {
                 				selectedComponent = network.getSelected();
                 				destroyPropertyView();
             					buildPropertyView(selectedComponent);
+								AudioPlayer.closeStream();
             				}
             				
     					}
@@ -480,11 +487,11 @@ public class MainController {
     			if (grabbedNode != null) {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
-					network.simulate();
+					network.evaluate();
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
-					network.simulate();
+					network.evaluate();
     			}
     		}
         );
@@ -515,12 +522,19 @@ public class MainController {
 						totalTimeSec += duration.toSeconds();
 					}
 					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
+
+					if (simulating != null && simulating && playAudio) {
+						AudioPlayer.playVoltage(selectedComponent);
+					}
 				} catch (Exception e) {
 					System.out.println("simulate error");
 					e.printStackTrace();
 				}
             }
         ));
+
+
+
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
         
@@ -552,6 +566,7 @@ public class MainController {
         				if (newValue != null  && !newValue.equals(oldValue)) {
         					prop.value = prop.valueN.getText().trim();
         					component.updatePropertyModel();
+							AudioPlayer.closeStream();
         				}
         			});
         		}
@@ -575,7 +590,7 @@ public class MainController {
     		it.next();
 			it.remove();
 		}
-    }    
+    }
     
     /**
      * Process keyboardPressed events.
@@ -591,7 +606,8 @@ public class MainController {
         			network.removeComponent(selectedComponent);
         			destroyPropertyView();
 					selectedComponent = null;
-					network.simulate();
+					network.evaluate();
+					AudioPlayer.closeStream();
     			}
     			break;
     		case ESCAPE:
@@ -599,6 +615,7 @@ public class MainController {
     				network.cancelSelection();
         			destroyPropertyView();
     				selectedComponent = null;
+					AudioPlayer.closeStream();
     			}
     			break;
     		case G:
@@ -614,6 +631,11 @@ public class MainController {
     		default:
     			break;
     	} 
-    }   
+    }
+
+	public void handleCloseRequest(WindowEvent event)
+	{
+		AudioPlayer.closeStream();
+	}
 
 }
