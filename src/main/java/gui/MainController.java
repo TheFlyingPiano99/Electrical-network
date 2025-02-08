@@ -45,12 +45,10 @@ public class MainController {
 	private Component     grabbedComponent = null;
 	private ComponentNode grabbedNode = null;
 	private Component selectedComponent = null;
-	private int idx = 0;
-	
+	AudioPlayer2 audioPlayer = new AudioPlayer2();
+
 	boolean snapToGrid = true;
 	Boolean simulating = null;
-	boolean playAudio = true;
-
 	double totalTimeSec = 0;
 
 //FXML items:-----------------------------------------------------------------	
@@ -188,7 +186,6 @@ public class MainController {
      */
     @FXML
     void miQuitAction(ActionEvent event) {
-		AudioPlayer.closeStream();
 		Platform.exit();
     }
 
@@ -222,6 +219,7 @@ public class MainController {
     void miStartAction(ActionEvent event) {
     	simulating = true;
     	leftStatus.setText("Szimuláció folyamatban.");
+		audioPlayer.startPlayback();
     }
 
     /**
@@ -234,7 +232,7 @@ public class MainController {
         	leftStatus.setText("Szimuláció szüneteltetve.");    		
     	}
     	simulating = false;
-		AudioPlayer.closeStream();
+		audioPlayer.pausePlayback();
     }
 
     /**
@@ -247,7 +245,7 @@ public class MainController {
     	simulating = null;
     	leftStatus.setText("Szimuláció leállítva.");
 		DrawingHelper.resetScope(scopeCanvas);
-		AudioPlayer.resetAudioPlayback();
+		audioPlayer.stopPlayback();
 		totalTimeSec = 0;
 	}
 
@@ -431,7 +429,7 @@ public class MainController {
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
 					network.evaluate();
-					AudioPlayer.closeStream();
+					audioPlayer.setSelectedComponent(selectedComponent);
     	        } else {
     	            event.setDropCompleted(false);
     	            //System.out.println("Failed!");
@@ -456,7 +454,7 @@ public class MainController {
                 				selectedComponent = network.getSelected();
                 				destroyPropertyView();
             					buildPropertyView(selectedComponent);
-								AudioPlayer.closeStream();
+								audioPlayer.setSelectedComponent(selectedComponent);
             				}
             				
     					}
@@ -486,10 +484,12 @@ public class MainController {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
 					network.evaluate();
+					audioPlayer.setSelectedComponent(selectedComponent);
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
 					network.evaluate();
+					audioPlayer.setSelectedComponent(selectedComponent);
     			}
     		}
         );
@@ -506,12 +506,12 @@ public class MainController {
 		volumeSlider.valueProperty().addListener(
 			(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 				if (!Objects.equals(oldValue, newValue)) {
-					AudioPlayer.setVolume((double)newValue / 100.0);
+					audioPlayer.setVolume((double)newValue / 100.0);
 				}
 			}
 		);
 		volumeSlider.setValue(0);
-		AudioPlayer.setVolume(0);
+		audioPlayer.setVolume(0);
 
 		// Timer
         
@@ -533,10 +533,6 @@ public class MainController {
 						totalTimeSec += duration.toSeconds();
 					}
 					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
-
-					if (simulating != null && simulating && playAudio) {
-						AudioPlayer.playVoltage(selectedComponent);
-					}
 				} catch (Exception e) {
 					System.out.println("simulate error");
 					e.printStackTrace();
@@ -550,6 +546,8 @@ public class MainController {
         timeline.play();
         
 		DrawingHelper.resetScope(scopeCanvas);
+
+		audioPlayer.initializeWorkThread();
     }
 
 
@@ -577,7 +575,7 @@ public class MainController {
         				if (newValue != null  && !newValue.equals(oldValue)) {
         					prop.value = prop.valueN.getText().trim();
         					component.updatePropertyModel();
-							AudioPlayer.closeStream();
+							audioPlayer.setSelectedComponent(component);
         				}
         			});
         		}
@@ -618,7 +616,7 @@ public class MainController {
         			destroyPropertyView();
 					selectedComponent = null;
 					network.evaluate();
-					AudioPlayer.closeStream();
+					audioPlayer.setSelectedComponent(null);
     			}
     			break;
     		case ESCAPE:
@@ -626,7 +624,7 @@ public class MainController {
     				network.cancelSelection();
         			destroyPropertyView();
     				selectedComponent = null;
-					AudioPlayer.closeStream();
+					audioPlayer.setSelectedComponent(null);
     			}
     			break;
     		case G:
@@ -646,7 +644,7 @@ public class MainController {
 
 	public void handleCloseRequest(WindowEvent event)
 	{
-		AudioPlayer.closeStream();
+		audioPlayer.joinWorkThread();
 	}
 
 }

@@ -17,6 +17,7 @@ import math.*;
 public abstract class Component implements Cloneable {
 		
 	private Network parent;
+	protected int maxFourierTerm = 1000;
 	
 	public double getCurrentVisualisationOffset() {
 		return currentVisualisationOffset;
@@ -123,6 +124,11 @@ public abstract class Component implements Cloneable {
 	
 	public void setProperties(Map<String, ComponentProperty> properties) {
 		this.properties = properties;
+	}
+
+	public void setMaxFourierTerm(int n)
+	{
+		maxFourierTerm = n;
 	}
 
 	//Default generators:----------------------------------------------------------
