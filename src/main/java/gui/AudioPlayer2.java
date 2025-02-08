@@ -11,13 +11,12 @@ import java.util.concurrent.*;
 public class AudioPlayer2 {
     private Thread workThread = null;
     private ConcurrentLinkedQueue<AudioCommand> commandQueue = new ConcurrentLinkedQueue<>();
-    SourceDataLine dataLine;
     private double volume = 1.0;
     private Component selectedComponent = null;
     private ArrayList<Double> simulatedAngularFrequencies = null;
+    private double periodTimeSec = 1;
     private boolean isPlaying = false;
-    Object dataLineMutexObj = new Object();
-    ConcurrentLinkedQueue<byte[]> bufferQueue = new ConcurrentLinkedQueue<>();
+    private boolean generateSamples = true;
 
     abstract class AudioCommand
     {
@@ -42,8 +41,15 @@ public class AudioPlayer2 {
                 // "Low pass" filter:
                 int n = Math.min(originalN, 50);
                 omegas = new ArrayList<>(n);
+                periodTimeSec = -1;
                 for (Double omega : c.getParent().getSimulatedAngularFrequencies()) {
                     omegas.add(omega);
+                    if (periodTimeSec == -1 && omega != 0.0) {
+                        periodTimeSec = 2 * Math.PI / omega;
+                    }
+                }
+                if (periodTimeSec == -1) {
+                    periodTimeSec = 0.1;
                 }
             } catch (CloneNotSupportedException ex) {
                 throw new RuntimeException(ex);
@@ -55,12 +61,7 @@ public class AudioPlayer2 {
         {
             selectedComponent = newComp;
             simulatedAngularFrequencies = omegas;
-            synchronized (dataLineMutexObj)
-            {
-                dataLine.flush();
-                bufferQueue.clear();
-                bufferQueue.clear();
-            }
+            generateSamples = true;
         }
     }
 
@@ -81,6 +82,7 @@ public class AudioPlayer2 {
         public void execute()
         {
             volume = newVolume;
+            generateSamples = true;
         }
     }
 
@@ -94,12 +96,6 @@ public class AudioPlayer2 {
         public void execute()
         {
             isPlaying = true;
-            synchronized (dataLineMutexObj)
-            {
-                dataLine.flush();
-                dataLine.start();
-                bufferQueue.clear();
-            }
         }
     }
 
@@ -114,12 +110,6 @@ public class AudioPlayer2 {
         public void execute()
         {
             isPlaying = false;
-            synchronized (dataLineMutexObj)
-            {
-                dataLine.flush();
-                dataLine.stop();
-                bufferQueue.clear();
-            }
         }
     }
 
@@ -134,12 +124,6 @@ public class AudioPlayer2 {
         public void execute()
         {
             isPlaying = false;
-            synchronized (dataLineMutexObj)
-            {
-                dataLine.flush();
-                dataLine.stop();
-                bufferQueue.clear();
-            }
         }
     }
 
@@ -167,7 +151,6 @@ public class AudioPlayer2 {
         int sampleRateHz = 44100;
         int shortByteSize = 2;
         double timeStepSec = 1.0 / sampleRateHz;
-        int dataPointsPerBuffer = 2048 / shortByteSize;
         double playBackSpeed = 1.0;
 
         // Build audio buffer:
@@ -186,87 +169,55 @@ public class AudioPlayer2 {
                 true                              // Big-endian (true for big-endian, false for little-endian)
         );
 
+        SourceDataLine dataLine;
         try {
             dataLine = AudioSystem.getSourceDataLine(format);
             dataLine.open();
+            dataLine.start();
         } catch (LineUnavailableException e) {
             throw new RuntimeException(e);
         }
 
-        Object lockObj = new Object();
-        Thread dataExporterThread = new Thread(
-                () -> {
-                    while(true) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-                        else if (!bufferQueue.isEmpty()) {
-                            byte[] buffer = bufferQueue.poll();
-                            if (null != buffer) {
-                                synchronized (dataLineMutexObj)
-                                {
-                                    dataLine.write(buffer, 0, dataPointsPerBuffer * shortByteSize);
-                                }
-                            }
-                        }
-                        else {
-                            synchronized (lockObj)
-                            {
-                                try {
-                                    lockObj.wait();
-                                } catch (InterruptedException e) {
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-        );
-        dataExporterThread.start();
-
-        double timeSec = 0;
+        ByteBuffer buffer = null;
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
-            ByteBuffer buffer = ByteBuffer.allocate(dataPointsPerBuffer * shortByteSize);
-            for (int n = 0; n < dataPointsPerBuffer; n++) {
-                while (!commandQueue.isEmpty()) {
-                    AudioCommand command = commandQueue.poll();
-                    if (null != command) {
-                        command.execute();
+            while (!commandQueue.isEmpty()) {
+                AudioCommand command = commandQueue.poll();
+                if (null != command) {
+                    command.execute();
+                }
+            }
+            if (isPlaying) {
+                if (generateSamples) {
+                    generateSamples = false;
+                    int dataPointsPerBuffer = (int)(periodTimeSec * sampleRateHz);
+                    System.out.println("sample / buffer = " + dataPointsPerBuffer);
+                    buffer = ByteBuffer.allocate(dataPointsPerBuffer * shortByteSize);
+                    dataLine.flush();
+                    buffer.clear();
+                    double timeSec = 0;
+                    for (int n = 0; n < dataPointsPerBuffer; n++) {
+                        if (isPlaying && null != selectedComponent && null != simulatedAngularFrequencies) {
+                            selectedComponent.updateTimeDomainParameters(timeSec, simulatedAngularFrequencies);
+                            double sample = Math.max(Math.min(volume * selectedComponent.getTimeDomainVoltageDrop(), 1.0), -1.0);
+                            double remappedSample = (sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget;
+                            buffer.putShort((short)remappedSample);
+                            timeSec += timeStepSec * playBackSpeed;
+                        }
+                        else {
+                            buffer.putShort((short) 0);
+                        }
                     }
                 }
-                if (isPlaying && null != selectedComponent && null != simulatedAngularFrequencies) {
-                    selectedComponent.updateTimeDomainParameters(timeSec, simulatedAngularFrequencies);
-                    double sample = Math.max(Math.min(volume * selectedComponent.getTimeDomainVoltageDrop(), 1.0), -1.0);
-                    double remappedSample = (sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget;
-                    buffer.putShort((short)remappedSample);
-                    timeSec += timeStepSec * playBackSpeed;
-                }
-                else {
-                    buffer.putShort((short) 0);
-                }
-            }
-
-            bufferQueue.add(buffer.array());
-            if (bufferQueue.size() > 2) {
-                synchronized (lockObj)
-                {
-                    lockObj.notify();
-                }
+                System.out.println("Writing buffer");
+                dataLine.write(buffer.array(), 0, buffer.array().length);
             }
         }
 
-        dataExporterThread.interrupt();
-        try {
-            dataExporterThread.join();
-        } catch (InterruptedException e) {
-            //
-        } finally {
-            dataLine.flush();
-            dataLine.close();
-        }
+        dataLine.flush();
+        dataLine.close();
     }
 
 
