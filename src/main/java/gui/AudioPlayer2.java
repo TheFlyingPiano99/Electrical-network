@@ -5,21 +5,30 @@ import network.Component;
 import javax.sound.sampled.*;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.LinkedList;
 import java.util.concurrent.*;
 
 public class AudioPlayer2 {
     private Thread workThread = null;
     private ConcurrentLinkedQueue<AudioCommand> commandQueue = new ConcurrentLinkedQueue<>();
-    private double volume = 1.0;
+    private double masterVolume = 1.0;
     private Component selectedComponent = null;
     private ArrayList<Double> simulatedAngularFrequencies = null;
     private double periodTimeSec = 1;
     private boolean isPlaying = false;
     private boolean generateSamples = true;
-    private final double longestAudiblePeriodTimeSec = 1 / 31.0;
-    private final double shortestAudiblePeriodTimeSec = 1 / 15000.0;
+    private final double lowestAudibleFrequencyHz = 31.0;
+    private final double highestAudibleFrequencyHz = 19000.0;
+    private boolean fadeIn = false;
+    private boolean fadeOut = false;
+    private PlaybackMode mode = PlaybackMode.CURRENT;
 
+    enum PlaybackMode {
+        VOLTAGE_DROP,
+        CURRENT,
+        INPUT_POTENTIAL,
+        OUTPUT_POTENTIAL
+    }
 
     abstract class AudioCommand
     {
@@ -43,17 +52,22 @@ public class AudioPlayer2 {
                 newComp = c.clone();
                 int originalN = c.getParent().getSimulatedAngularFrequencies().size();
                 // "Low pass" filter:
-                int n = Math.min(originalN, 50);
+                int n = Math.min(originalN, 100);
                 omegas = new ArrayList<>(n);
                 newPeriodTimeSec = -1;
                 for (Double omega : c.getParent().getSimulatedAngularFrequencies()) {
                     omegas.add(omega);
-                    if (newPeriodTimeSec == -1 && omega != 0.0) {
+                    if (newPeriodTimeSec == -1 && omega > 0.0) {
                         newPeriodTimeSec = 2 * Math.PI / omega;
                     }
+                    if (omegas.size() == n){
+                        break;
+                    }
                 }
-                if (newPeriodTimeSec == -1) {
-                    newPeriodTimeSec = 0.1;
+                if (-1 == newPeriodTimeSec) {
+                    newComp = null;
+                    omegas = null;
+                    newPeriodTimeSec = 1 / highestAudibleFrequencyHz;
                 }
             } catch (CloneNotSupportedException ex) {
                 throw new RuntimeException(ex);
@@ -86,12 +100,11 @@ public class AudioPlayer2 {
         @Override
         public void execute()
         {
-            volume = newVolume;
-            generateSamples = true;
+            masterVolume = newVolume;
         }
     }
 
-    public void setVolume(double v) {
+    public void setMasterVolume(double v) {
         commandQueue.add(new SetVolumeCommand(v));
     }
 
@@ -101,6 +114,8 @@ public class AudioPlayer2 {
         public void execute()
         {
             isPlaying = true;
+            fadeIn = true;
+            fadeOut = false;
         }
     }
 
@@ -114,7 +129,8 @@ public class AudioPlayer2 {
         @Override
         public void execute()
         {
-            isPlaying = false;
+            fadeIn = false;
+            fadeOut = true;
         }
     }
 
@@ -128,7 +144,8 @@ public class AudioPlayer2 {
         @Override
         public void execute()
         {
-            isPlaying = false;
+            fadeIn = false;
+            fadeOut = true;
         }
     }
 
@@ -152,13 +169,30 @@ public class AudioPlayer2 {
         workThread.start();
     }
 
+    private double filterSample(double sample, LinkedList<Double> previousSamples){
+        double sum = 0;
+        for (Double prev : previousSamples) {
+            sum += prev;
+        }
+        sum += sample;
+        sample = sum / (previousSamples.size() + 1);
+        previousSamples.push(sample);
+        if (previousSamples.size() > 50) {
+            previousSamples.poll();
+        }
+        return sample;
+    }
+
     public void playbackLoop() {
         int sampleRateHz = 44100;
         double timeStepSec = 1.0 / sampleRateHz;
         int shortByteSize = 2;
         double playBackSpeed = 1.0;
-        int bufferSampleCount = 512;
+        int bufferSampleCount = 1024;
         int bufferSize = bufferSampleCount * shortByteSize;
+        double currentVolume = 0.0;
+        double fadeSpeed = 1.0;
+        LinkedList<Double> previousSamples = new LinkedList<>();
 
         // Build audio buffer:
         AudioFormat format = new AudioFormat(
@@ -180,10 +214,14 @@ public class AudioPlayer2 {
             throw new RuntimeException(e);
         }
 
-        ByteBuffer buffer = null;
-        int bufferOffset = 0;
+        int bufferSampleOffset = 0;
+        int bufferByteOffset = 0;
+        int samplesToReconstructPeriod = bufferSize;
+        ArrayList<Double> sampleBuffer = null;
+        ByteBuffer masteredBuffer = ByteBuffer.allocate(2 * bufferSize);
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
+                Thread.currentThread().interrupt();
                 break;
             }
             while (!commandQueue.isEmpty()) {
@@ -192,50 +230,103 @@ public class AudioPlayer2 {
                     command.execute();
                 }
             }
-            if (isPlaying) {
-                if (
-                    generateSamples
-                    && periodTimeSec < longestAudiblePeriodTimeSec
-                    && periodTimeSec > shortestAudiblePeriodTimeSec
-                ) {
-                    generateSamples = false;
-                    bufferOffset = 0;
-                    if (null != selectedComponent) {
-                        int samplesToReconstructPeriod = (int)(periodTimeSec * sampleRateHz);
-                        int precalculatedSampleCount = samplesToReconstructPeriod +
-                                bufferSampleCount - samplesToReconstructPeriod % bufferSampleCount;
-                        System.out.println("samples presampled = " + precalculatedSampleCount + "period time: " + periodTimeSec);
-                        buffer = ByteBuffer.allocate(precalculatedSampleCount * shortByteSize);
 
-                        double minOriginal = -1.0;
-                        double maxOriginal = 1.0;
-                        short minTarget = Short.MIN_VALUE;
-                        short maxTarget = Short.MAX_VALUE;
+            if (generateSamples) {
+                generateSamples = false;
+                if (null != selectedComponent) {
+                    bufferSampleOffset = 0;
+                    bufferByteOffset = 0;
+                    samplesToReconstructPeriod = (int)(periodTimeSec * sampleRateHz);
+                    int precalculatedSampleCount = samplesToReconstructPeriod + bufferSampleCount;
+                    System.out.println("samples presampled = " + precalculatedSampleCount + "period time: " + periodTimeSec);
+                    sampleBuffer = new ArrayList<>(precalculatedSampleCount);
+                    masteredBuffer = ByteBuffer.allocate(precalculatedSampleCount * shortByteSize);
 
-                        double timeSec = 0;
-                        for (int n = 0; n < precalculatedSampleCount; n++) {
-                            if (null != selectedComponent && null != simulatedAngularFrequencies) {
-                                selectedComponent.updateTimeDomainParameters(timeSec, simulatedAngularFrequencies);
-                                double sample = Math.max(Math.min(volume * selectedComponent.getTimeDomainVoltageDrop(), 1.0), -1.0);
-                                double remappedSample = (sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget;
-                                buffer.putShort((short)remappedSample);
-                                timeSec += timeStepSec * playBackSpeed;
+                    double timeSec = 0;
+                    for (int n = 0; n < precalculatedSampleCount; n++) {
+                        if (null != selectedComponent && null != simulatedAngularFrequencies) {
+                            selectedComponent.updateTimeDomainParameters(timeSec, simulatedAngularFrequencies);
+                            switch (mode) {
+                                case PlaybackMode.VOLTAGE_DROP: {
+                                    sampleBuffer.add(selectedComponent.getTimeDomainVoltageDrop());
+                                    break;
+                                }
+                                case PlaybackMode.CURRENT: {
+                                    sampleBuffer.add(selectedComponent.getTimeDomainCurrent());
+                                    break;
+                                }
+                                case PlaybackMode.INPUT_POTENTIAL: {
+                                    break;
+                                }
+                                case PlaybackMode.OUTPUT_POTENTIAL: {
+                                    break;
+                                }
                             }
-                            else {
-                                buffer.putShort((short) 0);
-                            }
+                            timeSec += timeStepSec * playBackSpeed;
+                        }
+                        else {
+                            sampleBuffer.add(0.0);
                         }
                     }
-                    else {
-                        buffer = null;
-                    }
-                    dataLine.flush();
                 }
-                if (null != buffer) {
-                    dataLine.write(buffer.array(), bufferOffset, bufferSize);
-                    bufferOffset = (bufferOffset + bufferSize) % buffer.array().length;
+                else {
+                    sampleBuffer = null;
                 }
             }
+
+            double minOriginal = -1.0;
+            double maxOriginal = 1.0;
+            short minTarget = Short.MIN_VALUE;
+            short maxTarget = Short.MAX_VALUE;
+            if (sampleBuffer != null) {
+                for (int i = 0; i < bufferSampleCount; i++) {
+                    double sample = sampleBuffer.get(bufferSampleOffset + i);
+                    if (fadeIn) {
+                        fadeOut = false;
+                        isPlaying = true;
+                        currentVolume += timeStepSec * fadeSpeed;
+                        if (currentVolume > 1) {
+                            currentVolume = 1;
+                            fadeIn = false;
+                        }
+                    }
+                    else if (fadeOut) {
+                        fadeIn = false;
+                        currentVolume -= timeStepSec * fadeSpeed;
+                        if (currentVolume < 0) {
+                            currentVolume = 0;
+                            fadeOut = false;
+                            isPlaying = false;
+                        }
+                    }
+                    else if (isPlaying) {
+                        currentVolume = 1;
+                    }
+                    else {
+                        currentVolume = 0;
+                    }
+                    sample = Math.max(Math.min(Math.pow(masterVolume * currentVolume, 3) * sample, 1.0), -1.0); // Clip peaks
+                    sample = filterSample(sample, previousSamples);
+                    short remappedSample = (short)((sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
+                    masteredBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
+                }
+            }
+            else {
+                for (int i = 0; i < bufferSampleCount; i++) {
+                    double sample = filterSample(0, previousSamples);
+                    short remappedSample = (short)((sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
+                    masteredBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            dataLine.write(masteredBuffer.array(), bufferByteOffset, bufferSize);
+            bufferSampleOffset = (bufferSampleOffset + bufferSampleCount) % samplesToReconstructPeriod;
+            bufferByteOffset = (bufferByteOffset + bufferSize) % (samplesToReconstructPeriod * shortByteSize);
         }
 
         dataLine.flush();
@@ -245,6 +336,7 @@ public class AudioPlayer2 {
 
     public void joinWorkThread() {
         if (null != workThread && workThread.isAlive()) {
+            commandQueue.clear();
             workThread.interrupt();
             try {
                 workThread.join();
@@ -252,6 +344,5 @@ public class AudioPlayer2 {
                 throw new RuntimeException(e);
             }
         }
-        commandQueue.clear();
     }
 }
