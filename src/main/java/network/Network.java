@@ -243,11 +243,13 @@ public class Network {
 					linSystem = new LinearSystemForCurrent(incidence, cycle, impedance, sourceVoltage, inputCurrent);
 
 				} catch (RuntimeException e) {
+					validNetwork = false;
+					return;
 				}
 
 				//Calculate-current:
-
 				Vector current = CalculateCurrent();
+
 				if (current != null) {
 					validNetwork = true;
 					for (int i = 0; i < edges.size(); i++) {

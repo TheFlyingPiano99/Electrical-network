@@ -45,7 +45,7 @@ public class MainController {
 	private Component     grabbedComponent = null;
 	private ComponentNode grabbedNode = null;
 	private Component selectedComponent = null;
-	AudioPlayer2 audioPlayer = new AudioPlayer2();
+	AudioPlayer audioPlayer = new AudioPlayer();
 
 	boolean snapToGrid = true;
 	Boolean simulating = null;
@@ -517,19 +517,19 @@ public class MainController {
 
 		btnAudioMode.setOnAction(
 			(event) -> {
-				AudioPlayer2.PlaybackMode newMode = audioPlayer.toogleMode();
+				AudioPlayer.PlaybackMode newMode = audioPlayer.toogleMode();
 				String text = "";
 				switch (newMode) {
-					case AudioPlayer2.PlaybackMode.CURRENT -> text = "    Áram    ";
-					case AudioPlayer2.PlaybackMode.VOLTAGE_DROP -> text = " Feszültség ";
-					case AudioPlayer2.PlaybackMode.INPUT_POTENTIAL -> text = "Potenciál (be)";
-					case AudioPlayer2.PlaybackMode.OUTPUT_POTENTIAL -> text = "Potenciál (ki)";
+					case AudioPlayer.PlaybackMode.CURRENT -> text = "    Áram    ";
+					case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = " Feszültség ";
+					case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = "Potenciál (be)";
+					case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = "Potenciál (ki)";
 				}
 				btnAudioMode.setText(text);
 			}
 		);
 		btnAudioMode.setText(" Feszültség ");
-		audioPlayer.setPlaybackMode(AudioPlayer2.PlaybackMode.VOLTAGE_DROP);
+		audioPlayer.setPlaybackMode(AudioPlayer.PlaybackMode.VOLTAGE_DROP);
 
 		// Timer
         
@@ -663,6 +663,7 @@ public class MainController {
 	public void handleCloseRequest(WindowEvent event)
 	{
 		audioPlayer.joinWorkThread();
+		System.out.println("Exiting");
 	}
 
 }
