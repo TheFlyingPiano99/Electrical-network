@@ -244,18 +244,21 @@ public class Capacitor extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("capacity").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setCapacity(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("capacity").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setCapacity(val);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//System.out.println("Updated value:" + getCapacity());
+				getProperties().get("capacity").value = String.valueOf(getCapacity());
+				getParent().evaluate();
 			}
-			//System.out.println("Updated value:" + getCapacity());
-			getProperties().get("capacity").value = String.valueOf(getCapacity());
-			getParent().evaluate();
 		}
 	}
 

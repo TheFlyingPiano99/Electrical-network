@@ -300,18 +300,21 @@ public class Inductor extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("inductance").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setInductance(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("inductance").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setInductance(val);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//System.out.println("Updated value:" + getInductance());
+				getProperties().get("inductance").value = String.valueOf(getInductance());
+				getParent().evaluate();
 			}
-			//System.out.println("Updated value:" + getInductance());
-			getProperties().get("inductance").value = String.valueOf(getInductance());
-			getParent().evaluate();
 		}
 	}
 

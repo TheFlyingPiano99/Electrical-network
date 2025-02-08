@@ -228,19 +228,21 @@ public class Resistance extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("resistance").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setResistance(val);
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("resistance").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setResistance(val);
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
+				getParent().evaluate();
 			}
-			getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
-			getParent().evaluate();
 		}
-
 	}
 
 	@Override
