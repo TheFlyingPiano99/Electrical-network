@@ -454,9 +454,8 @@ public class MainController {
                 				selectedComponent = network.getSelected();
                 				destroyPropertyView();
             					buildPropertyView(selectedComponent);
-								audioPlayer.setSelectedComponent(selectedComponent);
             				}
-            				
+							audioPlayer.setSelectedComponent(selectedComponent);
     					}
     				}
     			}
@@ -484,7 +483,6 @@ public class MainController {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
 					network.evaluate();
-					audioPlayer.setSelectedComponent(selectedComponent);
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
