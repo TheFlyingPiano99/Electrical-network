@@ -154,11 +154,39 @@ public class AudioPlayer2 {
         commandQueue.add(new PausePlaybackCommand());
     }
 
-    private static class MyLineListener implements LineListener {
-        @Override
-        public void update(LineEvent event) {
-            // TODO
+    class SetPlaybackMode extends AudioCommand
+    {
+        private PlaybackMode newMode;
+
+        public SetPlaybackMode(PlaybackMode m)
+        {
+            newMode = m;
         }
+
+        @Override
+        public void execute() {
+            mode = newMode;
+            generateSamples = true;
+        }
+    }
+
+    public PlaybackMode toogleMode()
+    {
+        PlaybackMode newMode = mode;
+        switch (mode)
+        {
+            case PlaybackMode.CURRENT -> newMode = PlaybackMode.VOLTAGE_DROP;
+            case PlaybackMode.VOLTAGE_DROP -> newMode = PlaybackMode.CURRENT;
+            //case PlaybackMode.INPUT_POTENTIAL -> newMode = PlaybackMode.OUTPUT_POTENTIAL;
+            //case PlaybackMode.OUTPUT_POTENTIAL -> newMode = PlaybackMode.CURRENT;
+        }
+        commandQueue.add(new SetPlaybackMode(newMode));
+        return newMode;
+    }
+
+    public void setPlaybackMode(PlaybackMode m)
+    {
+        commandQueue.add(new SetPlaybackMode(m));
     }
 
     public void initializeWorkThread()
@@ -278,7 +306,7 @@ public class AudioPlayer2 {
             double maxOriginal = 1.0;
             short minTarget = Short.MIN_VALUE;
             short maxTarget = Short.MAX_VALUE;
-            if (sampleBuffer != null) {
+            if (sampleBuffer != null && sampleBuffer.size() >= bufferSampleCount) {
                 for (int i = 0; i < bufferSampleCount; i++) {
                     double sample = sampleBuffer.get(bufferSampleOffset + i);
                     if (fadeIn) {

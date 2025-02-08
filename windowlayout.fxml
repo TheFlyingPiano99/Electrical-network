@@ -55,6 +55,7 @@
             <Button fx:id="btnStop" mnemonicParsing="false" onAction="#btnStopAction" text="Leállít" />
             <Label text="Hangerő:" />
             <Slider fx:id="volumeSlider" />
+            <Button fx:id="btnAudioMode" mnemonicParsing="false" text="Potenciál" />
         </items>
       </ToolBar>
     <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" minHeight="0.0" minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
