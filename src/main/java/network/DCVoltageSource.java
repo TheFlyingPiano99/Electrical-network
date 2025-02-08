@@ -248,18 +248,21 @@ public class DCVoltageSource extends network.Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("voltage").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setSourceVoltage(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("voltage").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setSourceVoltage(val);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//System.out.println("Updated value:" + getSourceVoltage());
+				getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
+				getParent().evaluate();
 			}
-			//System.out.println("Updated value:" + getSourceVoltage());
-			getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
-			getParent().evaluate();
 		}
 	}
 

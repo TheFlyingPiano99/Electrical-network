@@ -58,7 +58,12 @@ public class Network {
 	private int gridSize = 30;
 	private final Object accessMutexObj = new Object();
 	//--------------------------------------------------
-	
+
+	public Object getMutexObj()
+	{
+		return accessMutexObj;
+	}
+
 	/**
 	 * Distance of merging and grabbing.
 	 * HUN: Az összeolvasztás és megfogás távolsága.

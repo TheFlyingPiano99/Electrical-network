@@ -219,17 +219,20 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("current").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setInputCurrent(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("current").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setInputCurrent(val);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				getProperties().get("current").value = String.valueOf(getInputCurrent());
+				getParent().evaluate();
 			}
-			getProperties().get("current").value = String.valueOf(getInputCurrent());
-			getParent().evaluate();
 		}
 	}
 

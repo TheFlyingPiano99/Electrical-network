@@ -365,46 +365,49 @@ public class TriangleVoltageSource extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("amplitude").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setSourceVoltageAmplitude(val);
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("amplitude").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setSourceVoltageAmplitude(val);
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//System.out.println("Updated value:" + getSourceVoltage());
+				getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
+				getParent().evaluate();
 			}
-			//System.out.println("Updated value:" + getSourceVoltage());
-			getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
-			getParent().evaluate();
-		}
 
-		str = getProperties().get("angularFrequency").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setSourceVoltageAngularFrequency(val);
+			str = getProperties().get("angularFrequency").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setSourceVoltageAngularFrequency(val);
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//System.out.println("Updated value:" + getSourceVoltage());
+				getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
+				getParent().evaluate();
 			}
-			//System.out.println("Updated value:" + getSourceVoltage());
-			getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
-			getParent().evaluate();
-		}
 
-		str = getProperties().get("phase").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setSourceVoltagePhaseRad(val);
+			str = getProperties().get("phase").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setSourceVoltagePhaseRad(val);
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				//System.out.println("Updated value:" + getSourceVoltage());
+				getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
+				getParent().evaluate();
 			}
-			//System.out.println("Updated value:" + getSourceVoltage());
-			getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
-			getParent().evaluate();
 		}
 	}
 
