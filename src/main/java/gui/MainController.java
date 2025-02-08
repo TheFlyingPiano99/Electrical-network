@@ -504,12 +504,12 @@ public class MainController {
 		volumeSlider.valueProperty().addListener(
 			(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
 				if (!Objects.equals(oldValue, newValue)) {
-					audioPlayer.setVolume((double)newValue / 100.0);
+					audioPlayer.setMasterVolume((double)newValue / 100.0);
 				}
 			}
 		);
 		volumeSlider.setValue(0);
-		audioPlayer.setVolume(0);
+		audioPlayer.setMasterVolume(0);
 
 		// Timer
         
