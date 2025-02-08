@@ -80,9 +80,9 @@ public class SinusoidalVoltageSource extends Component {
 		getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency);
 		this.sourceVoltageAngularFrequency = omega;
 		if (e != null) {
-			Vector source = new Vector(e.getImpedance().dimension);
-			source.fill(new Complex(0, 0));
 			int frequencyIdx = getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency);
+			math.Vector source =  Vector.Zeros(getParent().getSimulatedAngularFrequencies().size());
+			source.fill(new Complex(0, 0));
 			source.setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
 			e.setSourceVoltage(source);
 		}
