@@ -95,6 +95,9 @@ public class MainController {
 	@FXML
 	private Slider volumeSlider;
 
+	@FXML
+	private Button btnAudioMode;
+
     @FXML
     private ListView<String> lvLeftListView;
 
@@ -287,6 +290,7 @@ public class MainController {
         assert btnPause != null : "fx:id=\"btnPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert volumeSlider != null : "fx:id=\"volumeSlider\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnAudioMode != null : "fx:id=\"btnAudioMode\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lvLeftListView != null : "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert circuitCanvas != null : "fx:id=\"circuitCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert scopeCanvas != null : "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
@@ -508,8 +512,24 @@ public class MainController {
 				}
 			}
 		);
-		volumeSlider.setValue(0);
-		audioPlayer.setMasterVolume(0);
+		volumeSlider.setValue(100);
+		audioPlayer.setMasterVolume(1);
+
+		btnAudioMode.setOnAction(
+			(event) -> {
+				AudioPlayer2.PlaybackMode newMode = audioPlayer.toogleMode();
+				String text = "";
+				switch (newMode) {
+					case AudioPlayer2.PlaybackMode.CURRENT -> text = "    Áram    ";
+					case AudioPlayer2.PlaybackMode.VOLTAGE_DROP -> text = " Feszültség ";
+					case AudioPlayer2.PlaybackMode.INPUT_POTENTIAL -> text = "Potenciál (be)";
+					case AudioPlayer2.PlaybackMode.OUTPUT_POTENTIAL -> text = "Potenciál (ki)";
+				}
+				btnAudioMode.setText(text);
+			}
+		);
+		btnAudioMode.setText(" Feszültség ");
+		audioPlayer.setPlaybackMode(AudioPlayer2.PlaybackMode.VOLTAGE_DROP);
 
 		// Timer
         
