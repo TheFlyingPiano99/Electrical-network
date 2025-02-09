@@ -247,20 +247,25 @@ public class Network {
 					return;
 				}
 
-				//Calculate-current:
-				Vector current = CalculateCurrent();
-
-				if (current != null) {
-					validNetwork = true;
-					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).getCurrent().setAt(k, current.at(i));
+				try {
+					//Calculate-current:
+					Vector current = CalculateCurrent();
+					if (current != null) {
+						validNetwork = true;
+						for (int i = 0; i < edges.size(); i++) {
+							edges.get(i).getCurrent().setAt(k, current.at(i));
+						}
+					}
+					else {
+						validNetwork = false;
+						for (int i = 0; i < edges.size(); i++) {
+							edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
+						}
 					}
 				}
-				else {
+				catch (RuntimeException e)
+				{
 					validNetwork = false;
-					for (int i = 0; i < edges.size(); i++) {
-						edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
-					}
 				}
 			}
 		}
