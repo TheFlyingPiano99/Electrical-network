@@ -462,7 +462,6 @@ public class MainController {
                 				destroyPropertyView();
             					buildPropertyView(selectedComponent);
             				}
-							audioPlayer.setSelectedComponent(selectedComponent);
     					}
     				}
     			}
@@ -539,7 +538,7 @@ public class MainController {
             duration,
             ae -> {
 				synchronized (network.getMutexObj()) {
-					network.evaluate();
+					network.evaluate(false);
 					if (network.isValid()) {
 						rightStatus.setText("Helyes kapcsolás.");
 					} else {

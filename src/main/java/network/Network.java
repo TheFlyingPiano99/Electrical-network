@@ -58,6 +58,7 @@ public class Network {
 	private boolean needRecalculation = true;
 	private int gridSize = 30;
 	private final Object accessMutexObj = new Object();
+	private final double angularFrequencyComparisonEpsilon = 0.001;
 	//--------------------------------------------------
 
 	public Object getMutexObj()
@@ -109,7 +110,7 @@ public class Network {
 		synchronized (accessMutexObj)
 		{
 			for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-				if (simulatedAngularFrequencies.get(i) == omega) {	// Already among simulated frequencies
+				if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) {	// Already among simulated frequencies
 					angularFrequencyReferenceCounter.set(i, angularFrequencyReferenceCounter.get(i) + 1);
 					return i;
 				}
@@ -135,7 +136,7 @@ public class Network {
 		synchronized (accessMutexObj)
 		{
 			for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-				if (simulatedAngularFrequencies.get(i) == omega) {	//  Among simulated frequencies
+				if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) {	//  Among simulated frequencies
 					int refCount = angularFrequencyReferenceCounter.get(i);
 					if (refCount > 1) {		// Other components also require the same frequency
 						angularFrequencyReferenceCounter.set(i, refCount - 1);
@@ -218,7 +219,7 @@ public class Network {
 	 */
 	public int getAngularFrequencyIndex(double omega) {
 		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-			if (simulatedAngularFrequencies.get(i) == omega) {
+			if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) {
 				return i;
 			}
 		}
@@ -229,9 +230,9 @@ public class Network {
 	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels.
 	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
 	 */
-	public void evaluate() {
+	public void evaluate(boolean forceEval) {
 		synchronized (accessMutexObj) {
-			if (!needRecalculation) {		// Early termination
+			if (!needRecalculation && !forceEval) {		// Early termination
 				return;
 			}
 			needRecalculation = false;

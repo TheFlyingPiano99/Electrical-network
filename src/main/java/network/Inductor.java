@@ -317,7 +317,7 @@ public class Inductor extends Component {
 				}
 				//System.out.println("Updated value:" + getInductance());
 				getProperties().get("inductance").value = String.valueOf(getInductance());
-				getParent().evaluate();
+				getParent().evaluate(true);
 			}
 		}
 	}
