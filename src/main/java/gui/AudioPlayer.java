@@ -12,17 +12,22 @@ public class AudioPlayer {
     private Thread workThread = null;
     private ConcurrentLinkedQueue<AudioCommand> commandQueue = new ConcurrentLinkedQueue<>();
     private double masterVolume = 1.0;
+    private double targetMasterVolume = 1.0;
     private Component selectedComponent = null;
-    private ArrayList<Double> simulatedAngularFrequencies = null;
-    private ArrayList<Integer> sampledFrequencyIndices = null;
-    private double periodTimeSec = 1;
+    private ArrayList<Double> simulatedAngularFrequencies = null;   // All the angular frequencies simulated by the network
+    private ArrayList<Integer> sampledFrequencyIndices = null;      // The angular frequencies indices selected to create audio
+    private Component previousSelectedComponent = null;
+    private ArrayList<Double> previousSimulatedAngularFrequencies = null;
+    private ArrayList<Integer> previousSampledFrequencyIndices = null;
+    private double crossFadeParam = 0.0;
+    private boolean isCrossFade = false;
     private boolean isPlaying = false;
-    private boolean generateSamples = true;
     private final double lowestAudibleFrequencyHz = 31.0;
     private final double highestAudibleFrequencyHz = 19000.0;
     private boolean fadeIn = false;
     private boolean fadeOut = false;
     private PlaybackMode mode = PlaybackMode.CURRENT;
+    private PlaybackMode previousMode = PlaybackMode.CURRENT;
     private boolean runWorkThread = true;
 
     enum PlaybackMode {
@@ -41,7 +46,6 @@ public class AudioPlayer {
         private Component newComp;
         private ArrayList<Double> newOmegas;
         private ArrayList<Integer> newSampledFrequencyIndices;
-        private double newPeriodTimeSec;
 
         public NewComponentCommand(Component c)
         {
@@ -50,47 +54,51 @@ public class AudioPlayer {
                 newComp = null;
                 newOmegas = null;
                 newSampledFrequencyIndices = null;
-                newPeriodTimeSec = 0;
                 return;
             }
-            try {
-                newComp = c.clone();
-            } catch (CloneNotSupportedException ex) {
-                throw new RuntimeException(ex);
-            }
-            newOmegas = newComp.getParent().getSimulatedAngularFrequencies();
-            newSampledFrequencyIndices = new ArrayList<Integer>(200);
+            synchronized (c.getParent().getMutexObj())
+            {
+                try {
+                    newComp = c.clone();
+                } catch (CloneNotSupportedException ex) {
+                    throw new RuntimeException(ex);
+                }
+                newOmegas = (ArrayList<Double>)c.getParent().getSimulatedAngularFrequencies().clone();
+                newSampledFrequencyIndices = new ArrayList<Integer>(200);
 
-            // "Band pass" filtering the frequency components to the audible range:
-            newPeriodTimeSec = -1;
-            for (int i = 0; i < newOmegas.size(); i++) {
-                double omega = newOmegas.get(i);
-                if (omega > 2 * Math.PI * lowestAudibleFrequencyHz && omega < 2 * Math.PI * highestAudibleFrequencyHz) {
-                    newSampledFrequencyIndices.add(i);
-                    if (newSampledFrequencyIndices.size() > 200) {
-                        break;
-                    }
-                    if (newPeriodTimeSec == -1) {   // Set to the first audible frequency
-                        newPeriodTimeSec = 2 * Math.PI / omega;
+                // "Band pass" filtering the frequency components to the audible range:
+                for (int i = 0; i < newOmegas.size(); i++) {
+                    double omega = newOmegas.get(i);
+                    if (omega > 2 * Math.PI * lowestAudibleFrequencyHz && omega < 2 * Math.PI * highestAudibleFrequencyHz) {
+                        newSampledFrequencyIndices.add(i);
+                        if (newSampledFrequencyIndices.size() == 200) {
+                            break;
+                        }
                     }
                 }
-            }
-            if (-1 == newPeriodTimeSec) {
-                newComp = null;
-                newOmegas = null;
-                newSampledFrequencyIndices = null;
-                newPeriodTimeSec = 0;
+                if (newSampledFrequencyIndices.isEmpty()) {
+                    newComp = null;
+                    newOmegas = null;
+                    newSampledFrequencyIndices = null;
+                }
             }
         }
 
         @Override
         public void execute()
         {
+            previousSelectedComponent = selectedComponent;
+            previousSimulatedAngularFrequencies = simulatedAngularFrequencies;
+            previousSampledFrequencyIndices = sampledFrequencyIndices;
+
             selectedComponent = newComp;
             simulatedAngularFrequencies = newOmegas;
             sampledFrequencyIndices = newSampledFrequencyIndices;
-            periodTimeSec = newPeriodTimeSec;
-            generateSamples = true;
+
+            previousMode = mode;
+
+            isCrossFade = true;
+            crossFadeParam = 0.0;
         }
     }
 
@@ -110,7 +118,7 @@ public class AudioPlayer {
         @Override
         public void execute()
         {
-            masterVolume = newVolume;
+            targetMasterVolume = newVolume;
         }
     }
 
@@ -175,8 +183,15 @@ public class AudioPlayer {
 
         @Override
         public void execute() {
+            previousSelectedComponent = selectedComponent;
+            previousSimulatedAngularFrequencies = simulatedAngularFrequencies;
+            previousSampledFrequencyIndices = sampledFrequencyIndices;
+
+            previousMode = mode;
             mode = newMode;
-            generateSamples = true;
+
+            isCrossFade = true;
+            crossFadeParam = 0.0;
         }
     }
 
@@ -240,16 +255,16 @@ public class AudioPlayer {
         }
     }
 
-    private double sampleData(double elapsedTimeSec)
+    private double sampleData(double elapsedTimeSec, Component component, ArrayList<Double> omegas, ArrayList<Integer> indices, PlaybackMode playbackMode)
     {
-        selectedComponent.updateTimeDomainParametersUsingSpecificFrequencies(
+        component.updateTimeDomainParametersUsingSpecificFrequencies(
                 elapsedTimeSec,
-                simulatedAngularFrequencies,
-                sampledFrequencyIndices
+                omegas,
+                indices
         );
-        switch (mode) {
-            case PlaybackMode.VOLTAGE_DROP -> { return selectedComponent.getTimeDomainVoltageDrop(); }
-            case PlaybackMode.CURRENT -> { return selectedComponent.getTimeDomainCurrent(); }
+        switch (playbackMode) {
+            case PlaybackMode.VOLTAGE_DROP -> { return component.getTimeDomainVoltageDrop(); }
+            case PlaybackMode.CURRENT -> { return component.getTimeDomainCurrent(); }
             case PlaybackMode.INPUT_POTENTIAL -> {}
             case PlaybackMode.OUTPUT_POTENTIAL -> {}
             default -> { return 0.0; }
@@ -264,7 +279,8 @@ public class AudioPlayer {
         int bufferSampleCount = 512;
         double playBackSpeed = 1.0;
         double fadeSpeed = 4.0;
-        double currentVolume = 0.0;
+        double crossFadeSpeed = 6.0;
+        double faderVolume = 0.0;
         int bufferSize = bufferSampleCount * shortByteSize;
         LinkedList<Double> previousSamples = new LinkedList<>();    // Accumulate for filtering
 
@@ -288,11 +304,9 @@ public class AudioPlayer {
             throw new RuntimeException(e);
         }
 
-        int bufferSampleOffset = 0;
+        double elapsedTimeSec = 0;
         int bufferByteOffset = 0;
-        int samplesToReconstructPeriod = bufferSize;
-        ArrayList<Double> sampleBuffer = null;
-        ByteBuffer masteredByteBuffer = ByteBuffer.allocate(2 * bufferSize);
+        ByteBuffer masteredByteBuffer = ByteBuffer.allocate(4 * bufferSize);
         while (runWorkThread) {
             if (Thread.currentThread().isInterrupted()) {
                 Thread.currentThread().interrupt();
@@ -300,83 +314,93 @@ public class AudioPlayer {
             }
             processCommands();
 
-            if (generateSamples) {
-                generateSamples = false;
-                if (null != selectedComponent) {
-                    bufferSampleOffset = 0;
-                    bufferByteOffset = 0;
-                    samplesToReconstructPeriod = (int)(periodTimeSec * sampleRateHz);
-                    int precalculatedSampleCount = samplesToReconstructPeriod + bufferSampleCount;
-                    sampleBuffer = new ArrayList<>(precalculatedSampleCount);
-                    masteredByteBuffer = ByteBuffer.allocate(precalculatedSampleCount * shortByteSize);
-                    double elapsedTimeSec = 0;
-                    for (int n = 0; n < precalculatedSampleCount; n++) {
-                        sampleBuffer.add(sampleData(elapsedTimeSec));
-                        elapsedTimeSec += timeStepSec * playBackSpeed;
-                    }
-                }
-                else {
-                    sampleBuffer = null;
-                }
-            }
-
             // Fill mastered buffer:
             double minOriginal = -1.0;
             double maxOriginal = 1.0;
             short minTarget = Short.MIN_VALUE;
             short maxTarget = Short.MAX_VALUE;
-            if (sampleBuffer != null) {
-                for (int i = 0; i < bufferSampleCount; i++) {
-                    double sample = sampleBuffer.get(bufferSampleOffset + i);
-                    if (fadeIn) {
-                        fadeOut = false;
-                        isPlaying = true;
-                        currentVolume += timeStepSec * fadeSpeed;
-                        if (currentVolume > 1) {
-                            currentVolume = 1;
-                            fadeIn = false;
-                        }
+            for (int i = 0; i < bufferSampleCount; i++) {
+                double sample = 0;
+                if (isCrossFade) {
+                    if (null != previousSelectedComponent) {
+                        sample = (1.0 - crossFadeParam) * sampleData(elapsedTimeSec * playBackSpeed,
+                                previousSelectedComponent,
+                                previousSimulatedAngularFrequencies,
+                                previousSampledFrequencyIndices,
+                                previousMode
+                        );
                     }
-                    else if (fadeOut) {
+                    if (null != selectedComponent) {
+                        sample += crossFadeParam * sampleData(elapsedTimeSec * playBackSpeed,
+                                selectedComponent,
+                                simulatedAngularFrequencies,
+                                sampledFrequencyIndices,
+                                mode
+                        );
+                    }
+
+                    crossFadeParam += timeStepSec * crossFadeSpeed;
+                    if (crossFadeParam > 1.0) {
+                        crossFadeParam = 1.0;
+                        isCrossFade = false;
+                    }
+                }
+                else {
+                    if (null != selectedComponent) {
+                        sample = sampleData(elapsedTimeSec * playBackSpeed,
+                                selectedComponent,
+                                simulatedAngularFrequencies,
+                                sampledFrequencyIndices,
+                                mode
+                        );
+                    }
+                }
+
+                // Gradually change fader volume:
+                if (fadeIn) {
+                    fadeOut = false;
+                    isPlaying = true;
+                    faderVolume += timeStepSec * fadeSpeed;
+                    if (faderVolume > 1) {
+                        faderVolume = 1;
                         fadeIn = false;
-                        currentVolume -= timeStepSec * fadeSpeed;
-                        if (currentVolume < 0) {
-                            currentVolume = 0;
-                            fadeOut = false;
-                            isPlaying = false;
-                        }
                     }
-                    else if (isPlaying) {
-                        currentVolume = 1;
+                }
+                else if (fadeOut) {
+                    fadeIn = false;
+                    faderVolume -= timeStepSec * fadeSpeed;
+                    if (faderVolume < 0) {
+                        faderVolume = 0;
+                        fadeOut = false;
+                        isPlaying = false;
                     }
-                    else {
-                        currentVolume = 0;
+                }
+
+                // Gradually change master volume:
+                if (targetMasterVolume < masterVolume) {
+                    masterVolume -= timeStepSec * fadeSpeed;
+                    if (targetMasterVolume > masterVolume) {
+                        masterVolume = targetMasterVolume;
                     }
-                    sample = Math.max(Math.min(Math.pow(masterVolume * currentVolume, 3) * sample, 1.0), -1.0); // Clip peaks
-                    sample = filterSample(sample, previousSamples);
-                    short remappedSample = (short)((sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
-                    masteredByteBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
                 }
-            }
-            else {  // If no samples are available, we use zeros
-                for (int i = 0; i < bufferSampleCount; i++) {
-                    double filteredZeroSample = filterSample(0, previousSamples);
-                    short remappedSample = (short)((filteredZeroSample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
-                    masteredByteBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
+                else if (targetMasterVolume > masterVolume) {
+                    masterVolume += timeStepSec * fadeSpeed;
+                    if (targetMasterVolume < masterVolume) {
+                        masterVolume = targetMasterVolume;
+                    }
                 }
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+
+                sample = Math.max(Math.min(Math.pow(masterVolume * faderVolume, 3) * sample, 1.0), -1.0); // Clip peaks
+                sample = filterSample(sample, previousSamples);
+                short remappedSample = (short)((sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
+                masteredByteBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
+                elapsedTimeSec += timeStepSec;
             }
 
             // Export mastered buffer through sound API:
             dataLine.write(masteredByteBuffer.array(), bufferByteOffset, bufferSize);   // NOTE: For continuous audio, it is good to reuse the same buffer
             // Increment buffer offsets:
-            bufferSampleOffset = (bufferSampleOffset + bufferSampleCount) % samplesToReconstructPeriod;
-            bufferByteOffset = (bufferByteOffset + bufferSize) % (samplesToReconstructPeriod * shortByteSize);
+            bufferByteOffset = (bufferByteOffset + bufferSize) % masteredByteBuffer.array().length;
         }
 
         dataLine.flush();

@@ -265,7 +265,7 @@ public class DCVoltageSource extends network.Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
-				getParent().evaluate();
+				getParent().evaluate(true);
 			}
 		}
 	}

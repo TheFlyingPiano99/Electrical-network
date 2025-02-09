@@ -235,7 +235,7 @@ public class CurrentSource extends Component {
 				} catch (RuntimeException e) {
 				}
 				getProperties().get("current").value = String.valueOf(getInputCurrent());
-				getParent().evaluate();
+				getParent().evaluate(true);
 			}
 		}
 	}
