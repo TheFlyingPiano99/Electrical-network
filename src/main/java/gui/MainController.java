@@ -152,6 +152,9 @@ public class MainController {
 	@FXML
 	private Button btnScopeRight;
 
+	@FXML
+	private Button btnScopeReset;
+
 	//Menu item actions:------------------------------------------------------------------------------------------
     
     /**
@@ -325,6 +328,7 @@ public class MainController {
 		assert btnScopeVerticalMinus != null : "fx:id=\"btnScopeVerticalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert btnScopeLeft != null : "fx:id=\"btnScopeLeft\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert btnScopeRight != null : "fx:id=\"btnScopeRight\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeReset != null : "fx:id=\"btnScopeReset\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
         mainController = this;
         
@@ -558,46 +562,53 @@ public class MainController {
 
 		btnScopeHorizontalPlus.setOnAction(
 				(event) -> {
-					double currentVal = DrawingHelper.getScopeTimeInterval();
-					DrawingHelper.setScopeTimeInterval(currentVal * 2.0);
+					double currentVal = DrawingHelper.getScopeXInterval();
+					DrawingHelper.setScopeXInterval(currentVal * 0.5);
 					DrawingHelper.updateScopeSamples(selectedComponent);
 				}
 		);
 
 		btnScopeHorizontalMinus.setOnAction(
 				(event) -> {
-					double currentVal = DrawingHelper.getScopeTimeInterval();
-					DrawingHelper.setScopeTimeInterval(currentVal * 0.5);
+					double currentVal = DrawingHelper.getScopeXInterval();
+					DrawingHelper.setScopeXInterval(currentVal * 2.0);
 					DrawingHelper.updateScopeSamples(selectedComponent);
 				}
 		);
 
 		btnScopeVerticalPlus.setOnAction(
 				(event) -> {
-					double currentVal = DrawingHelper.getScopeTimeValueScale();
-					DrawingHelper.setScopeTimeValueScale(currentVal * 2.0);
+					double currentVal = DrawingHelper.getScopeYScale();
+					DrawingHelper.setScopeYScale(currentVal * 2.0);
 				}
 		);
 
 		btnScopeVerticalMinus.setOnAction(
 				(event) -> {
-					double currentVal = DrawingHelper.getScopeTimeValueScale();
-					DrawingHelper.setScopeTimeValueScale(currentVal * 0.5);
+					double currentVal = DrawingHelper.getScopeYScale();
+					DrawingHelper.setScopeYScale(currentVal * 0.5);
 				}
 		);
 
 		btnScopeLeft.setOnAction(
 				(event) -> {
-					double currentVal = DrawingHelper.getScopeStartTime();
-					DrawingHelper.setScopeStartTime(currentVal - DrawingHelper.getScopeTimeInterval() * 0.25);
+					double currentVal = DrawingHelper.getScopeXStart();
+					DrawingHelper.setScopeXStart(currentVal - DrawingHelper.getScopeXInterval() * 0.25);
 					DrawingHelper.updateScopeSamples(selectedComponent);
 				}
 		);
 
 		btnScopeRight.setOnAction(
 				(event) -> {
-					double currentVal = DrawingHelper.getScopeStartTime();
-					DrawingHelper.setScopeStartTime(currentVal + DrawingHelper.getScopeTimeInterval() * 0.25);
+					double currentVal = DrawingHelper.getScopeXStart();
+					DrawingHelper.setScopeXStart(currentVal + DrawingHelper.getScopeXInterval() * 0.25);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeReset.setOnAction(
+				(event) -> {
+					DrawingHelper.resetScope();
 					DrawingHelper.updateScopeSamples(selectedComponent);
 				}
 		);

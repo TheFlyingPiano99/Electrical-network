@@ -91,7 +91,7 @@ public class SinusoidalVoltageSource extends Component {
 	public void setSourceVoltagePhaseRad(double phase) {
 		this.sourceVoltagePhaseRad = phase;
 		if (e != null) {
-			int frequencyIdx = getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency);
+			int frequencyIdx = getParent().getAngularFrequencyIndex(this.sourceVoltageAngularFrequency);
 			e.getSourceVoltage().setAt(frequencyIdx, Complex.euler(sourceVoltageAmplitude, sourceVoltagePhaseRad - Math.PI / 2));	// At zero frequency -- constant source
 		}
 	}
