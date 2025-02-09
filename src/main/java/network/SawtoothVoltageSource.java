@@ -85,7 +85,7 @@ public class SawtoothVoltageSource extends Component {
 			return;
 		}
 
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 0; n <= maxN; n += 1) {		// Request all the required angular frequencies
 			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
 		}
 
@@ -208,7 +208,7 @@ public class SawtoothVoltageSource extends Component {
 	public void destroy() {
 		super.removeEndNodes();
 		super.getParent().removeEdge(e);
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 0; n <= maxN; n += 1) {		// Request all the required angular frequencies
 			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
 		}
 	}

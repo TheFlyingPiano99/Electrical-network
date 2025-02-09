@@ -917,7 +917,7 @@ public class Network {
 		synchronized (accessMutexObj)
 		{
 			if (!components.contains(component)) {
-				throw new RuntimeException("Invalid component released.");
+				return;
 			}
 			component.release();
 			needRecalculation = true;
