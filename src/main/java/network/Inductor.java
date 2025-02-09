@@ -158,6 +158,11 @@ public class Inductor extends Component {
 		e.updateTimeDomainParameters(omegas, totalTimeSec);
 	}
 
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
+
 	public double getInductance() {
 		return inductance;
 	}

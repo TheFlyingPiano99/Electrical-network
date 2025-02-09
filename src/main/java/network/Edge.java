@@ -141,6 +141,19 @@ public class Edge implements Cloneable {
 		}
 	}
 
+	public void updateTimeDomainParametersUsingSpecificFrequencies(ArrayList<Double> omega, ArrayList<Integer> frequencyIndices, double totalTimeSec)
+	{
+		timeDomainCurrent = 0;
+		timeDomainSourceVoltage = 0;
+		timeDomainVoltageDrop = 0;
+		for (int k : frequencyIndices) {
+			Complex e = Complex.euler(1, omega.get(k) * totalTimeSec);
+			timeDomainCurrent += Complex.multiply(current.at(k), e).getRe();
+			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), e).getRe();
+			timeDomainVoltageDrop += Complex.multiply(Complex.multiply(current.at(k), impedance.at(k)), e).getRe();
+		}
+	}
+
 	public final double getTimeDomainCurrent()
 	{
 		return timeDomainCurrent;

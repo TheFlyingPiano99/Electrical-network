@@ -268,6 +268,12 @@ public abstract class Component implements Cloneable {
 	abstract public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas);
 
 	/**
+	 * Calculate current and voltage values for the given time step
+	 * @param totalTimeSec The total elapsed time since the beginning of the simulation
+	 */
+	abstract public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices);
+
+	/**
 	 * Returns electric current value in ampere.
 	 * HUN: Visszaadja az áramszintet amperben.
 	 * @return current ampere
