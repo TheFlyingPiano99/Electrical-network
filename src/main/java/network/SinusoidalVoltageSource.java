@@ -224,6 +224,11 @@ public class SinusoidalVoltageSource extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("VoltageSource [");

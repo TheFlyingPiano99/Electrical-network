@@ -1,6 +1,5 @@
 package gui;
 
-import javafx.util.Pair;
 import network.Component;
 
 import javax.sound.sampled.*;
@@ -15,6 +14,7 @@ public class AudioPlayer {
     private double masterVolume = 1.0;
     private Component selectedComponent = null;
     private ArrayList<Double> simulatedAngularFrequencies = null;
+    private ArrayList<Integer> sampledFrequencyIndices = null;
     private double periodTimeSec = 1;
     private boolean isPlaying = false;
     private boolean generateSamples = true;
@@ -39,7 +39,8 @@ public class AudioPlayer {
 
     class NewComponentCommand extends AudioCommand {
         private Component newComp;
-        private ArrayList<Double> omegas;
+        private ArrayList<Double> newOmegas;
+        private ArrayList<Integer> newSampledFrequencyIndices;
         private double newPeriodTimeSec;
 
         public NewComponentCommand(Component c)
@@ -47,32 +48,38 @@ public class AudioPlayer {
             if (null == c)
             {
                 newComp = null;
-                omegas = null;
+                newOmegas = null;
+                newSampledFrequencyIndices = null;
+                newPeriodTimeSec = 0;
                 return;
             }
             try {
                 newComp = c.clone();
-                int originalN = c.getParent().getSimulatedAngularFrequencies().size();
-                // "Low pass" filter:
-                int n = Math.min(originalN, 200);
-                omegas = new ArrayList<>(n);
-                newPeriodTimeSec = -1;
-                for (Double omega : c.getParent().getSimulatedAngularFrequencies()) {
-                    omegas.add(omega);
-                    if (newPeriodTimeSec == -1 && omega > 0.0) {
-                        newPeriodTimeSec = 2 * Math.PI / omega;
-                    }
-                    if (omegas.size() == n){
-                        break;
-                    }
-                }
-                if (-1 == newPeriodTimeSec) {
-                    newComp = null;
-                    omegas = null;
-                    newPeriodTimeSec = 0;
-                }
             } catch (CloneNotSupportedException ex) {
                 throw new RuntimeException(ex);
+            }
+            newOmegas = newComp.getParent().getSimulatedAngularFrequencies();
+            newSampledFrequencyIndices = new ArrayList<Integer>(200);
+
+            // "Band pass" filtering the frequency components to the audible range:
+            newPeriodTimeSec = -1;
+            for (int i = 0; i < newOmegas.size(); i++) {
+                double omega = newOmegas.get(i);
+                if (omega > 2 * Math.PI * lowestAudibleFrequencyHz && omega < 2 * Math.PI * highestAudibleFrequencyHz) {
+                    newSampledFrequencyIndices.add(i);
+                    if (newSampledFrequencyIndices.size() > 200) {
+                        break;
+                    }
+                    if (newPeriodTimeSec == -1) {   // Set to the first audible frequency
+                        newPeriodTimeSec = 2 * Math.PI / omega;
+                    }
+                }
+            }
+            if (-1 == newPeriodTimeSec) {
+                newComp = null;
+                newOmegas = null;
+                newSampledFrequencyIndices = null;
+                newPeriodTimeSec = 0;
             }
         }
 
@@ -80,7 +87,8 @@ public class AudioPlayer {
         public void execute()
         {
             selectedComponent = newComp;
-            simulatedAngularFrequencies = omegas;
+            simulatedAngularFrequencies = newOmegas;
+            sampledFrequencyIndices = newSampledFrequencyIndices;
             periodTimeSec = newPeriodTimeSec;
             generateSamples = true;
         }
@@ -232,13 +240,13 @@ public class AudioPlayer {
         }
     }
 
-    private void generateSamples(ArrayList<Double> sampleBuffer, ByteBuffer masteredBuffer)
-    {
-    }
-
     private double sampleData(double elapsedTimeSec)
     {
-        selectedComponent.updateTimeDomainParameters(elapsedTimeSec, simulatedAngularFrequencies);
+        selectedComponent.updateTimeDomainParametersUsingSpecificFrequencies(
+                elapsedTimeSec,
+                simulatedAngularFrequencies,
+                sampledFrequencyIndices
+        );
         switch (mode) {
             case PlaybackMode.VOLTAGE_DROP -> { return selectedComponent.getTimeDomainVoltageDrop(); }
             case PlaybackMode.CURRENT -> { return selectedComponent.getTimeDomainCurrent(); }
