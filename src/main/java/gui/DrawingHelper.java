@@ -2,6 +2,7 @@ package gui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -14,6 +15,7 @@ import math.Coordinate;
 import math.Line;
 import math.MyMath;
 import math.Vector;
+import network.Component;
 import network.Network;
 
 /**
@@ -34,10 +36,12 @@ public class DrawingHelper {
 	private static final double DASH_OFFSET_SELECT = 5.0;
 	private static ArrayList<Double> scopeVoltageBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeCurrentBuffer = new ArrayList<>();
-	private static ArrayList<Double> scopeResistanceBuffer = new ArrayList<>();
-	private static double scopeStartTimeSec = 0;
 	private static int maxScopeDataPoints = 256;
 	private static boolean scopeInTimeDomain = true;
+	private static double scopeStartTimeSec = 0;
+	private static double scopeSampleTimeStep = 1.0 / maxScopeDataPoints;
+	private static double scopeTimeValueScale = 0.5;
+	private static final Object accessMutexObj = new Object();
 
 	/**
 	 * Sets drawing attributes for normal drawing. (Uses the predefined, static variables.)
@@ -97,17 +101,19 @@ public class DrawingHelper {
 	}
 
 	protected static void resetScope(Canvas canvas) {
-		GraphicsContext ctx;
-		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
-			double W = canvas.getWidth();
-			double H = canvas.getHeight();
-			ctx.setFill(Color.GREY);
-			ctx.fillRect(0, 0, W, H);
+		synchronized (accessMutexObj)
+		{
+			GraphicsContext ctx;
+			if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
+				double W = canvas.getWidth();
+				double H = canvas.getHeight();
+				ctx.setFill(Color.GREY);
+				ctx.fillRect(0, 0, W, H);
+			}
+			scopeCurrentBuffer.clear();
+			scopeVoltageBuffer.clear();
+			scopeStartTimeSec = 0;
 		}
-		scopeCurrentBuffer.clear();
-		scopeVoltageBuffer.clear();
-		scopeResistanceBuffer.clear();
-		scopeStartTimeSec = 0;
 	}
 
 	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, ArrayList<Double> angularFrequencies, Vector voltage, double W, double H)
@@ -198,7 +204,7 @@ public class DrawingHelper {
 		ctx.setLineWidth(2.0);
 		double prevVal = 0;
 		double valOffset = H / 2.0;
-		double valScale = H / 2.0 / 5.0;
+		double valScale = H / 2.0 * scopeTimeValueScale;
 		boolean firstElement = true;
 		int t = 0;
 		double stepSize = W / maxScopeDataPoints;
@@ -227,7 +233,7 @@ public class DrawingHelper {
 
 		double prevVal = 0;
 		double valOffset = H / 2.0;
-		double valScale = H / 2.0 / 5.0;
+		double valScale = H / 2.0 * scopeTimeValueScale;
 		boolean firstElement = true;
 		int t = 0;
 		double stepSize = W / maxScopeDataPoints;
@@ -248,122 +254,163 @@ public class DrawingHelper {
 		}
 	}
 
-	private static void drawResistance(GraphicsContext ctx, double R, double W, double H) {
-		ctx.setStroke(Color.PURPLE);
-		ctx.setLineWidth(0.8);
-		ctx.strokeText("R = " + String.format("%,.5f", R) + " Ohm", 10,60);
-		ctx.setLineWidth(2.0);
+	public static void updateScopeSamples(Component component)
+	{
+		synchronized (accessMutexObj)
+		{
+			scopeCurrentBuffer.clear();
+			scopeVoltageBuffer.clear();
+			if (null == component) {
+				return;
+			}
+			Component clonedSelection;
+			try {
+				clonedSelection = component.clone();
+			} catch (CloneNotSupportedException e) {
+				throw new RuntimeException(e);
+			}
 
-		double prevVal = 0;
-		double valOffset = H / 2.0;
-		double valScale = H / 2.0 / 5.0;
-		boolean firstElement = true;
-		int t = 0;
-		double stepSize = W / maxScopeDataPoints;
-		for (Double r : scopeResistanceBuffer) {
-			if (firstElement) {
-				firstElement = false;
+			double virtualTimeSec = scopeStartTimeSec;
+			for (int i = 0; i < maxScopeDataPoints; i++)
+			{
+				component.updateTimeDomainParameters(virtualTimeSec, component.getParent().getSimulatedAngularFrequencies());
+				scopeCurrentBuffer.add(component.getTimeDomainCurrent());
+				scopeVoltageBuffer.add(component.getTimeDomainVoltageDrop());
+				virtualTimeSec += scopeSampleTimeStep;
 			}
-			else {
-				ctx.strokeLine(
-						(t - 1) * stepSize,
-						Math.min(Math.max(0.0, valOffset - valScale * prevVal), H),
-						t * stepSize,
-						Math.min(Math.max(0.0, valOffset - valScale * r), H)
-				);
-			}
-			prevVal = r;
-			t++;
 		}
 	}
 
-	protected static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec, boolean running) {
-		GraphicsContext ctx;
-		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
-			double W = canvas.getWidth();
-			double H = canvas.getHeight();
-			ctx.setFill(Color.GREY);
-			ctx.fillRect(0, 0, W, H);
+	public static void setScopeTimeInterval(double timeSec)
+	{
+		synchronized (accessMutexObj)
+		{
+			scopeSampleTimeStep = timeSec / maxScopeDataPoints;
+		}
+	}
 
-			network.Component selected = network.getSelected();
-			if (selected != null) {
-				double I = selected.getTimeDomainCurrent();
-				double U = selected.getTimeDomainVoltageDrop();
-				double R = selected.getTimeDomainResistance();
-				if (running) {
-					scopeCurrentBuffer.add(I);
-					scopeVoltageBuffer.add(U);
-					scopeResistanceBuffer.add(R);
-					if (scopeCurrentBuffer.size() > maxScopeDataPoints) {	// Pop first element
-						scopeCurrentBuffer.remove(0);
+	public static double getScopeTimeInterval()
+	{
+		synchronized (accessMutexObj)
+		{
+			return scopeSampleTimeStep * maxScopeDataPoints;
+		}
+	}
+
+	public static void setScopeStartTime(double startSec)
+	{
+		synchronized (accessMutexObj)
+		{
+			scopeStartTimeSec = startSec;
+		}
+	}
+
+	public static double getScopeStartTime()
+	{
+		synchronized (accessMutexObj)
+		{
+			return scopeStartTimeSec;
+		}
+	}
+
+	public static void setScopeTimeValueScale(double scale)
+	{
+		synchronized (accessMutexObj)
+		{
+			scopeTimeValueScale = scale;
+		}
+	}
+
+	public static double getScopeTimeValueScale()
+	{
+		synchronized (accessMutexObj)
+		{
+			return scopeTimeValueScale;
+		}
+	}
+
+	public static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec, boolean running) {
+		synchronized (accessMutexObj)
+		{
+			GraphicsContext ctx;
+			if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
+				double W = canvas.getWidth();
+				double H = canvas.getHeight();
+				ctx.setFill(Color.GREY);
+				ctx.fillRect(0, 0, W, H);
+
+				network.Component selected = network.getSelected();
+				if (selected != null) {
+					if (scopeInTimeDomain) {
+						double I = selected.getTimeDomainCurrent();
+						double U = selected.getTimeDomainVoltageDrop();
+
+						if (running) {
+							if (scopeCurrentBuffer.size() > maxScopeDataPoints) {	// Pop first element
+								scopeCurrentBuffer.remove(0);
+							}
+							if (scopeVoltageBuffer.size() > maxScopeDataPoints) {	// Pop first element
+								scopeVoltageBuffer.remove(0);
+							}
+						}
+
+						setNormalDrawingAttributes(ctx);
+						ctx.setLineWidth(0.8);
+						ctx.strokeText("Intervallum kezdete = " + String.format("%,.2f", scopeStartTimeSec) + " s", 10,H - 25);
+						ctx.strokeText("Intervallum hossza  = " + String.format("%,.2f", maxScopeDataPoints * scopeSampleTimeStep) + " s", 10,H - 10);
+
+						double valOffset = H / 2.0;
+						double valScale = H / 2.0 * scopeTimeValueScale;
+						ctx.setLineWidth(1.0);
+						ctx.strokeLine(0, valOffset, W, valOffset);
+						ctx.setLineWidth(0.25);
+						for (int i = 0; i * valScale < H / 2.0; i++) {
+							ctx.strokeLine(0, valOffset - valScale * i, W, valOffset - valScale * i);
+							ctx.strokeLine(0, valOffset + valScale * i, W, valOffset + valScale * i);
+						}
+						drawTimeDomainVoltage(ctx, U, W, H);
+						drawTimeDomainCurrent(ctx, I, W, H);
+						//drawResistance(ctx, R, W, H);
 					}
-					if (scopeVoltageBuffer.size() > maxScopeDataPoints) {	// Pop first element
-						scopeVoltageBuffer.remove(0);
-					}
-					if (scopeResistanceBuffer.size() > maxScopeDataPoints) {	// Pop first element
-						scopeResistanceBuffer.remove(0);
+					else {	// scope mode == frequency domain
+						ArrayList<Double> angularFrequency = network.getSimulatedAngularFrequencies();
+						Vector voltage = selected.getFrequencyDomainVoltageDrop();
+						Vector current = selected.getFrequencyDomainCurrent();
+
+						setNormalDrawingAttributes(ctx);
+						ctx.setLineWidth(0.8);
+						ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
+
+						double valOffset = H * 0.8;
+						double valScale = H / 5.0;
+						ctx.setLineWidth(1.0);
+						ctx.strokeLine(0, valOffset, W, valOffset);
+						ctx.setLineWidth(0.25);
+						ctx.strokeLine(0, valOffset - valScale * 1, W, valOffset - valScale * 1);
+						ctx.strokeLine(0, valOffset - valScale * 2, W, valOffset - valScale * 2);
+						ctx.strokeLine(0, valOffset - valScale * 3, W, valOffset - valScale * 3);
+						ctx.strokeLine(0, valOffset - valScale * 4, W, valOffset - valScale * 4);
+						ctx.strokeLine(0, valOffset - valScale * 5, W, valOffset - valScale * 5);
+
+						drawFrequencyDomainVoltage(ctx, angularFrequency, voltage, W, H);
+						drawFrequencyDomainCurrent(ctx, angularFrequency, current, W, H);
+						drawFrequencyDomainLabels(ctx, W, H);
 					}
 				}
-
-				if (scopeInTimeDomain) {
-					setNormalDrawingAttributes(ctx);
-					ctx.setLineWidth(0.8);
-					ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
-
-					double valOffset = H / 2.0;
-					double valScale = H / 2.0 / 5.0;
-					ctx.setLineWidth(1.0);
-					ctx.strokeLine(0, valOffset, W, valOffset);
-					ctx.setLineWidth(0.25);
-					ctx.strokeLine(0, valOffset - valScale * 1, W, valOffset - valScale * 1);
-					ctx.strokeLine(0, valOffset - valScale * 2, W, valOffset - valScale * 2);
-					ctx.strokeLine(0, valOffset - valScale * 3, W, valOffset - valScale * 3);
-					ctx.strokeLine(0, valOffset - valScale * 4, W, valOffset - valScale * 4);
-					ctx.strokeLine(0, valOffset + valScale * 1, W, valOffset + valScale * 1);
-					ctx.strokeLine(0, valOffset + valScale * 2, W, valOffset + valScale * 2);
-					ctx.strokeLine(0, valOffset + valScale * 3, W, valOffset + valScale * 3);
-					ctx.strokeLine(0, valOffset + valScale * 4, W, valOffset + valScale * 4);
-
-					drawTimeDomainVoltage(ctx, U, W, H);
-					drawTimeDomainCurrent(ctx, I, W, H);
-					//drawResistance(ctx, R, W, H);
+				else {
+					scopeCurrentBuffer.clear();
+					scopeVoltageBuffer.clear();
 				}
-				else {	// scope mode == frequency domain
-					ArrayList<Double> angularFrequency = network.getSimulatedAngularFrequencies();
-					Vector voltage = selected.getFrequencyDomainVoltageDrop();
-					Vector current = selected.getFrequencyDomainCurrent();
-
-					setNormalDrawingAttributes(ctx);
-					ctx.setLineWidth(0.8);
-					ctx.strokeText("t = " + String.format("%,.2f", totalTimeSec) + " s", 10,H - 20);
-
-					double valOffset = H * 0.8;
-					double valScale = H / 5.0;
-					ctx.setLineWidth(1.0);
-					ctx.strokeLine(0, valOffset, W, valOffset);
-					ctx.setLineWidth(0.25);
-					ctx.strokeLine(0, valOffset - valScale * 1, W, valOffset - valScale * 1);
-					ctx.strokeLine(0, valOffset - valScale * 2, W, valOffset - valScale * 2);
-					ctx.strokeLine(0, valOffset - valScale * 3, W, valOffset - valScale * 3);
-					ctx.strokeLine(0, valOffset - valScale * 4, W, valOffset - valScale * 4);
-					ctx.strokeLine(0, valOffset - valScale * 5, W, valOffset - valScale * 5);
-
-					drawFrequencyDomainVoltage(ctx, angularFrequency, voltage, W, H);
-					drawFrequencyDomainCurrent(ctx, angularFrequency, current, W, H);
-					drawFrequencyDomainLabels(ctx, W, H);
-				}
-			}
-			else {
-				scopeCurrentBuffer.clear();
-				scopeVoltageBuffer.clear();
-				scopeResistanceBuffer.clear();
 			}
 		}
 	}
 
 	public static void toggleScopeMode()
 	{
-		scopeInTimeDomain = !scopeInTimeDomain;
+		synchronized (accessMutexObj)
+		{
+			scopeInTimeDomain = !scopeInTimeDomain;
+		}
 	}
 	
 	private static Color getInterpolatedColor(Color color1, Color color2, float t) {

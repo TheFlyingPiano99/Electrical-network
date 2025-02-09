@@ -77,7 +77,21 @@
                         <AnchorPane fx:id="rightTopPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="160.0">
                            <children>
                               <Canvas fx:id="scopeCanvas" height="302.0" nodeOrientation="INHERIT" width="294.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                              <Button fx:id="scopeModeToggleBtn" layoutX="236.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnScopeModeToggleAction" text="Mód" AnchorPane.rightAnchor="6.0" AnchorPane.topAnchor="6.0" />
+                              <Button fx:id="scopeModeToggleBtn" layoutX="236.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnScopeModeToggleAction" text="Mód" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                              <Button fx:id="btnScopeHorizontalMinus" layoutX="218.0" layoutY="263.0" mnemonicParsing="false" text="-" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="35.0" />
+                              <Button fx:id="btnScopeHorizontalPlus" layoutX="251.0" layoutY="263.0" mnemonicParsing="false" text="+" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="btnScopeVerticalMinus" layoutX="261.0" layoutY="71.0" mnemonicParsing="false" text="-" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="70.0" />
+                              <Button fx:id="btnScopeVerticalPlus" layoutX="258.0" layoutY="39.0" mnemonicParsing="false" text="+" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="40.0">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="btnScopeRight" layoutX="178.0" layoutY="272.0" mnemonicParsing="false" text="&gt;" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="65.0" />
+                              <Button fx:id="btnScopeLeft" layoutX="162.0" layoutY="247.0" mnemonicParsing="false" text="&lt;" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="95.0" />
                            </children>
                         </AnchorPane>
                       <AnchorPane fx:id="rightBottomPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">

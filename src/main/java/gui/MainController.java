@@ -134,6 +134,24 @@ public class MainController {
 	@FXML
 	private Button scopeModeToggleBtn;
 
+	@FXML
+	private Button btnScopeHorizontalPlus;
+
+	@FXML
+	private Button btnScopeHorizontalMinus;
+
+	@FXML
+	private Button btnScopeVerticalPlus;
+
+	@FXML
+	private Button btnScopeVerticalMinus;
+
+	@FXML
+	private Button btnScopeLeft;
+
+	@FXML
+	private Button btnScopeRight;
+
 	//Menu item actions:------------------------------------------------------------------------------------------
     
     /**
@@ -247,7 +265,6 @@ public class MainController {
     	network.reset();
     	simulating = null;
     	leftStatus.setText("Szimuláció leállítva.");
-		DrawingHelper.resetScope(scopeCanvas);
 		audioPlayer.stopPlayback();
 		totalTimeSec = 0;
 	}
@@ -302,6 +319,12 @@ public class MainController {
 		assert middlePane != null : "fx:id=\"middlePane\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert rightTopPane != null : "fx:id=\"rightTopPane\" was not injected: check your FXML file 'windowlayout.fxml'.";
 		assert scopeModeToggleBtn != null : "fx:id=\"scopeModeToggleBtn\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeHorizontalPlus != null : "fx:id=\"btnScopeHorizontalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeHorizontalMinus != null : "fx:id=\"btnScopeHorizontalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeVerticalPlus != null : "fx:id=\"btnScopeVerticalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeVerticalMinus != null : "fx:id=\"btnScopeVerticalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeLeft != null : "fx:id=\"btnScopeLeft\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeRight != null : "fx:id=\"btnScopeRight\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
         mainController = this;
         
@@ -437,6 +460,7 @@ public class MainController {
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
 					audioPlayer.setSelectedComponent(selectedComponent);
+					DrawingHelper.updateScopeSamples(selectedComponent);
     	        } else {
     	            event.setDropCompleted(false);
     	            //System.out.println("Failed!");
@@ -492,6 +516,7 @@ public class MainController {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
 					audioPlayer.setSelectedComponent(selectedComponent);
+					DrawingHelper.updateScopeSamples(selectedComponent);
     			}
     		}
         );
@@ -531,6 +556,52 @@ public class MainController {
 		btnAudioMode.setText(" Feszültség ");
 		audioPlayer.setPlaybackMode(AudioPlayer.PlaybackMode.VOLTAGE_DROP);
 
+		btnScopeHorizontalPlus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeTimeInterval();
+					DrawingHelper.setScopeTimeInterval(currentVal * 2.0);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeHorizontalMinus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeTimeInterval();
+					DrawingHelper.setScopeTimeInterval(currentVal * 0.5);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeVerticalPlus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeTimeValueScale();
+					DrawingHelper.setScopeTimeValueScale(currentVal * 2.0);
+				}
+		);
+
+		btnScopeVerticalMinus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeTimeValueScale();
+					DrawingHelper.setScopeTimeValueScale(currentVal * 0.5);
+				}
+		);
+
+		btnScopeLeft.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeStartTime();
+					DrawingHelper.setScopeStartTime(currentVal - DrawingHelper.getScopeTimeInterval() * 0.25);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeRight.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeStartTime();
+					DrawingHelper.setScopeStartTime(currentVal + DrawingHelper.getScopeTimeInterval() * 0.25);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
 		// Timer
         
         Duration duration = Duration.millis(50);
@@ -557,8 +628,6 @@ public class MainController {
 
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
-        
-		DrawingHelper.resetScope(scopeCanvas);
 
 		audioPlayer.initializePlayback();
     }
@@ -589,6 +658,7 @@ public class MainController {
         					prop.value = prop.valueN.getText().trim();
         					component.updatePropertyModel();
 							audioPlayer.setSelectedComponent(component);
+							DrawingHelper.updateScopeSamples(component);
         				}
         			});
         		}
@@ -629,6 +699,7 @@ public class MainController {
         			destroyPropertyView();
 					selectedComponent = null;
 					audioPlayer.setSelectedComponent(null);
+					DrawingHelper.updateScopeSamples(null);
     			}
     			break;
     		case ESCAPE:
@@ -637,6 +708,7 @@ public class MainController {
         			destroyPropertyView();
     				selectedComponent = null;
 					audioPlayer.setSelectedComponent(null);
+					DrawingHelper.updateScopeSamples(null);
     			}
     			break;
     		case G:
