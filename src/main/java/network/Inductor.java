@@ -308,8 +308,7 @@ public class Inductor extends Component {
 					double val = Double.parseDouble(str);
 					setInductance(val);
 
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				//System.out.println("Updated value:" + getInductance());
 				getProperties().get("inductance").value = String.valueOf(getInductance());

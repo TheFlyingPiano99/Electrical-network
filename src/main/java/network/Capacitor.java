@@ -253,7 +253,6 @@ public class Capacitor extends Component {
 					setCapacity(val);
 
 				} catch (Exception e) {
-					e.printStackTrace();
 				}
 				//System.out.println("Updated value:" + getCapacity());
 				getProperties().get("capacity").value = String.valueOf(getCapacity());

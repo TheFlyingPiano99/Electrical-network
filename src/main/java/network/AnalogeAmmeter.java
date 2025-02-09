@@ -304,8 +304,7 @@ public class AnalogeAmmeter extends Component {
 					double val = Double.parseDouble(str);
 					setResistance(val);
 
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
 				getParent().evaluate();
@@ -317,8 +316,7 @@ public class AnalogeAmmeter extends Component {
 					double val = Double.parseDouble(str);
 					scale = val;
 
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				getProperties().get("scale").value = String.valueOf(scale);
 			}

@@ -55,6 +55,7 @@ public class Network {
 	private boolean snapToGrid = true;
 	private boolean validNetwork = false;
 	private boolean changedSetOfAngularFrequencies = false;
+	private boolean needRecalculation = true;
 	private int gridSize = 30;
 	private final Object accessMutexObj = new Object();
 	//--------------------------------------------------
@@ -75,7 +76,10 @@ public class Network {
 
 	public ArrayList<Double> getSimulatedAngularFrequencies()
 	{
-		return simulatedAngularFrequencies;
+		synchronized (accessMutexObj)
+		{
+			return simulatedAngularFrequencies;
+		}
 	}
 	
 	//Constructor:------------------------------------------------------
@@ -102,39 +106,48 @@ public class Network {
 	 */
 	public int requestAngularFrequency(double omega)
 	{
-		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-			if (simulatedAngularFrequencies.get(i) == omega) {	// Already among simulated frequencies
-				angularFrequencyReferenceCounter.set(i, angularFrequencyReferenceCounter.get(i) + 1);
-				return i;
+		synchronized (accessMutexObj)
+		{
+			for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
+				if (simulatedAngularFrequencies.get(i) == omega) {	// Already among simulated frequencies
+					angularFrequencyReferenceCounter.set(i, angularFrequencyReferenceCounter.get(i) + 1);
+					return i;
+				}
+				else if (simulatedAngularFrequencies.get(i) > omega)
+				{
+					simulatedAngularFrequencies.add(i, omega);	// Insert before the first larger frequency
+					angularFrequencyReferenceCounter.add(i, 1);
+					changedSetOfAngularFrequencies = true;
+					needRecalculation = true;
+					return i;
+				}
 			}
-			else if (simulatedAngularFrequencies.get(i) > omega)
-			{
-				simulatedAngularFrequencies.add(i, omega);	// Insert before the first larger frequency
-				angularFrequencyReferenceCounter.add(i, 1);
-				changedSetOfAngularFrequencies = true;
-				return i;
-			}
+			simulatedAngularFrequencies.add(omega);		// Append to the end
+			angularFrequencyReferenceCounter.add(1);
+			changedSetOfAngularFrequencies = true;
+			needRecalculation = true;
+			return simulatedAngularFrequencies.size() - 1;
 		}
-		simulatedAngularFrequencies.add(omega);		// Append to the end
-		angularFrequencyReferenceCounter.add(1);
-		changedSetOfAngularFrequencies = true;
-		return simulatedAngularFrequencies.size() - 1;
 	}
 
 	public void releaseAngularFrequency(double omega)
 	{
-		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-			if (simulatedAngularFrequencies.get(i) == omega) {	//  Among simulated frequencies
-				int refCount = angularFrequencyReferenceCounter.get(i);
-				if (refCount > 1) {		// Other components also require the same frequency
-					angularFrequencyReferenceCounter.set(i, refCount - 1);
+		synchronized (accessMutexObj)
+		{
+			for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
+				if (simulatedAngularFrequencies.get(i) == omega) {	//  Among simulated frequencies
+					int refCount = angularFrequencyReferenceCounter.get(i);
+					if (refCount > 1) {		// Other components also require the same frequency
+						angularFrequencyReferenceCounter.set(i, refCount - 1);
+					}
+					else {					// No other components require this frequency
+						angularFrequencyReferenceCounter.remove(i);
+						simulatedAngularFrequencies.remove(i);
+						changedSetOfAngularFrequencies = true;
+						needRecalculation = true;
+					}
+					return;
 				}
-				else {					// No other components require this frequency
-					angularFrequencyReferenceCounter.remove(i);
-					simulatedAngularFrequencies.remove(i);
-					changedSetOfAngularFrequencies = true;
-				}
-				return;
 			}
 		}
 	}
@@ -218,6 +231,10 @@ public class Network {
 	 */
 	public void evaluate() {
 		synchronized (accessMutexObj) {
+			if (!needRecalculation) {		// Early termination
+				return;
+			}
+			needRecalculation = false;
 			System.out.println("\nCalculating system");
 			if (changedSetOfAngularFrequencies) {
 				changedSetOfAngularFrequencies = false;
@@ -594,31 +611,39 @@ public class Network {
 	 * @param edge	Edge to be added.
 	 */
 	public void addEdge(Edge edge) {
-		Vertex input = new Vertex();
-		Vertex output = new Vertex();
-		
-		edge.setInput(input);
-		edge.setOutput(output);
-		
-		input.addOutgoing(output, edge);
-		output.addIncoming(input, edge);
-		
-		edges.add(edge);
-		vertices.add(input);
-		vertices.add(output);
+		synchronized (accessMutexObj)
+		{
+			Vertex input = new Vertex();
+			Vertex output = new Vertex();
+
+			edge.setInput(input);
+			edge.setOutput(output);
+
+			input.addOutgoing(output, edge);
+			output.addIncoming(input, edge);
+
+			edges.add(edge);
+			vertices.add(input);
+			vertices.add(output);
+			needRecalculation = true;
+		}
 	}
 
 	
 	public void addEdgeWithGroundedOutput(Edge edge) {
-		Vertex input = new Vertex();
-		edge.setInput(input);
-		edge.setOutput(this.vertices.get(0));
-		
-		input.addOutgoing(this.vertices.get(0), edge);
-		this.vertices.get(0).addIncoming(input, edge);
-		
-		edges.add(edge);
-		vertices.add(input);
+		synchronized (accessMutexObj)
+		{
+			Vertex input = new Vertex();
+			edge.setInput(input);
+			edge.setOutput(this.vertices.get(0));
+
+			input.addOutgoing(this.vertices.get(0), edge);
+			this.vertices.get(0).addIncoming(input, edge);
+
+			edges.add(edge);
+			vertices.add(input);
+			needRecalculation = true;
+		}
 	}
 	
 	/**
@@ -627,20 +652,24 @@ public class Network {
 	 * @param edge	Edge to be removed.
 	 */
 	public void removeEdge(Edge edge) {
-		if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1 && vertices.indexOf(edge.getInput()) != 0) {
-			vertices.remove(edge.getInput());
-		}
-		else {
-			edge.getInput().removeOutgoing(edge.getOutput());
-		}
-		if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0 && vertices.indexOf(edge.getOutput()) != 0) {
-			vertices.remove(edge.getOutput());
-		}
-		else {
-			edge.getOutput().removeIncoming(edge.getInput());
-		}
+		synchronized (accessMutexObj)
+		{
+			if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1 && vertices.indexOf(edge.getInput()) != 0) {
+				vertices.remove(edge.getInput());
+			}
+			else {
+				edge.getInput().removeOutgoing(edge.getOutput());
+			}
+			if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0 && vertices.indexOf(edge.getOutput()) != 0) {
+				vertices.remove(edge.getOutput());
+			}
+			else {
+				edge.getOutput().removeIncoming(edge.getInput());
+			}
 
-		edges.remove(edge);
+			edges.remove(edge);
+			needRecalculation = true;
+		}
 	}
 	
 	
@@ -727,9 +756,13 @@ public class Network {
 	 * @param component The component to be added.
 	 */
 	public void addComponent (Component component) {
-		component.setParent(this);
-		component.build();
-		components.add(component);
+		synchronized (accessMutexObj)
+		{
+			component.setParent(this);
+			component.build();
+			components.add(component);
+			needRecalculation = true;
+		}
 	}
 
 	/**
@@ -742,6 +775,7 @@ public class Network {
 		{
 			component.destroy();
 			components.remove(component);
+			needRecalculation = true;
 		}
 	}
 	
@@ -791,6 +825,7 @@ public class Network {
 				throw new RuntimeException("Invalid node released.");
 			}
 			componentNode.release();
+			needRecalculation = true;
 		}
 	}
 
@@ -817,6 +852,7 @@ public class Network {
 				component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));
 			}
 			component.release();
+			needRecalculation = true;
 		}
 	}
 	
@@ -884,6 +920,7 @@ public class Network {
 				throw new RuntimeException("Invalid component released.");
 			}
 			component.release();
+			needRecalculation = true;
 		}
 	}
 
@@ -970,11 +1007,17 @@ public class Network {
 	}
 
 	public ArrayList<Component> getComponents() {
-		return components;
+		synchronized (accessMutexObj)
+		{
+			return components;
+		}
 	}
 	
 	public ArrayList<ComponentNode> getComponentNodes() {
-		return componentNodes;
+		synchronized (accessMutexObj)
+		{
+			return componentNodes;
+		}
 	}
 	
 	/**
@@ -1057,11 +1100,11 @@ public class Network {
 	 * @param fileName {@link String} The name of file, from which the persistent information gets loaded.
 	 */
 	public void load(String fileName) {
-		try {
-			clear();			//Clear current state.
+		synchronized (accessMutexObj)
+		{
+			try {
+				this.clear();			//Clear current state.
 
-			synchronized (accessMutexObj)
-			{
 				FileReader input = new FileReader(fileName);
 
 				BufferedReader reader = new BufferedReader(input);
@@ -1094,12 +1137,13 @@ public class Network {
 
 				}
 				reader.close();
+			} catch (Exception e) {
+					throw new RuntimeException("Load error!", e);
 			}
-
-		} catch (Exception e) {
-			throw new RuntimeException("Load error!", e);
+			finally {
+				needRecalculation = true;
+			}
 		}
-
 	}
 	
 	/**
@@ -1115,8 +1159,8 @@ public class Network {
 			vertices.clear();
 
 			vertices.add(new Vertex());
+			needRecalculation = true;
 		}
-		evaluate();
 	}
 
 	/**
@@ -1127,17 +1171,19 @@ public class Network {
 	public void draw(GraphicsContext ctx, double totalTimeSec, double deltaTimeSec) {
 		synchronized (accessMutexObj)
 		{
-			for (Edge e : edges) {
-				e.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
-			}
-			for (Vertex v : vertices) {
-				v.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
+			if (isValid()) {
+				for (Edge e : edges) {
+					e.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
+				}
+				for (Vertex v : vertices) {
+					v.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
+				}
+				ArrayList<Double> potentials = discoverPotential_BFS();
+				for (int i = 0; i < vertices.size(); i++) {
+					vertices.get(i).setTimeDomainPotential(potentials.get(i));
+				}
 			}
 
-			ArrayList<Double> potentials = discoverPotential_BFS();
-			for (int i = 0; i < vertices.size(); i++) {
-				vertices.get(i).setTimeDomainPotential(potentials.get(i));
-			}
 
 			for (Component component : components) {
 				component.updateCurrentVisualisationOffset(deltaTimeSec);
@@ -1160,8 +1206,8 @@ public class Network {
 			for (Component component : components) {
 				component.reset();
 			}
+			needRecalculation = true;
 		}
-		evaluate();
 	}
 	
 	/**
