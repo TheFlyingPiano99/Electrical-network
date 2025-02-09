@@ -42,12 +42,12 @@ public class AudioPlayer {
         public abstract void execute();
     }
 
-    class NewComponentCommand extends AudioCommand {
+    class SetComponentCommand extends AudioCommand {
         private Component newComp;
         private ArrayList<Double> newOmegas;
         private ArrayList<Integer> newSampledFrequencyIndices;
 
-        public NewComponentCommand(Component c)
+        public SetComponentCommand(Component c)
         {
             if (null == c)
             {
@@ -87,24 +87,25 @@ public class AudioPlayer {
         @Override
         public void execute()
         {
-            previousSelectedComponent = selectedComponent;
-            previousSimulatedAngularFrequencies = simulatedAngularFrequencies;
-            previousSampledFrequencyIndices = sampledFrequencyIndices;
+            if (!isCrossFade) { // Only change previous state if no cross-fade is happening to prevent click
+                previousSelectedComponent = selectedComponent;
+                previousSimulatedAngularFrequencies = simulatedAngularFrequencies;
+                previousSampledFrequencyIndices = sampledFrequencyIndices;
+                previousMode = mode;
+                crossFadeParam = 0.0;
+                isCrossFade = true;
+            }
 
             selectedComponent = newComp;
             simulatedAngularFrequencies = newOmegas;
             sampledFrequencyIndices = newSampledFrequencyIndices;
 
-            previousMode = mode;
-
-            isCrossFade = true;
-            crossFadeParam = 0.0;
         }
     }
 
     public void setSelectedComponent(Component c)
     {
-        commandQueue.add(new NewComponentCommand(c));
+        commandQueue.add(new SetComponentCommand(c));
     }
 
     class SetVolumeCommand extends AudioCommand {
@@ -183,15 +184,17 @@ public class AudioPlayer {
 
         @Override
         public void execute() {
-            previousSelectedComponent = selectedComponent;
-            previousSimulatedAngularFrequencies = simulatedAngularFrequencies;
-            previousSampledFrequencyIndices = sampledFrequencyIndices;
+            if (!isCrossFade)
+            {
+                previousSelectedComponent = selectedComponent;
+                previousSimulatedAngularFrequencies = simulatedAngularFrequencies;
+                previousSampledFrequencyIndices = sampledFrequencyIndices;
+                previousMode = mode;
+                isCrossFade = true;
+                crossFadeParam = 0.0;
+            }
 
-            previousMode = mode;
             mode = newMode;
-
-            isCrossFade = true;
-            crossFadeParam = 0.0;
         }
     }
 
