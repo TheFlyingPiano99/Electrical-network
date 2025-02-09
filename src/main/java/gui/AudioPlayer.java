@@ -253,12 +253,12 @@ public class AudioPlayer {
         int sampleRateHz = 44100;
         double timeStepSec = 1.0 / sampleRateHz;
         int shortByteSize = 2;
+        int bufferSampleCount = 512;
         double playBackSpeed = 1.0;
-        int bufferSampleCount = 1024;
-        int bufferSize = bufferSampleCount * shortByteSize;
+        double fadeSpeed = 4.0;
         double currentVolume = 0.0;
-        double fadeSpeed = 1.0;
-        LinkedList<Double> previousSamples = new LinkedList<>();
+        int bufferSize = bufferSampleCount * shortByteSize;
+        LinkedList<Double> previousSamples = new LinkedList<>();    // Accumulate for filtering
 
         // Build audio buffer:
         AudioFormat format = new AudioFormat(
@@ -284,7 +284,7 @@ public class AudioPlayer {
         int bufferByteOffset = 0;
         int samplesToReconstructPeriod = bufferSize;
         ArrayList<Double> sampleBuffer = null;
-        ByteBuffer masteredBuffer = ByteBuffer.allocate(2 * bufferSize);
+        ByteBuffer masteredByteBuffer = ByteBuffer.allocate(2 * bufferSize);
         while (runWorkThread) {
             if (Thread.currentThread().isInterrupted()) {
                 Thread.currentThread().interrupt();
@@ -300,7 +300,7 @@ public class AudioPlayer {
                     samplesToReconstructPeriod = (int)(periodTimeSec * sampleRateHz);
                     int precalculatedSampleCount = samplesToReconstructPeriod + bufferSampleCount;
                     sampleBuffer = new ArrayList<>(precalculatedSampleCount);
-                    masteredBuffer = ByteBuffer.allocate(precalculatedSampleCount * shortByteSize);
+                    masteredByteBuffer = ByteBuffer.allocate(precalculatedSampleCount * shortByteSize);
                     double elapsedTimeSec = 0;
                     for (int n = 0; n < precalculatedSampleCount; n++) {
                         sampleBuffer.add(sampleData(elapsedTimeSec));
@@ -312,11 +312,12 @@ public class AudioPlayer {
                 }
             }
 
+            // Fill mastered buffer:
             double minOriginal = -1.0;
             double maxOriginal = 1.0;
             short minTarget = Short.MIN_VALUE;
             short maxTarget = Short.MAX_VALUE;
-            if (sampleBuffer != null && sampleBuffer.size() >= bufferSampleCount) {
+            if (sampleBuffer != null) {
                 for (int i = 0; i < bufferSampleCount; i++) {
                     double sample = sampleBuffer.get(bufferSampleOffset + i);
                     if (fadeIn) {
@@ -346,14 +347,14 @@ public class AudioPlayer {
                     sample = Math.max(Math.min(Math.pow(masterVolume * currentVolume, 3) * sample, 1.0), -1.0); // Clip peaks
                     sample = filterSample(sample, previousSamples);
                     short remappedSample = (short)((sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
-                    masteredBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
+                    masteredByteBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
                 }
             }
-            else {
+            else {  // If no samples are available, we use zeros
                 for (int i = 0; i < bufferSampleCount; i++) {
-                    double sample = filterSample(0, previousSamples);
-                    short remappedSample = (short)((sample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
-                    masteredBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
+                    double filteredZeroSample = filterSample(0, previousSamples);
+                    short remappedSample = (short)((filteredZeroSample - minOriginal) * (maxTarget - minTarget) / (maxOriginal - minOriginal) + minTarget);
+                    masteredByteBuffer.putShort(bufferByteOffset + i * shortByteSize, remappedSample);
                 }
                 try {
                     Thread.sleep(50);
@@ -362,7 +363,10 @@ public class AudioPlayer {
                     break;
                 }
             }
-            dataLine.write(masteredBuffer.array(), bufferByteOffset, bufferSize);
+
+            // Export mastered buffer through sound API:
+            dataLine.write(masteredByteBuffer.array(), bufferByteOffset, bufferSize);   // NOTE: For continuous audio, it is good to reuse the same buffer
+            // Increment buffer offsets:
             bufferSampleOffset = (bufferSampleOffset + bufferSampleCount) % samplesToReconstructPeriod;
             bufferByteOffset = (bufferByteOffset + bufferSize) % (samplesToReconstructPeriod * shortByteSize);
         }

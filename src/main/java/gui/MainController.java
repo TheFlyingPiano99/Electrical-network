@@ -309,6 +309,7 @@ public class MainController {
 		lvLeftListView.getItems().add("Szinuszos feszültségforrás");
 		lvLeftListView.getItems().add("Négyszög feszültségforrás");
 		lvLeftListView.getItems().add("Háromszög feszültségforrás");
+		lvLeftListView.getItems().add("Fűrészfog feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getItems().add("Kondenzátor");
@@ -403,6 +404,9 @@ public class MainController {
 					}
 					else if (str.equals("Háromszög feszültségforrás")) {
 						network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+					}
+					else if (str.equals("Fűrészfog feszültségforrás")) {
+						network.dropComponent(new SawtoothVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 					}
     	            else if (str.equals("Ellenállás")) {
     	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
