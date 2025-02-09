@@ -432,7 +432,6 @@ public class MainController {
     	            selectedComponent = network.getSelected();
     	            destroyPropertyView();
     	            buildPropertyView(selectedComponent);
-					network.evaluate();
 					audioPlayer.setSelectedComponent(selectedComponent);
     	        } else {
     	            event.setDropCompleted(false);
@@ -486,11 +485,9 @@ public class MainController {
     			if (grabbedNode != null) {
     				network.releaseComponentNode(grabbedNode);
     				grabbedNode = null;
-					network.evaluate();
     			} else if (grabbedComponent != null) {
 					network.releaseComponent(grabbedComponent);
 					grabbedComponent = null;
-					network.evaluate();
 					audioPlayer.setSelectedComponent(selectedComponent);
     			}
     		}
@@ -537,23 +534,18 @@ public class MainController {
         Timeline timeline = new Timeline(new KeyFrame(
             duration,
             ae -> {
-        		try {
-					if (network != null) {
-						if (network.isValid()) {
-							rightStatus.setText("Helyes kapcsolás.");
-						}
-						else {
-					    	rightStatus.setText("Hibás kapcsolás!");    		
-						}
+				synchronized (network.getMutexObj()) {
+					network.evaluate();
+					if (network.isValid()) {
+						rightStatus.setText("Helyes kapcsolás.");
+					} else {
+						rightStatus.setText("Hibás kapcsolás!");
 					}
-					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec, ((simulating != null && simulating)? duration.toSeconds() : 0));
+					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec, ((simulating != null && simulating) ? duration.toSeconds() : 0));
+					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
 					if (simulating != null && simulating) {
 						totalTimeSec += duration.toSeconds();
 					}
-					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
-				} catch (Exception e) {
-					System.out.println("simulate error");
-					e.printStackTrace();
 				}
             }
         ));
@@ -565,7 +557,7 @@ public class MainController {
         
 		DrawingHelper.resetScope(scopeCanvas);
 
-		audioPlayer.initializeWorkThread();
+		audioPlayer.initializePlayback();
     }
 
 
@@ -633,7 +625,6 @@ public class MainController {
         			network.removeComponent(selectedComponent);
         			destroyPropertyView();
 					selectedComponent = null;
-					network.evaluate();
 					audioPlayer.setSelectedComponent(null);
     			}
     			break;
@@ -662,7 +653,7 @@ public class MainController {
 
 	public void handleCloseRequest(WindowEvent event)
 	{
-		audioPlayer.joinWorkThread();
+		audioPlayer.terminatePlayback();
 		System.out.println("Exiting");
 	}
 

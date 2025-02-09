@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.util.Pair;
 import network.Component;
 
 import javax.sound.sampled.*;
@@ -53,7 +54,7 @@ public class AudioPlayer {
                 newComp = c.clone();
                 int originalN = c.getParent().getSimulatedAngularFrequencies().size();
                 // "Low pass" filter:
-                int n = Math.min(originalN, 100);
+                int n = Math.min(originalN, 200);
                 omegas = new ArrayList<>(n);
                 newPeriodTimeSec = -1;
                 for (Double omega : c.getParent().getSimulatedAngularFrequencies()) {
@@ -68,7 +69,7 @@ public class AudioPlayer {
                 if (-1 == newPeriodTimeSec) {
                     newComp = null;
                     omegas = null;
-                    newPeriodTimeSec = 1 / highestAudibleFrequencyHz;
+                    newPeriodTimeSec = 0;
                 }
             } catch (CloneNotSupportedException ex) {
                 throw new RuntimeException(ex);
@@ -190,7 +191,7 @@ public class AudioPlayer {
         commandQueue.add(new SetPlaybackMode(m));
     }
 
-    public void initializeWorkThread()
+    public void initializePlayback()
     {
         workThread = new Thread(
                 () -> { this.playbackLoop(); }
@@ -219,6 +220,33 @@ public class AudioPlayer {
         public void execute() {
             runWorkThread = false;
         }
+    }
+
+    private void processCommands()
+    {
+        while (!commandQueue.isEmpty()) {
+            AudioCommand command = commandQueue.poll();
+            if (null != command) {
+                command.execute();
+            }
+        }
+    }
+
+    private void generateSamples(ArrayList<Double> sampleBuffer, ByteBuffer masteredBuffer)
+    {
+    }
+
+    private double sampleData(double elapsedTimeSec)
+    {
+        selectedComponent.updateTimeDomainParameters(elapsedTimeSec, simulatedAngularFrequencies);
+        switch (mode) {
+            case PlaybackMode.VOLTAGE_DROP -> { return selectedComponent.getTimeDomainVoltageDrop(); }
+            case PlaybackMode.CURRENT -> { return selectedComponent.getTimeDomainCurrent(); }
+            case PlaybackMode.INPUT_POTENTIAL -> {}
+            case PlaybackMode.OUTPUT_POTENTIAL -> {}
+            default -> { return 0.0; }
+        }
+        return 0.0;
     }
 
     public void playbackLoop() {
@@ -262,12 +290,7 @@ public class AudioPlayer {
                 Thread.currentThread().interrupt();
                 break;
             }
-            while (!commandQueue.isEmpty()) {
-                AudioCommand command = commandQueue.poll();
-                if (null != command) {
-                    command.execute();
-                }
-            }
+            processCommands();
 
             if (generateSamples) {
                 generateSamples = false;
@@ -278,32 +301,10 @@ public class AudioPlayer {
                     int precalculatedSampleCount = samplesToReconstructPeriod + bufferSampleCount;
                     sampleBuffer = new ArrayList<>(precalculatedSampleCount);
                     masteredBuffer = ByteBuffer.allocate(precalculatedSampleCount * shortByteSize);
-
-                    double timeSec = 0;
+                    double elapsedTimeSec = 0;
                     for (int n = 0; n < precalculatedSampleCount; n++) {
-                        if (null != selectedComponent && null != simulatedAngularFrequencies) {
-                            selectedComponent.updateTimeDomainParameters(timeSec, simulatedAngularFrequencies);
-                            switch (mode) {
-                                case PlaybackMode.VOLTAGE_DROP: {
-                                    sampleBuffer.add(selectedComponent.getTimeDomainVoltageDrop());
-                                    break;
-                                }
-                                case PlaybackMode.CURRENT: {
-                                    sampleBuffer.add(selectedComponent.getTimeDomainCurrent());
-                                    break;
-                                }
-                                case PlaybackMode.INPUT_POTENTIAL: {
-                                    break;
-                                }
-                                case PlaybackMode.OUTPUT_POTENTIAL: {
-                                    break;
-                                }
-                            }
-                            timeSec += timeStepSec * playBackSpeed;
-                        }
-                        else {
-                            sampleBuffer.add(0.0);
-                        }
+                        sampleBuffer.add(sampleData(elapsedTimeSec));
+                        elapsedTimeSec += timeStepSec * playBackSpeed;
                     }
                 }
                 else {
@@ -371,7 +372,7 @@ public class AudioPlayer {
     }
 
 
-    public void joinWorkThread() {
+    public void terminatePlayback() {
         if (null != workThread && workThread.isAlive()) {
             commandQueue.clear();
             commandQueue.add(new TerminateCommand());

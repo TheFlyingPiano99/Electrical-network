@@ -227,8 +227,7 @@ public class CurrentSource extends Component {
 					double val = Double.parseDouble(str);
 					setInputCurrent(val);
 
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				getProperties().get("current").value = String.valueOf(getInputCurrent());
 				getParent().evaluate();

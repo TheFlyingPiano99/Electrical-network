@@ -339,8 +339,7 @@ public class SinusoidalVoltageSource extends Component {
 					double val = Double.parseDouble(str);
 					setSourceVoltageAmplitude(val);
 
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
@@ -353,8 +352,7 @@ public class SinusoidalVoltageSource extends Component {
 					double val = Double.parseDouble(str);
 					setSourceVoltageAngularFrequency(val);
 
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
@@ -366,9 +364,7 @@ public class SinusoidalVoltageSource extends Component {
 				try {
 					double val = Double.parseDouble(str);
 					setSourceVoltagePhaseRad(val);
-
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (RuntimeException e) {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
