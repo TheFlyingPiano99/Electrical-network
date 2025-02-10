@@ -714,23 +714,22 @@ public class MainController {
      */
     public void handleKeyboardPressed(KeyEvent event) {
     	switch (event.getCode()) {
-    		case ENTER:
-    			break;
-    		case DELETE:
+    		case ENTER -> {}
+    		case DELETE -> {
 				synchronized (network.getMutexObj())
 				{
 					if (selectedComponent != null) {
-							network.cancelSelection();
-							network.removeComponent(selectedComponent);
-							destroyPropertyView();
-							selectedComponent = null;
-							network.evaluate(true);
-							audioPlayer.setSelectedComponent(null);
-							DrawingHelper.updateScopeSamples(null);
+						network.cancelSelection();
+						network.removeComponent(selectedComponent);
+						destroyPropertyView();
+						selectedComponent = null;
+						network.evaluate(true);
+						audioPlayer.setSelectedComponent(null);
+						DrawingHelper.updateScopeSamples(null);
 					}
 				}
-    			break;
-    		case ESCAPE:
+			}
+    		case ESCAPE -> {
 				synchronized (network.getMutexObj())
 				{
 					if (selectedComponent != null) {
@@ -741,20 +740,19 @@ public class MainController {
 						DrawingHelper.updateScopeSamples(null);
 					}
 				}
-    			break;
-    		case G:
-    			if (snapToGrid || network.isSnapToGrid()) {
-    				this.snapToGrid = false;
-    				network.setSnapToGrid(false);
+			}
+    		case G -> {
+				if (snapToGrid || network.isSnapToGrid()) {
+					this.snapToGrid = false;
+					network.setSnapToGrid(false);
 				}
-    			else if (!snapToGrid && !network.isSnapToGrid()) {
-    				this.snapToGrid = true;
-    				network.setSnapToGrid(true);
-    			}
-    			break;
-    		default:
-    			break;
-    	} 
+				else if (!snapToGrid && !network.isSnapToGrid()) {
+					this.snapToGrid = true;
+					network.setSnapToGrid(true);
+				}
+			}
+    		default -> {}
+    	}
     }
 
 	public void handleCloseRequest(WindowEvent event)
