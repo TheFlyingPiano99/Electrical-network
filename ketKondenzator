@@ -1,5 +1,0 @@
-class: main.java.network.Capacitor; capacity: 1.0; inputPos: [240, 60]; outputPos: [390, 60]
-class: main.java.network.DCVoltageSource; voltage: 1.0; inputPos: [390, 60]; outputPos: [390, 300]
-class: main.java.network.Resistance; resistance: 10.0; inputPos: [240, 300]; outputPos: [240, 60]
-class: main.java.network.Capacitor; capacity: 1.0; inputPos: [240, 300]; outputPos: [390, 300]
-class: main.java.network.Wire; inputPos: [540, 60]; outputPos: [540, 300]
