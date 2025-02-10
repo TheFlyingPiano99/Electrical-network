@@ -223,7 +223,7 @@ public class Capacitor extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}
@@ -261,7 +261,6 @@ public class Capacitor extends Component {
 				}
 				//System.out.println("Updated value:" + getCapacity());
 				getProperties().get("capacity").value = String.valueOf(getCapacity());
-				getParent().evaluate(true);
 			}
 		}
 	}

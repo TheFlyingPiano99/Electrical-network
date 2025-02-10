@@ -279,7 +279,7 @@ public class Inductor extends Component {
 				DEFAULT_SIZE,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}
@@ -317,7 +317,6 @@ public class Inductor extends Component {
 				}
 				//System.out.println("Updated value:" + getInductance());
 				getProperties().get("inductance").value = String.valueOf(getInductance());
-				getParent().evaluate(true);
 			}
 		}
 	}

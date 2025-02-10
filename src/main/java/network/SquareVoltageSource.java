@@ -198,7 +198,7 @@ public class SquareVoltageSource extends Component {
 	public void destroy() {
 		super.removeEndNodes();
 		super.getParent().removeEdge(e);
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 1; n <= maxN; n += 2) {		// Release all the used angular frequencies
 			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
 		}
 	}
@@ -339,7 +339,7 @@ public class SquareVoltageSource extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}
@@ -377,7 +377,6 @@ public class SquareVoltageSource extends Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
-				getParent().evaluate(true);
 			}
 
 			str = getProperties().get("angularFrequency").value;
@@ -390,7 +389,6 @@ public class SquareVoltageSource extends Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
-				getParent().evaluate(true);
 			}
 
 			str = getProperties().get("phase").value;
@@ -403,7 +401,6 @@ public class SquareVoltageSource extends Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
-				getParent().evaluate(true);
 			}
 		}
 	}

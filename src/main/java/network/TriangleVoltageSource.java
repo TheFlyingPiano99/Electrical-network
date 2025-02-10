@@ -344,7 +344,7 @@ public class TriangleVoltageSource extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}
@@ -382,7 +382,6 @@ public class TriangleVoltageSource extends Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
-				getParent().evaluate(true);
 			}
 
 			str = getProperties().get("angularFrequency").value;
@@ -395,7 +394,6 @@ public class TriangleVoltageSource extends Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
-				getParent().evaluate(true);
 			}
 
 			str = getProperties().get("phase").value;
@@ -408,7 +406,6 @@ public class TriangleVoltageSource extends Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
-				getParent().evaluate(true);
 			}
 		}
 	}

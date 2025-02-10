@@ -265,11 +265,13 @@ public class MainController {
      */
     @FXML
     void miStopAction(ActionEvent event) {
-    	network.reset();
-    	simulating = null;
-    	leftStatus.setText("Szimuláció leállítva.");
-		audioPlayer.stopPlayback();
-		totalTimeSec = 0;
+		synchronized (network.getMutexObj())
+		{
+			simulating = null;
+			leftStatus.setText("Szimuláció leállítva.");
+			audioPlayer.stopPlayback();
+			totalTimeSec = 0;
+		}
 	}
 
     //Button actions:--------------------------------------------------------------------------
@@ -415,61 +417,64 @@ public class MainController {
     
         circuitCanvas.setOnDragDropped(
     		event -> {
-       			Dragboard dragboard = event.getDragboard();
-    	        if (dragboard.hasString())
-    	        {
-    	            event.setDropCompleted(true);
-    	            String str = dragboard.getString();
-    	            if (str.equals("Feszültségforrás")) {
-    	            	network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-					else if (str.equals("Szinuszos feszültségforrás")) {
-						network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+				synchronized (network.getMutexObj())
+				{
+					Dragboard dragboard = event.getDragboard();
+					if (dragboard.hasString())
+					{
+						event.setDropCompleted(true);
+						String str = dragboard.getString();
+						if (str.equals("Feszültségforrás")) {
+							network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Szinuszos feszültségforrás")) {
+							network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Négyszög feszültségforrás")) {
+							network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Háromszög feszültségforrás")) {
+							network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Fűrészfog feszültségforrás")) {
+							network.dropComponent(new SawtoothVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Ellenállás")) {
+							network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Vezeték")) {
+							network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Kondenzátor")) {
+							network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Induktor")) {
+							network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Analóg voltmérő")) {
+							network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Analóg ampermérő")) {
+							network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Áramforrás")) {
+							network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Földelés")) {
+							network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+
+						selectedComponent = network.getSelected();
+						destroyPropertyView();
+						buildPropertyView(selectedComponent);
+						network.evaluate(true);
+						audioPlayer.setSelectedComponent(selectedComponent);
+						DrawingHelper.updateScopeSamples(selectedComponent);
+					} else {
+						event.setDropCompleted(false);
 					}
-					else if (str.equals("Négyszög feszültségforrás")) {
-						network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-					}
-					else if (str.equals("Háromszög feszültségforrás")) {
-						network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-					}
-					else if (str.equals("Fűrészfog feszültségforrás")) {
-						network.dropComponent(new SawtoothVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-					}
-    	            else if (str.equals("Ellenállás")) {
-    	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Vezeték")) {
-    	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Kondenzátor")) {
-    	            	network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Induktor")) {
-    	            	network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Analóg voltmérő")) {
-    	            	network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Analóg ampermérő")) {
-    	            	network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Áramforrás")) {
-    	            	network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Földelés")) {
-    	            	network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	         
-    	            selectedComponent = network.getSelected();
-    	            destroyPropertyView();
-    	            buildPropertyView(selectedComponent);
-					audioPlayer.setSelectedComponent(selectedComponent);
-					DrawingHelper.updateScopeSamples(selectedComponent);
-    	        } else {
-    	            event.setDropCompleted(false);
-    	            //System.out.println("Failed!");
-    	        }
-    	        event.consume();        			
+					event.consume();
+				}
     		}
 		);
         
@@ -513,16 +518,21 @@ public class MainController {
 
         circuitCanvas.setOnMouseReleased(
     		event -> {
-    			if (grabbedNode != null) {
-    				network.releaseComponentNode(grabbedNode);
-    				grabbedNode = null;
-    			} else if (grabbedComponent != null) {
-					network.releaseComponent(grabbedComponent);
-					grabbedComponent = null;
-					audioPlayer.setSelectedComponent(selectedComponent);
-					DrawingHelper.updateScopeSamples(selectedComponent);
-    			}
-    		}
+				synchronized (network.getMutexObj())
+					{
+					if (grabbedNode != null) {
+						network.releaseComponentNode(grabbedNode);
+						network.evaluate(true);
+						grabbedNode = null;
+					} else if (grabbedComponent != null) {
+						network.releaseComponent(grabbedComponent);
+						grabbedComponent = null;
+						network.evaluate(true);
+						audioPlayer.setSelectedComponent(selectedComponent);
+						DrawingHelper.updateScopeSamples(selectedComponent);
+					}
+	    		}
+			}
         );
 
         circuitCanvas.setOnMouseExited(
@@ -620,7 +630,6 @@ public class MainController {
             duration,
             ae -> {
 				synchronized (network.getMutexObj()) {
-					network.evaluate(false);
 					if (network.isValid()) {
 						rightStatus.setText("Helyes kapcsolás.");
 					} else {
@@ -666,10 +675,14 @@ public class MainController {
         		if (prop.editable) {
         			prop.valueN.textProperty().addListener((observable, oldValue, newValue) -> {
         				if (newValue != null  && !newValue.equals(oldValue)) {
-        					prop.value = prop.valueN.getText().trim();
-        					component.updatePropertyModel();
-							audioPlayer.setSelectedComponent(component);
-							DrawingHelper.updateScopeSamples(component);
+							synchronized (network.getMutexObj())
+							{
+								prop.value = prop.valueN.getText().trim();
+								component.updatePropertyModel();
+								network.evaluate(true);
+								audioPlayer.setSelectedComponent(component);
+								DrawingHelper.updateScopeSamples(component);
+							}
         				}
         			});
         		}
@@ -704,23 +717,30 @@ public class MainController {
     		case ENTER:
     			break;
     		case DELETE:
-    			if (selectedComponent != null) {
-					network.cancelSelection();
-        			network.removeComponent(selectedComponent);
-        			destroyPropertyView();
-					selectedComponent = null;
-					audioPlayer.setSelectedComponent(null);
-					DrawingHelper.updateScopeSamples(null);
-    			}
+				synchronized (network.getMutexObj())
+				{
+					if (selectedComponent != null) {
+							network.cancelSelection();
+							network.removeComponent(selectedComponent);
+							destroyPropertyView();
+							selectedComponent = null;
+							network.evaluate(true);
+							audioPlayer.setSelectedComponent(null);
+							DrawingHelper.updateScopeSamples(null);
+					}
+				}
     			break;
     		case ESCAPE:
-    			if (selectedComponent != null) {
-    				network.cancelSelection();
-        			destroyPropertyView();
-    				selectedComponent = null;
-					audioPlayer.setSelectedComponent(null);
-					DrawingHelper.updateScopeSamples(null);
-    			}
+				synchronized (network.getMutexObj())
+				{
+					if (selectedComponent != null) {
+						network.cancelSelection();
+						destroyPropertyView();
+						selectedComponent = null;
+						audioPlayer.setSelectedComponent(null);
+						DrawingHelper.updateScopeSamples(null);
+					}
+				}
     			break;
     		case G:
     			if (snapToGrid || network.isSnapToGrid()) {
