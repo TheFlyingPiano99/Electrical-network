@@ -176,7 +176,7 @@ public class Ground extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}

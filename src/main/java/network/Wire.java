@@ -171,7 +171,7 @@ public class Wire extends Component {
 				getDEFAULT_SIZE(),
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 

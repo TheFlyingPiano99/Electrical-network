@@ -209,7 +209,7 @@ public class Resistance extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 
@@ -244,7 +244,6 @@ public class Resistance extends Component {
 				} catch (RuntimeException e) {
 				}
 				getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
-				getParent().evaluate(true);
 			}
 		}
 	}

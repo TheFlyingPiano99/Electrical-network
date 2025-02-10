@@ -198,7 +198,7 @@ public class CurrentSource extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}
@@ -235,7 +235,6 @@ public class CurrentSource extends Component {
 				} catch (RuntimeException e) {
 				}
 				getProperties().get("current").value = String.valueOf(getInputCurrent());
-				getParent().evaluate(true);
 			}
 		}
 	}

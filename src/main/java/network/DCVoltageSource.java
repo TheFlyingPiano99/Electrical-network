@@ -227,7 +227,7 @@ public class DCVoltageSource extends network.Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
+				getParent().isValid(),
 				(float)e.getInput().getTimeDomainPotential(),
 				(float)e.getOutput().getTimeDomainPotential());
 	}
@@ -265,7 +265,6 @@ public class DCVoltageSource extends network.Component {
 				}
 				//System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
-				getParent().evaluate(true);
 			}
 		}
 	}

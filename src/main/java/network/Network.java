@@ -97,8 +97,8 @@ public class Network {
 		//Create ground-node (index 0):
 		vertices.add(new Vertex());
 
-		simulatedAngularFrequencies.add(0.0);	// DC compoenent is always simulated
-		angularFrequencyReferenceCounter.add(1);
+		simulatedAngularFrequencies.add(0.0);	// DC component is always simulated
+		angularFrequencyReferenceCounter.add(1);	// Reference to the DC component
 	}
 
 	/**
@@ -237,19 +237,20 @@ public class Network {
 			}
 			needRecalculation = false;
 			System.out.println("\nCalculating system");
-			if (changedSetOfAngularFrequencies) {
+			if (changedSetOfAngularFrequencies || forceEval) {
 				changedSetOfAngularFrequencies = false;
+				// Make sure that the ground vertex is always updated:
+				vertices.get(0).setInputCurrent(Vector.Zeros(simulatedAngularFrequencies.size()));
 				for (Component c : components) {
 					c.updateFrequencyDependentParameters(simulatedAngularFrequencies);
 				}
 			}
 			for (int k = 0; k < simulatedAngularFrequencies.size(); k++) {	// Finer time resolution
 
-
-				//Graph representations:
-				Matrix incidence = new Matrix(0,0);
-				Matrix cycle = new Matrix(0,0);
-				try {
+				if (!edges.isEmpty()) {
+					//Graph representations:
+					Matrix incidence = new Matrix(0,0);
+					Matrix cycle = new Matrix(0,0);
 					DFS(incidence, cycle);
 
 					//Parameters:
@@ -260,12 +261,6 @@ public class Network {
 					//Create system:
 					linSystem = new LinearSystemForCurrent(incidence, cycle, impedance, sourceVoltage, inputCurrent);
 
-				} catch (RuntimeException e) {
-					validNetwork = false;
-					return;
-				}
-
-				try {
 					//Calculate-current:
 					Vector current = CalculateCurrent();
 					if (current != null) {
@@ -281,8 +276,7 @@ public class Network {
 						}
 					}
 				}
-				catch (RuntimeException e)
-				{
+				else {		// If no edges in the system
 					validNetwork = false;
 				}
 			}
@@ -1185,9 +1179,10 @@ public class Network {
 				}
 			}
 
-
 			for (Component component : components) {
-				component.updateCurrentVisualisationOffset(deltaTimeSec);
+				if (isValid()) {
+					component.updateCurrentVisualisationOffset(deltaTimeSec);
+				}
 				component.draw(ctx);
 			}
 		}
