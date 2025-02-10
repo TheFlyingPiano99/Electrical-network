@@ -202,7 +202,7 @@ public class SinusoidalVoltageSource extends Component {
 
 	@Override
 	public void load(String[] pairs) {
-		sourceVoltageAmplitude = Double.valueOf(pairs[1].split(":")[1]);
+		setSourceVoltageAmplitude(Double.valueOf(pairs[1].split(":")[1]));
 
 		setSourceVoltageAngularFrequency(Double.valueOf(pairs[2].split(":")[1]));
 

@@ -209,6 +209,8 @@ public class MainController {
         	String fileName = f.getAbsolutePath();
 			synchronized (network.getMutexObj())
 			{
+				network.clear();
+				network.evaluate(true);
 				network.load(fileName);
 				network.evaluate(true);
 			}

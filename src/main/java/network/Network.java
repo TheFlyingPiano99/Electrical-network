@@ -1098,8 +1098,6 @@ public class Network {
 		synchronized (accessMutexObj)
 		{
 			try {
-				this.clear();			//Clear current state.
-
 				FileReader input = new FileReader(fileName);
 
 				BufferedReader reader = new BufferedReader(input);
@@ -1120,12 +1118,8 @@ public class Network {
 						Class c = Class.forName(t[1]);
 
 						Component comp = (Component) c.getConstructor().newInstance();
-
 						this.addComponent(comp);
-
 						comp.load(pairs);
-						comp.getInput().setMerge(true);
-						comp.getOutput().setMerge(true);
 						tryToMergeComponentNode(comp.getInput());
 						tryToMergeComponentNode(comp.getOutput());
 					}
@@ -1152,8 +1146,13 @@ public class Network {
 			componentNodes.clear();
 			edges.clear();
 			vertices.clear();
-
 			vertices.add(new Vertex());
+
+			simulatedAngularFrequencies.clear();
+			angularFrequencyReferenceCounter.clear();
+			simulatedAngularFrequencies.add(0.0);
+			angularFrequencyReferenceCounter.add(1);
+			changedSetOfAngularFrequencies = true;
 			needRecalculation = true;
 		}
 	}
