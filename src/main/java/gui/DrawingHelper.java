@@ -95,9 +95,7 @@ public class DrawingHelper {
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 			
-			if (network.isSnapToGrid()) {
-				drawGrid(canvas, network.getGridSize());				
-			}
+			drawGrid(canvas, network.getGridSize());
 			network.draw(ctx, totalTimeSec, deltaTimeSec);
 		}
 	}

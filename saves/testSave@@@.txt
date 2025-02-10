@@ -1,7 +1,0 @@
-class: main.java.network.DCVoltageSource; voltage: 10.0; inputPos: [40, 110]; outputPos: [70, 110]
-class: main.java.network.Resistance; resistance: 10.0; inputPos: [70, 110]; outputPos: [70, 80]
-class: main.java.network.Resistance; resistance: 10.0; inputPos: [70, 80]; outputPos: [40, 80]
-class: main.java.network.Resistance; resistance: 10.0; inputPos: [40, 80]; outputPos: [40, 110]
-class: main.java.network.Resistance; resistance: 10.0; inputPos: [70, 50]; outputPos: [40, 50]
-class: main.java.network.Wire; inputPos: [70, 80]; outputPos: [70, 50]
-class: main.java.network.Wire; inputPos: [40, 50]; outputPos: [40, 80]
