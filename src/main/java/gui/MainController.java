@@ -21,11 +21,7 @@ import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -163,7 +159,7 @@ public class MainController {
      */
     @FXML
     void miAboutAction(ActionEvent event) {
-    	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán, 2020", ButtonType.OK);
+    	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán (2025)", ButtonType.OK);
     	dlg.show();
     }
 
@@ -173,12 +169,23 @@ public class MainController {
      */
     @FXML
     void miNewAction(ActionEvent event) {
-    	network.clear();
-		selectedComponent = null;
-    	grabbedNode = null;
-    	grabbedComponent = null;
-    	simulating = null;
-    	destroyPropertyView();
+		synchronized (network.getMutexObj())
+		{
+			selectedComponent = null;
+			grabbedNode = null;
+			grabbedComponent = null;
+			simulating = null;
+			destroyPropertyView();
+			network.clear();
+			network.evaluate(true);
+			audioPlayer.setSelectedComponent(null);
+			audioPlayer.stopPlayback();
+			DrawingHelper.resetScope();
+			DrawingHelper.toggleScopeMode();
+			DrawingHelper.resetScope();
+			DrawingHelper.toggleScopeMode();
+			DrawingHelper.updateScopeSamples(null);
+		}
     }
 
     /**
@@ -200,7 +207,11 @@ public class MainController {
         File f = fileChooser.showOpenDialog(App.globalStage);
         if (f != null && f.exists()) {
         	String fileName = f.getAbsolutePath();
-        	network.load(fileName);
+			synchronized (network.getMutexObj())
+			{
+				network.load(fileName);
+				network.evaluate(true);
+			}
         }
     }
 
@@ -210,6 +221,8 @@ public class MainController {
      */
     @FXML
     void miQuitAction(ActionEvent event) {
+		audioPlayer.terminatePlayback();
+		System.out.println("Exiting");
 		Platform.exit();
     }
 
@@ -741,18 +754,22 @@ public class MainController {
 					}
 				}
 			}
-    		case G -> {
-				if (snapToGrid || network.isSnapToGrid()) {
-					this.snapToGrid = false;
-					network.setSnapToGrid(false);
-				}
-				else if (!snapToGrid && !network.isSnapToGrid()) {
-					this.snapToGrid = true;
-					network.setSnapToGrid(true);
+			case KeyCode.G -> {
+				synchronized (network.getMutexObj())
+				{
+					if (network.isSnapToGrid()) {
+						this.snapToGrid = false;
+						network.setSnapToGrid(false);
+					}
+					else {
+						this.snapToGrid = true;
+						network.setSnapToGrid(true);
+					}
 				}
 			}
     		default -> {}
     	}
+		event.consume();
     }
 
 	public void handleCloseRequest(WindowEvent event)
