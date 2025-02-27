@@ -789,6 +789,7 @@ public class Network {
 				throw new RuntimeException("Invalid node grabbed.");
 			}
 			componentNode.grab(cursorPos);
+			needRecalculation = true;
 		}
 	}
 	
