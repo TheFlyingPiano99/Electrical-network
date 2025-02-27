@@ -504,7 +504,8 @@ public class MainController {
     					grabbedComponent = network.getComponentAtPos(cursorPos);
     					if (grabbedComponent != null) {
     						network.grabComponent(grabbedComponent, cursorPos);
-            				if (null != network.getSelected() &&
+							network.evaluate(true);
+							if (null != network.getSelected() &&
             						(selectedComponent == null || selectedComponent != network.getSelected())) {
                 				selectedComponent = network.getSelected();
                 				destroyPropertyView();
