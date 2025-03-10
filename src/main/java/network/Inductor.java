@@ -1,14 +1,13 @@
 package network;
 
-import javafx.util.Duration;
-
 import java.util.*;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
-import math.MyMath;
+import math.Vector;
 
 /**
  * Ideal inductor, with adjustable value and zero resistance.
@@ -18,9 +17,6 @@ import math.MyMath;
 public class Inductor extends Component {
 	private Edge e;
 	private double inductance = 0.000001;
-	private List<Double> prevCurrents = new ArrayList<>();
-	private List<Double> prevDeltas = new ArrayList<>();
-	private double derivativeOfCurrent = 0;
 	private final float DEFAULT_SIZE = 60.0f;
 	private double wireResistance = 0.0;
 	
@@ -28,31 +24,54 @@ public class Inductor extends Component {
 	
 	public Inductor() {
 	}
-	
-	
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		math.Vector current = new math.Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		math.Vector impedance = new math.Vector(simulatedAngularFrequencies.size());
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+					i,
+					new Complex(0, 2 * Math.PI * simulatedAngularFrequencies.get(i) * inductance)
+			);
+		}
+		e.setImpedance(impedance);
+		math.Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
+
 	public Inductor(double l) {
 		inductance = l;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
-	public double getSourceVoltage() {
-		return -inductance * derivativeOfCurrent;
-	}
 
 	@Override
-	public double getCurrent() {
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return wireResistance; }
+
+	@Override
+	public Vector getFrequencyDomainCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Vector getFrequencyDomainVoltageDrop() {
 		return e.getVoltageDrop();
-	}
-
-	@Override
-	public double getResistance() {
-		return e.getResistance();
 	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
@@ -64,10 +83,7 @@ public class Inductor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(wireResistance);
-		e.setSourceVoltage(0);		
-		
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());		
@@ -78,7 +94,7 @@ public class Inductor extends Component {
 
 		ComponentProperty prop = new ComponentProperty();
 		prop.editable = false;
-		prop.name = "forrás feszültség:";
+		prop.name = "feszültség esés:";
 		prop.unit = "V";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("voltage", prop);
@@ -104,42 +120,6 @@ public class Inductor extends Component {
 		
 		super.getParent().removeEdge(e);
 	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(Duration duration) {
-		double delta = (double)duration.toSeconds();
-		double I = e.getCurrent();
-		prevCurrents.add(I);
-		prevDeltas.add(delta);
-
-		int maxUsedSampleCount = 10;
-		if (maxUsedSampleCount < prevCurrents.size()) {	// Pop first
-			prevCurrents.remove(0);
-		}
-		if (maxUsedSampleCount < prevDeltas.size()) {	// Pop first
-			prevDeltas.remove(0);
-		}
-		double derivativeOfCurrent = 0.0;
-		for (int k = 0; k < prevCurrents.size(); k++) {
-			double sample = prevCurrents.get(prevCurrents.size() - 1 - k);
-			derivativeOfCurrent += ((k % 2 == 0)? 1 : -1) * MyMath.binomial(prevCurrents.size() - 1, k) * sample;
-		}
-		derivativeOfCurrent /= delta;
-
-		double reactance = 0.0;
-		if (Math.abs(I) > 0.0) {
-			reactance = inductance * derivativeOfCurrent / I;
-		}
-		double impedance = Math.sqrt(Math.pow(wireResistance, 2) + Math.pow(reactance, 2));
-		e.setResistance(impedance);
-
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
-		getParent().setUpdateAll();	
-	}
-
 
 	//Persistence:-----------------------------------------------------------------------------------
 	
@@ -173,6 +153,15 @@ public class Inductor extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
 
 	public double getInductance() {
 		return inductance;
@@ -181,6 +170,13 @@ public class Inductor extends Component {
 
 	public void setInductance(double inductance) {
 		this.inductance = inductance;
+		ArrayList<Double> omega = getParent().getSimulatedAngularFrequencies();
+		for (int i = 0; i < e.getImpedance().dimension; i++) {
+			e.getImpedance().setAt(
+					i,
+					new Complex(0, 2 * Math.PI * omega.get(i) * inductance)
+			);
+		}
 	}
 
 
@@ -207,6 +203,8 @@ public class Inductor extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
+
 		List<Line> lines = new ArrayList<Line>();
 
 		//Construction:
@@ -281,9 +279,9 @@ public class Inductor extends Component {
 				DEFAULT_SIZE,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				getParent().isValid(),
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -300,41 +298,49 @@ public class Inductor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0);
-		e.setSourceVoltage(0.0);
-		e.setResistance(wireResistance);
-		prevCurrents.clear();
-		prevDeltas.clear();
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("inductance").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setInductance(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("inductance").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setInductance(val);
+
+				} catch (RuntimeException e) {
+				}
+				//System.out.println("Updated value:" + getInductance());
+				getProperties().get("inductance").value = String.valueOf(getInductance());
 			}
-			getParent().setUpdateAll();
-			//System.out.println("Updated value:" + getInductance());
-			getProperties().get("inductance").value = String.valueOf(getInductance());
 		}
 	}
 
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
 			setProperty("inductance", this::getInductance);
 		}		
 	}
 
-	
+    @Override
+    public Inductor clone() {
+        try {
+            Inductor clone = (Inductor) super.clone();
+			clone.e = this.e.clone();
+			clone.inductance = this.inductance;
+			clone.wireResistance = this.wireResistance;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

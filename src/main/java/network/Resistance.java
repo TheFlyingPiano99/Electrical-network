@@ -1,14 +1,15 @@
 package network;
 
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Resistance with adjustable value.
@@ -26,32 +27,56 @@ public class Resistance extends Component {
 	public Resistance() {
 	}
 
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(resistance, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
 	public Resistance(double r) {
-		resistance = r;
+		this.resistance = r;
+		e.getImpedance().fill(new Complex(resistance, 0));
 	}
 
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getCurrent() {
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return resistance; }
+
+	public void setResistance(double resistance) {
+		this.resistance = resistance;
+		Vector imp = new Vector(e.getImpedance().dimension);
+		imp.fill(new Complex(resistance, 0));
+		e.setImpedance(imp);
+	}
+
+	@Override
+	public Vector getFrequencyDomainCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Vector getFrequencyDomainVoltageDrop() {
 		return e.getVoltageDrop();
 	}
-
-	@Override
-	public double getResistance() {
-		return e.getResistance();
-	}
-
-	public void setResistance(double resistance) {
-		this.resistance = resistance;
-		e.setResistance(resistance);
-	}
-
 	// Build/Destroy:------------------------------------------------------------------------------------
 
 	@Override
@@ -61,9 +86,7 @@ public class Resistance extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(resistance); // !
-		e.setSourceVoltage(0);
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -89,7 +112,7 @@ public class Resistance extends Component {
 		prop.editable = true;
 		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
-		prop.value = String.valueOf(getResistance());
+		prop.value = String.valueOf(getTimeDomainResistance());
 		getProperties().put("resistance", prop);
 
 	}
@@ -98,14 +121,6 @@ public class Resistance extends Component {
 	public void destroy() {
 		removeEndNodes();
 		super.getParent().removeEdge(e);
-	}
-
-	// Update:-------------------------------------------------------------------------------------------
-
-	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
 	}
 
 	// Persistence:-----------------------------------------------------------------------------------
@@ -142,6 +157,16 @@ public class Resistance extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Resistance [resistance=");
@@ -162,6 +187,7 @@ public class Resistance extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
 		// Construction:
@@ -183,9 +209,9 @@ public class Resistance extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				getParent().isValid(),
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -200,37 +226,47 @@ public class Resistance extends Component {
 		getOutput().setVertexBinding(e.getOutput());
 	}
 
-	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
-
 	}
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("resistance").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setResistance(val);
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("resistance").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setResistance(val);
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (RuntimeException e) {
+				}
+				getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
 			}
-			getParent().setUpdateAll();
-			getProperties().get("resistance").value = String.valueOf(getResistance());
 		}
-
 	}
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
-			setProperty("resistance", this::getResistance);
+			setProperty("resistance", this::getTimeDomainResistance);
 		}
 	}
 
+
+    @Override
+    public Resistance clone() {
+        try {
+            Resistance clone = (Resistance) super.clone();
+            clone.e = this.e.clone();
+			clone.resistance = this.resistance;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

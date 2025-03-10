@@ -18,8 +18,8 @@ public class MyMath {
 	 */
 	public static Vector coordToVector(Coordinate c) {
 		Vector v = new Vector(2);
-		v.setAt(0, (double)c.x);
-		v.setAt(1, (double)c.y);
+		v.setAt(0, new Complex(c.x, 0));
+		v.setAt(1, new Complex(c.y, 0));
 		return v; 
 	}
 
@@ -31,7 +31,7 @@ public class MyMath {
 	 * @return Rejected vector.
 	 */
 	public static Vector reject(Vector a, Vector b) {
-	    return subtract(a,  multiply(b, (dot(a, b) / dot(b, b))));
+	    return subtract(a,  multiply(b, new Complex(dot(a, b) / dot(b, b), 0)));
 	}
 
 	
@@ -44,11 +44,11 @@ public class MyMath {
 	 * @param M	{@link Matrix}.
 	 * @return M multiplied by s.
 	 */
-	public static Matrix multiply(double s, Matrix M) {
+	public static Matrix multiply(Complex s, Matrix M) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    for (int c = 0; c < M.column; c++) {
 	        for (int r = 0; r < M.row; r++) {
-	            retM.setAt(r, c, M.at(r, c) * s);
+	            retM.setAt(r, c, Complex.multiply(M.at(r, c), s));
 	        }
 	    }
 	    return retM;
@@ -69,9 +69,9 @@ public class MyMath {
 	    Matrix retM = new Matrix(row1, column2);
 	    for (int c = 0; c < column2; c++) {
 	        for (int r = 0; r < row1; r++) {
-	            double n = 0;
+	            Complex n = new Complex(0, 0);
 	            for (int k = 0; k < column1row2; k++) {
-	                n += A.at(r, k) * B.at(k, c);
+	                n.add(Complex.multiply(A.at(r, k), B.at(k, c)));
 	            }
 	            retM.setAt(r, c, n);
 	        }
@@ -89,9 +89,9 @@ public class MyMath {
 	public static Vector multiply(Matrix M, Vector v) {
 	    Vector retV = new Vector(M.row);
 	    for ( int r = 0; r < M.row; r++) {
-	        double n = 0;
+	        Complex n = new Complex(0, 0);
 	        for (int c = 0; c < M.column; c++) {
-	            n += M.at(r, c) * v.at(c);
+	            n.add(Complex.multiply(M.at(r, c), v.at(c)));
 	        }
 	        retV.setAt(r, n);
 	    }
@@ -108,9 +108,9 @@ public class MyMath {
 	public static Vector multiply(Vector v, Matrix M) {
 	    Vector retV = new Vector(M.column);
 	    for (int c = 0; c < M.column; c++) {
-            double n = 0;
+			Complex n = new Complex(0, 0);
             for (int r = 0; r < M.row; r++) {
-	                n += v.at(r) * M.at(r, c);
+	                n.add(Complex.multiply(v.at(r), M.at(r, c)));
 	        }
             retV.setAt(c, n);
 	    }
@@ -124,11 +124,11 @@ public class MyMath {
 	 * @param s Scalar to multiply with.
 	 * @return solution
 	 */
-	public static Matrix multiply(Matrix M, double s) {
+	public static Matrix multiply(Matrix M, Complex s) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    for (int c = 0; c < M.column; c++) {
 	        for (int r = 0; r < M.row; r++) {
-	            retM.setAt(r, c, M.at(r, c) * s);
+	            retM.setAt(r, c, Complex.multiply(M.at(r, c), s));
 	        }
 	    }
 	    return retM;
@@ -163,7 +163,7 @@ public class MyMath {
 	    Matrix retM = new Matrix(A.row, A.column);
 	    for (int c = 0; c < A.column; c++) {
 	        for (int r = 0; r < A.row; r++) {
-	            retM.setAt(r, c, A.at(r, c) + B.at(r, c));
+	            retM.setAt(r, c, Complex.add(A.at(r, c), B.at(r, c)));
 	        }
 	    }
 	    return retM;
@@ -176,11 +176,11 @@ public class MyMath {
 	 * @param B matrix
 	 * @return difference
 	 */
-	public static Matrix subtrackt(Matrix A, Matrix B) {
+	public static Matrix subtract(Matrix A, Matrix B) {
 	    Matrix retM = new Matrix(A.row, A.column);
 	    for (int c = 0; c < A.column; c++) {
 	        for (int r = 0; r < A.row; r++) {
-	            retM.setAt(r, c, A.at(r, c) - B.at(r, c));
+	            retM.setAt(r, c, Complex.subtract(A.at(r, c), B.at(r, c)));
 	        }
 	    }
 	    return retM;
@@ -194,9 +194,9 @@ public class MyMath {
 	 */
 	public static Matrix identity(int size) {
 	    Matrix retM = new Matrix(size, size);
-	    retM.fill(0);
+	    retM.fill(new Complex(0, 0));
 	    for (int i = 0; i < size; i++) {
-	        retM.setAt(i, i, 1.0f);
+	        retM.setAt(i, i, new Complex(1, 0));
 	    }
 	    return retM;
 	}
@@ -211,7 +211,7 @@ public class MyMath {
 	 */
 	public static Matrix diagonal(Vector v) {
 	    Matrix retM = new Matrix(v.dimension, v.dimension);
-	    retM.fill(0);
+	    retM.fill(new Complex(0, 0));
 	    for (int i = 0; i < v.dimension; i++) {
 	        retM.setAt(i, i, v.at(i));
 	    }
@@ -281,11 +281,11 @@ public class MyMath {
 	 * @param val - multiplier
 	 * @return matrix with multiplied row
 	 */
-	public static Matrix multiplyRow(Matrix M, int row, double val) {
+	public static Matrix multiplyRow(Matrix M, int row, Complex val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
 	    for (int c = 0; c < M.column; c++) {
-	        retM.setAt(row, c, M.at(row, c) * val);
+	        retM.setAt(row, c, Complex.multiply(M.at(row, c), val));
 	    }
 	    return retM;
 	}
@@ -298,11 +298,11 @@ public class MyMath {
 	 * @param val - multiplier
 	 * @return matrix with multiplied column
 	 */	
-	public static Matrix multipyColumn(Matrix M, int column, double val) {
+	public static Matrix multiplyColumn(Matrix M, int column, Complex val) {
 	    Matrix retM = new Matrix(M.row, M.column);
 	    retM.copy(M);
 	    for (int r = 0; r < M.row; r++) {
-	        retM.setAt(r, column, M.at(r, column) * val);
+	        retM.setAt(r, column, Complex.multiply(M.at(r, column), val));
 	    }
 	    return retM;
 	}
@@ -319,10 +319,10 @@ public class MyMath {
 	 * @param s Scalar double to multiply by.
 	 * @return solution
 	 */
-	public static Vector multiply(Vector v, double s) {
+	public static Vector multiply(Vector v, Complex s) {
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
-	        retV.setAt(i, v.at(i) * s);
+	        retV.setAt(i, Complex.multiply(v.at(i), s));
 	    }
 	    return retV;
 	}
@@ -337,10 +337,10 @@ public class MyMath {
 	 * @param v Vector to be multiplied.
 	 * @return solution
 	 */
-	public static Vector multiply(double s, Vector v) {
+	public static Vector multiply(Complex s, Vector v) {
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
-	        retV.setAt(i, v.at(i) * s);
+	        retV.setAt(i, Complex.multiply(v.at(i), s));
 	    }
 	    return retV;
 	}
@@ -355,7 +355,7 @@ public class MyMath {
 	public static double dot (Vector a, Vector b) {
 	    double sum = 0;
 	    for (int i = 0; i < a.dimension; i++) {
-	        sum += a.at(i) * b.at(i);
+	        sum += Complex.multiply(a.at(i).conjugate(), b.at(i)).getRe();
 	    }
 	    return sum;
 	}
@@ -367,11 +367,10 @@ public class MyMath {
 	 * @param s Scalar double to divide by.
 	 * @return {@link Vector} 
 	 */
-	public static Vector divide(Vector v, double s) {
-	    s = 1.0F / s;
+	public static Vector divide(Vector v, Complex s) {
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
-	        retV.setAt(i, v.at(i)* s);
+	        retV.setAt(i, Complex.divide(v.at(i), s));
 	    }
 	    return retV;
 	}
@@ -386,7 +385,7 @@ public class MyMath {
 	public static Vector divide(Vector a, Vector b) {
 	    Vector retV = new Vector(a.dimension);
 	    for (int i = 0; i < a.dimension; i++) {
-	        retV.setAt(i, a.at(i) * (1.0F/b.at(i)));
+	        retV.setAt(i, Complex.divide(a.at(i), b.at(i)));
 	    }
 	    return retV;
 	}
@@ -400,7 +399,7 @@ public class MyMath {
 	public static Vector negate(Vector v) {
 	    Vector retV = new Vector(v.dimension);
 	    for (int i = 0; i < v.dimension; i++) {
-	        retV.setAt(i, -v.at(i));
+	        retV.setAt(i, new Complex(-v.at(i).getRe(), -v.at(i).getIm()));
 	    }
 	    return retV;
 	}
@@ -414,9 +413,9 @@ public class MyMath {
 	public static double magnitude(Vector v) {
 	    double sum = 0;
 	    for (int i = 0; i < v.dimension; i++) {
-	        sum += v.at(i) * v.at(i);
+	        sum += Complex.multiply(v.at(i).conjugate(), v.at(i)).getRe();
 	    }
-	    return (double) Math.sqrt(sum);
+	    return Math.sqrt(sum);
 	}
 
 	/**
@@ -428,7 +427,7 @@ public class MyMath {
 	public static Vector normalize(Vector v) {
 		double mag = magnitude(v);
 		if (mag != 0) {
-		    return  divide(v, mag);
+		    return  divide(v, new Complex(mag, 0));
 		}
 		return v;
 	}
@@ -445,7 +444,7 @@ public class MyMath {
 	public static Vector add(Vector a, Vector b) {
 	    Vector retV = new Vector(a.dimension);
 	    for (int i = 0; i < a.dimension; i++) {
-	        retV.setAt(i, a.at(i) + b.at(i));
+	        retV.setAt(i, Complex.add(a.at(i), b.at(i)));
 	    }
 	    return retV;
 	}
@@ -460,7 +459,7 @@ public class MyMath {
 	public static Vector subtract(Vector a, Vector b) {
 	    Vector retV = new Vector(a.dimension);
 	    for (int i = 0; i < a.dimension; i++) {
-	        retV.setAt(i, a.at(i) - b.at(i));
+	        retV.setAt(i, Complex.subtract(a.at(i), b.at(i)));
 	    }
 	    return retV;
 	}
@@ -603,7 +602,7 @@ public class MyMath {
 	 * @param b second
 	 * @return difference {@link Coordinate}
 	 */
-	public static Coordinate subtrackt(Coordinate a, Coordinate b) {
+	public static Coordinate subtract(Coordinate a, Coordinate b) {
 		return new Coordinate(a.x - b.x, a.y - b.y);
 	}
 	

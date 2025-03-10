@@ -1,7 +1,5 @@
 package network;
 
-import javafx.util.Duration;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,8 +7,10 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Current input, with adjustable value.
@@ -22,31 +22,67 @@ import math.Line;
 
 public class CurrentSource extends Component {
 	private Edge e;
-	private double inputCurrent = 1.0f;
+	private double inputCurrent = 1.0;
 	
 	//Constructors:---------------------------------------------------------------------------------------
 	
 	public CurrentSource() {
 	}
-	
-	
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(this.inputCurrent, 0.0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(Vector.Zeros(simulatedAngularFrequencies.size()));
+	}
+
+
 	public CurrentSource(double i) {
 		inputCurrent = i;
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
+
 	public double getInputCurrent() {
 		return inputCurrent;
 	}
 
 	public void setInputCurrent(double inputCurrent) {
 		this.inputCurrent = inputCurrent;
-		if (e != null) {
-			e.getInput().setInputCurrent(inputCurrent);
+		if (null != e) {
+			e.getInput().getInputCurrent().fill(new Complex(inputCurrent, 0.0));
 		}
 	}
 
+	@Override
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return 0; }
+
+	@Override
+	public double getTimeDomainResistance() { return 0; }
+
+	@Override
+	public Vector getFrequencyDomainCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -56,12 +92,6 @@ public class CurrentSource extends Component {
 		
 		e = new Edge();
 		super.getParent().addEdge(e);
-
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);
-		e.getInput().setInputCurrent(getInputCurrent()); //!
-
 		
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -82,14 +112,6 @@ public class CurrentSource extends Component {
 		super.removeEndNodes();
 		
 		super.getParent().removeEdge(e);
-	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
 	}
 
 
@@ -125,6 +147,15 @@ public class CurrentSource extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -167,9 +198,9 @@ public class CurrentSource extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				getParent().isValid(),
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -186,24 +217,25 @@ public class CurrentSource extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("current").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setInputCurrent(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("current").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setInputCurrent(val);
+
+				} catch (RuntimeException e) {
+				}
+				getProperties().get("current").value = String.valueOf(getInputCurrent());
 			}
-			getParent().setUpdateAll();
-			getProperties().get("current").value = String.valueOf(getInputCurrent());
 		}
 	}
 
@@ -211,29 +243,19 @@ public class CurrentSource extends Component {
 	@Override
 	public void updatePropertyView(boolean updateEditable) {		
 		if (updateEditable) {
-			setProperty("current", this::getInputCurrent);
+			setProperty("current", e.getInput()::getTimeDomainInputCurrent);
 		}
 	}
 
-
-	@Override
-	public double getCurrent() {
-		return e.getCurrent();
-	}
-
-
-	@Override
-	public double getVoltage() {
-		return 0;
-	}
-
-
-	@Override
-	public double getResistance() {
-		return 0;
-	}
-
-
-
-	
+    @Override
+    public CurrentSource clone() {
+        try {
+            CurrentSource clone = (CurrentSource) super.clone();
+			clone.e = this.e.clone();
+			clone.inputCurrent = this.inputCurrent;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

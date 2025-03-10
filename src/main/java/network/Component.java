@@ -1,13 +1,12 @@
 package network;
 
-import javafx.util.Duration;
-
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import javafx.scene.canvas.GraphicsContext;
-import math.Coordinate;
-import math.MyMath;
+import math.*;
 
 /**
  * Abstract parent of all network components.
@@ -15,11 +14,12 @@ import math.MyMath;
  * @author Simon Zoltán
  *
  */
-public abstract class Component {
+public abstract class Component implements Cloneable {
 		
 	private Network parent;
+	protected int maxFourierTerm = 1000;
 	
-	public float getCurrentVisualisationOffset() {
+	public double getCurrentVisualisationOffset() {
 		return currentVisualisationOffset;
 	}
 
@@ -29,10 +29,11 @@ public abstract class Component {
 
 	private Map<String, ComponentProperty> properties = null;
 	
-	private float DEFAULT_SIZE = 60.0f;
+	protected float DEFAULT_SIZE = 60.0f;
 
-	private float currentVisualisationOffset = 0;
-	private static float currentVisualisationSpeed = 100;
+	protected double currentVisualisationOffset = 0;
+	protected static double currentVisualisationSpeedScale = 100;
+	protected static double currentVisualisationSpeedLimit = 100;
 	
 	private ComponentNode input;
 	public float getDEFAULT_SIZE() {
@@ -47,6 +48,7 @@ public abstract class Component {
 		
 	//Manipulation related:
 	boolean grabbed = false;
+
 
 	/**
 	 * When the component is grabbed, the actual position of the cursor and the position of the components input node may not match.
@@ -71,7 +73,17 @@ public abstract class Component {
 	public Component(Network parent) {
 		this.parent = parent;
 	}
-	
+
+	@Override
+	public Component clone() throws CloneNotSupportedException
+	{
+		Component clone = (Component)super.clone();
+		clone.parent = this.parent;
+		clone.input = this.input;
+		clone.output = this.output;
+		return clone;
+	}
+
 	///Getters/Setters:-------------------------------------------------
 	
 	public Network getParent() {
@@ -112,6 +124,11 @@ public abstract class Component {
 	
 	public void setProperties(Map<String, ComponentProperty> properties) {
 		this.properties = properties;
+	}
+
+	public void setMaxFourierTerm(int n)
+	{
+		maxFourierTerm = n;
 	}
 
 	//Default generators:----------------------------------------------------------
@@ -161,8 +178,8 @@ public abstract class Component {
 	 */
 	public void grab(Coordinate cursorPos) {
 		grabbed = true;
-		grabCursorOffset = MyMath.subtrackt(cursorPos, getInput().getPos());	//CP - P = RP
-		fromInputToOutput = MyMath.subtrackt(getOutput().getPos(), getInput().getPos());
+		grabCursorOffset = MyMath.subtract(cursorPos, getInput().getPos());	//CP - P = RP
+		fromInputToOutput = MyMath.subtract(getOutput().getPos(), getInput().getPos());
 		parent.disconnectComponent(this);
 		disconnectGraphRepresentation();
 	}
@@ -173,7 +190,7 @@ public abstract class Component {
 	 * @param cursorPos	Position of the cursor.
 	 */
 	public void drag(Coordinate cursorPos) {
-		Coordinate newInputPos = MyMath.subtrackt(cursorPos, grabCursorOffset);
+		Coordinate newInputPos = MyMath.subtract(cursorPos, grabCursorOffset);
 		if (parent.isSnapToGrid()) {
 			newInputPos = Coordinate.snapToGrid(newInputPos, parent.getGridSize());
 		}
@@ -193,21 +210,28 @@ public abstract class Component {
 		parent.tryToMergeComponentNode(getOutput());
 	}
 
-	//CUrrentVisualisation:-------------------------------------------------------
-	
-	
-	public void increaseCurrentVisualisationOffset() {
-		float pres = currentVisualisationOffset;
-		currentVisualisationOffset = (currentVisualisationOffset + (float)getCurrent() * currentVisualisationSpeed) % DEFAULT_SIZE;
-		
-		Double test =Double.valueOf(currentVisualisationOffset);
+	public void updateCurrentVisualisationOffset(double deltaTimeSec) {
+		double pres = currentVisualisationOffset;
+		double speed = getTimeDomainCurrent() * currentVisualisationSpeedScale;
+		currentVisualisationOffset = (
+				currentVisualisationOffset
+				+ deltaTimeSec * Math.signum(speed) * Math.min(Math.abs(speed), currentVisualisationSpeedLimit)
+		) % DEFAULT_SIZE;
+
+		Double test = Double.valueOf(currentVisualisationOffset);
 		if (test.isNaN()) {
 			currentVisualisationOffset = pres;
 		}
-	}	
-		
+	}
+
 	//To override:---------------------------------------------------------------
-	
+
+	/**
+	 * Must be called after the set of simulated frequencies changes
+	 * @param simulatedAngularFrequencies the array of all the simulated frequencies
+	 */
+	abstract public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies);
+
 	/**
 	 * Build the inner structure of the component, including elements of the graph representation. Must generate end nodes.
 	 * HUN: A komponens belső struktúráját hozza létre: gráf reprezentáció. A végpontok generálását is el kell végeznie. 
@@ -220,14 +244,6 @@ public abstract class Component {
 	 * HUN: Megszünteti a komponens belső struktúráját.
 	 */
 	abstract public void destroy ();
-	
-	/**
-	 * Updates the inner structure of the component, including elements of the graph representation.
-	 * In case of nonlinear components this method changes parameters of the graph representation. In this case it must set related flags of the parent network!
-	 * HUN: Frissíti a belső struktúrát. Nem lineáris komponensek esetén különösen fontos! 
-	 * @param deltaTime	The time spent since the last call of update.
-	 */
-	abstract public void update(Duration deltaTime);
 	
 	/**
 	 * Adds the persistent content of the component to the given builder.
@@ -244,28 +260,54 @@ public abstract class Component {
 	 * @param pairs	flags and values.
 	 */
 	abstract public void load(String[] pairs);
-	
+
+	/**
+	 * Calculate current and voltage values for the given time step
+	 * @param totalTimeSec The total elapsed time since the beginning of the simulation
+	 */
+	abstract public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas);
+
+	/**
+	 * Calculate current and voltage values for the given time step
+	 * @param totalTimeSec The total elapsed time since the beginning of the simulation
+	 */
+	abstract public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices);
+
 	/**
 	 * Returns electric current value in ampere.
 	 * HUN: Visszaadja az áramszintet amperben.
 	 * @return current ampere
 	 */
-	abstract public double getCurrent();
+	abstract public double getTimeDomainCurrent();
 	
 	/**
 	 * Returns electric voltage drop in volt.
 	 * HUN: Visszaadja az elektromos feszültég esést voltban.  
 	 * @return voltage volt
 	 */
-	abstract public double getVoltage();
-	
+	abstract public double getTimeDomainVoltageDrop();
+
+	/**
+	 * Returns electric current value in ampere as a function of frequency.
+	 * HUN: Visszaadja az áramszintet amperben frekvencia függvényében.
+	 * @return current ampere
+	 */
+	abstract public Vector getFrequencyDomainCurrent();
+
+	/**
+	 * Returns electric voltage drop in volts as a function of frequency.
+	 * HUN: Visszaadja az elektromos feszültég esést voltban frekvencia függvényében.
+	 * @return voltage volt
+	 */
+	abstract public Vector getFrequencyDomainVoltageDrop();
+
 	/**
 	 * Returns electric resistance of component in ohm.
 	 * HUN: Visszaadja az elektromos ellenállást ohmban. 
 	 * @return resistance ohm
 	 */
-	abstract public double getResistance();
-	
+	abstract public double getTimeDomainResistance();
+
 	/**
 	 * Draws the component's visual representation to the given GraphicsContext.
 	 * HUN: Kirajzolja a komponens grafikus reprezentációját a megadott rajzfelületre. 
@@ -292,18 +334,18 @@ public abstract class Component {
 	abstract public void updatePropertyModel(); 
 
 	/**
-	 * Updates the {@link ComponentProperty} map according to the inner values of the component. 
+	 * Updates the {@link ComponentProperty} map according to the inner values of the component.
 	 * HUN: Frissíti a {@link ComponentProperty} mapot a belső változók szerint.
 	 * @param updateEditable TODO
 	 */
 	abstract public void updatePropertyView(boolean updateEditable);
 
-	public static double getCurrentVisualisationSpeed() {
-		return currentVisualisationSpeed;
+	public static double getCurrentVisualisationSpeedScale() {
+		return currentVisualisationSpeedScale;
 	}
 
-	public static void setCurrentVisualisationSpeed(float currentVisualisationSpeed) {
-		Component.currentVisualisationSpeed = currentVisualisationSpeed;
+	public static void setCurrentVisualisationSpeedScale(double currentVisualisationSpeedScale) {
+		Component.currentVisualisationSpeedScale = currentVisualisationSpeedScale;
 	}
 	
 	protected void setProperty(String propName, Supplier<Double> getter) {

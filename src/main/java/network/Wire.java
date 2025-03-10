@@ -1,14 +1,12 @@
 package network;
 
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
-import math.Coordinate;
-import math.Line;
+import math.*;
 
 /**
  *	Ideal wire, with zero resistance.
@@ -22,21 +20,47 @@ public class Wire extends Component {
 	//Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getVoltage() {
-		return e.getVoltageDrop();
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() {
+		return 0;
 	}
 
 	@Override
-	public double getResistance() {
-		return e.getResistance();
+	public double getTimeDomainResistance() {
+		return 0;
 	}
-	
+
 	@Override
-	public double getCurrent() {
+	public Vector getFrequencyDomainCurrent() {
 		return e.getCurrent();
 	}
-	
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
+
 	//Build/Destroy:------------------------------------------------------------------------------------
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
 
 	@Override
 	public void build() {
@@ -45,10 +69,8 @@ public class Wire extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);		
-		
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
+
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		
@@ -68,27 +90,12 @@ public class Wire extends Component {
 		prop.unit = "A";
 		prop.value = String.valueOf(0.0);
 		getProperties().put("current", prop);
-
-		prop = new ComponentProperty();
-		prop.editable = false;
-		prop.name = "ellenállás:";
-		prop.unit = "Ohm";
-		prop.value = String.valueOf(0.0);
-		getProperties().put("resistance", prop);
 	}
 
 	@Override
 	public void destroy() {
 		removeEndNodes();
 		super.getParent().removeEdge(e);
-	}
-	
-	//Update:---------------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
 	}
 
 	//Persistence:-----------------------------------------------------------------------------------
@@ -118,6 +125,16 @@ public class Wire extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Wire [");
@@ -137,6 +154,7 @@ public class Wire extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();		
 		Coordinate inputPos  = getInput().getPos(); 
 		Coordinate outputPos = getOutput().getPos();
@@ -153,9 +171,9 @@ public class Wire extends Component {
 				getDEFAULT_SIZE(),
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				getParent().isValid(),
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 
 /*
 		//Construction:
@@ -193,10 +211,9 @@ public class Wire extends Component {
 
 	@Override
 	public
-	void reset() {		
-		e.setCurrent(0.0F);
+	void reset() {
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
-
 	}
 
 	@Override
@@ -206,7 +223,17 @@ public class Wire extends Component {
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("current", this::getCurrent);		
+		setProperty("current", this::getTimeDomainCurrent);
 	}
 
+    @Override
+    public Wire clone() {
+        try {
+            Wire clone = (Wire) super.clone();
+            clone.e = this.e.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

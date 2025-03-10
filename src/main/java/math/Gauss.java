@@ -37,13 +37,16 @@ public class Gauss {
                 throw new InfiniteSolutions();
             }
             case cleanSolution: {
-    //Second fase of Gauss eliminaton after reducton:----------------------------
+    //Second phase of Gauss elimination after reduction:----------------------------
                 int r = M.row-2;
                 int rightSideRow = M.row-1;     //The right side of the equations.
                 for (int c = M.column-1; c > 0; c--) {    //Reverse iteration on columns
                     for (int ci = c-1; ci >= 0; ci--) {
-                            M.setAt(rightSideRow, ci, M.at(rightSideRow, ci) - M.at(rightSideRow, c) * M.at(r, ci));
-                            M.setAt(r, ci, 0);
+                            M.setAt(rightSideRow, ci, Complex.subtract(
+                                    M.at(rightSideRow, ci),
+                                    Complex.multiply(M.at(rightSideRow, c), M.at(r, ci))
+                            ));
+                            M.setAt(r, ci, new Complex(0, 0));
                     }
                     r--;
                 }
@@ -80,18 +83,21 @@ public class Gauss {
         int r = 0;
         
         while (true) {
-            if (0 != M.at(r,c)) {
+            if (!M.at(r,c).equals(new Complex(0, 0))) {
                 //Divide column[c] by M(r,c).
-                double divider = 1 / M.at(r, c);
+                Complex divider = M.at(r, c).inverse();
                 for (int i = 0; i < M.row; i++) {
-                    M.setAt(i, c, M.at(i, c)* divider);
+                    M.setAt(i, c, Complex.multiply(M.at(i, c), divider));
                 }
                 if (c < M.column - 1) {
                     //Add the -M(r, i) * M[c] column to all "M[i]" columns:
                     for (int i = c+1; i < M.column; i++) {
-                        double fact = M.at(r, i);
+                        Complex fact = M.at(r, i);
                         for (int j = 0; j < M.row; j++) {
-                            M.setAt(j, i, M.at(j, i) - fact * M.at(j, c));
+                            M.setAt(j, i, Complex.subtract(
+                                    M.at(j, i),
+                                    Complex.multiply(fact, M.at(j, c))
+                                    ));
                         }
                     }
                 }
@@ -108,7 +114,7 @@ public class Gauss {
                 if (c < M.column-1) {
                     //Search for swapable. Criteria: 0 != M(r, i)
                     for (int i = c+1; i < M.column; i++) {
-                        if (0 != M.at(r, i)) {     //if swappable found swap columns
+                        if (! M.at(r, i).equals(new Complex(0, 0))) {     //if swappable found swap columns
                             SwapColumn(M, c, i);
                             foundSwappable = true;
                             break;
@@ -138,7 +144,7 @@ public class Gauss {
             for (int i = c; i < M.column; i++) {    //Iterate on columns
                 boolean foundNotZeroInColumn = false;
                 for (int j = 0; j < M.row; j++) {   //Iterate element in current column
-                    if (0 != M.at(j, i)) {
+                    if (!M.at(j, i).equals(new Complex(0, 0))) {
                         if (j == M.row-1) {     //Found a forbidden column, where all elements are 0 except the last element.
                             return SingularityFlag.noSolution;
                         }
@@ -178,7 +184,7 @@ public class Gauss {
      * @param col2 - Column no. 2
      */
     private static void SwapColumn (Matrix M, int col1, int col2) {
-    	double temp;
+    	Complex temp;
         for (int r = 0; r < M.row; r++) {
             temp = M.at(r, col1);
             M.setAt(r, col1, M.at(r, col2));

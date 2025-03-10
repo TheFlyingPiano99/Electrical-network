@@ -38,6 +38,7 @@ public class App extends Application {
 				}
 			}
 		);
-	}	
+		stage.setOnCloseRequest((event) -> { MainController.mainController.handleCloseRequest(event); });
+	}
 
 }

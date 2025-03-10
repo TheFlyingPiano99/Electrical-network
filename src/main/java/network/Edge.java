@@ -1,4 +1,7 @@
 package network;
+import math.*;
+
+import java.util.ArrayList;
 
 
 /**
@@ -7,18 +10,24 @@ package network;
  * @author Simon Zoltán
  *
  */
-public class Edge {
-	
+
+public class Edge implements Cloneable {
+	public static int defaultPhasorSpaceResolution = 1024;
+
 	static int gen = 0;
 	private int id;
 	
 	private Vertex input;
 	private Vertex output;
 	
-	double resistance = 0;
-	double current = 0;
-	double sourceVoltage = 0;
-	
+	Vector impedance = Vector.Zeros(defaultPhasorSpaceResolution);
+	Vector current = Vector.Zeros(defaultPhasorSpaceResolution);
+	Vector sourceVoltage = Vector.Zeros(defaultPhasorSpaceResolution);
+
+	double timeDomainCurrent = 0.0;
+	double timeDomainSourceVoltage = 0.0;
+	double timeDomainVoltageDrop = 0.0;
+
 	boolean grabbed = false;
 
 	//Constructor:----------------------------------------------------------
@@ -28,11 +37,11 @@ public class Edge {
 		id = gen;
 	}
 
-	public Edge(double r, double i) {
+	public Edge(Vector impedance, Vector current) {
 		gen++;
 		id = gen;
-		resistance = r;
-		current = i;
+		this.impedance = impedance;
+		this.current = current;
 	}
 	
 	//Getters/Setters:----------------------------------------------------------
@@ -50,16 +59,16 @@ public class Edge {
 		return id;
 	}
 
-	public double getSourceVoltage() {
+	public Vector getSourceVoltage() {
 		return sourceVoltage;
 	}
 
-	public void setSourceVoltage(double sourceVoltage) {
+	public void setSourceVoltage(Vector sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
 	}
 
-	public double getVoltageDrop() {
-		return (sourceVoltage == 0.0f)? current * resistance : -sourceVoltage;
+	public Vector getVoltageDrop() {
+		return Vector.multiply(current, impedance);
 	}
 	
 	public Vertex getInput() {
@@ -78,19 +87,19 @@ public class Edge {
 		this.output = output;
 	}
 
-	public double getResistance() {
-		return resistance;
+	public Vector getImpedance() {
+		return impedance;
 	}
 
-	public void setResistance(double resistance) {
-		this.resistance = resistance;			
+	public void setImpedance(Vector impedance) {
+		this.impedance = impedance;
 	}
 
-	public double getCurrent() {
+	public Vector getCurrent() {
 		return current;
 	}
 
-	public void setCurrent(double current) {
+	public void setCurrent(Vector current) {
 		this.current = current;
 	}
 
@@ -118,5 +127,57 @@ public class Edge {
 			return false;
 		return true;
 	}
-	
+
+	public void updateTimeDomainParameters(ArrayList<Double> omega, double totalTimeSec)
+	{
+		timeDomainCurrent = 0;
+		timeDomainSourceVoltage = 0;
+		timeDomainVoltageDrop = 0;
+		for (int k = 0; k < omega.size(); k++) {
+			Complex e = Complex.euler(1, omega.get(k) * totalTimeSec);
+			timeDomainCurrent += Complex.multiply(current.at(k), e).getRe();
+			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), e).getRe();
+			timeDomainVoltageDrop += Complex.multiply(Complex.multiply(current.at(k), impedance.at(k)), e).getRe();
+		}
+	}
+
+	public void updateTimeDomainParametersUsingSpecificFrequencies(ArrayList<Double> omega, ArrayList<Integer> frequencyIndices, double totalTimeSec)
+	{
+		timeDomainCurrent = 0;
+		timeDomainSourceVoltage = 0;
+		timeDomainVoltageDrop = 0;
+		for (int k : frequencyIndices) {
+			Complex e = Complex.euler(1, omega.get(k) * totalTimeSec);
+			timeDomainCurrent += Complex.multiply(current.at(k), e).getRe();
+			timeDomainSourceVoltage += Complex.multiply(sourceVoltage.at(k), e).getRe();
+			timeDomainVoltageDrop += Complex.multiply(Complex.multiply(current.at(k), impedance.at(k)), e).getRe();
+		}
+	}
+
+	public final double getTimeDomainCurrent()
+	{
+		return timeDomainCurrent;
+	}
+
+	public final double getTimeDomainSourceVoltage()
+	{
+		return timeDomainSourceVoltage;
+	}
+
+	public final double getTimeDomainVoltageDrop()
+	{
+		return (timeDomainSourceVoltage == 0.0f)? timeDomainVoltageDrop : -timeDomainSourceVoltage;
+	}
+
+    @Override
+    public Edge clone() {
+        try {
+            Edge clone = (Edge) super.clone();
+			clone.input = this.input.clone();
+			clone.output = this.output.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

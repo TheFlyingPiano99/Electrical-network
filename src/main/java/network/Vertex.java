@@ -1,6 +1,8 @@
 package network;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import math.*;
 
 /**
  * Vertex of the graph representation of the network.
@@ -8,7 +10,7 @@ import java.util.HashMap;
  * @author Simon Zoltán
  *
  */
-public class Vertex {
+public class Vertex implements Cloneable {
 
 	/**
 	 * Map of incoming edges.
@@ -32,9 +34,11 @@ public class Vertex {
 	
 	static int gen = 0;
 	private int id;
-	private double inputCurrent = 0.0f;
-	private double potential = 0.0f;
-	
+	private Vector inputCurrent;
+
+	private double timeDomainInputCurrent = 0;
+	private double timeDomainPotential = 0;
+
 	//Constructor:-----------------------------------------------------
 	
 	Vertex () {
@@ -42,6 +46,7 @@ public class Vertex {
 		id = gen;
 		incoming = new HashMap<Vertex, Edge>();
 		outgoing = new HashMap<Vertex, Edge>();
+		inputCurrent = Vector.Zeros(Edge.defaultPhasorSpaceResolution);
 	}
 
 	//Getters/Setters:-------------------------------------------------
@@ -82,12 +87,13 @@ public class Vertex {
 		return id;
 	}
 
-	public double getInputCurrent() {
+	public Vector getInputCurrent() {
 		return inputCurrent;
 	}
 
-	public void setInputCurrent(double inputCurrent) {
+	public void setInputCurrent(Vector inputCurrent) {
 		this.inputCurrent = inputCurrent;
+		
 	}
 
 	//HashCode/Equals:--------------------------------------------------------------
@@ -127,12 +133,41 @@ public class Vertex {
 				(this.getIncoming().containsKey(v) || this.getOutgoing().containsKey(v)));
 	}
 
-	public double getPotential() {
-		return potential;
+	public void setTimeDomainInputPotential(double potential) {
+		this.timeDomainPotential = potential;
 	}
 
-	public void setPotential(double potential) {
-		this.potential = potential;
+    public double getTimeDomainPotential() {
+        return timeDomainPotential;
+    }
+
+	public void setTimeDomainPotential(double potential) {
+		timeDomainPotential = potential;
 	}
 
+    public double getTimeDomainInputCurrent() {
+        return timeDomainInputCurrent;
+    }
+
+	public void updateTimeDomainParameters(ArrayList<Double> omega, double totalTimeSec)
+	{
+		timeDomainInputCurrent = 0;
+		for (int k = 0; k < omega.size(); k++) {
+			timeDomainInputCurrent += Complex.multiply(
+					inputCurrent.at(k),
+					Complex.euler(1, omega.get(k) * totalTimeSec)
+			).getRe();
+		}
+	}
+
+    @Override
+    public Vertex clone() {
+        try {
+            Vertex clone = (Vertex) super.clone();
+			clone.inputCurrent = this.inputCurrent;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }
