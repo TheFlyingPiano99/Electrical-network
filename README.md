@@ -9,6 +9,6 @@ Educational simulation software implemented in Java using JavaFX.
 - View the shape of the AC signal in time and frequency domain
 - Play the audio generated based on the current or voltage
 
-## Reuqirements
+## Requirements
 - Java 23
 - JavaFX
