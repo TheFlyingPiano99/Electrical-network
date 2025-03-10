@@ -1,15 +1,15 @@
 package network;
 
-import javafx.util.Duration;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Capacitor, with adjustable capacity.
@@ -18,24 +18,12 @@ import math.Line;
  */
 public class Capacitor extends Component {
 	private Edge e;
-	public double getCharge() {
-		return charge;
-	}
-
-
-	public void setCharge(double charge) {
-		this.charge = charge;
-	}
-
 
 	public double getCapacity() {
 		return capacity;
 	}
 
-
-	private double charge = 0;
 	private double capacity = 1;
-	private double prevCurrent = 0;
 	//Constructors:---------------------------------------------------------------------------------------
 	
 	public Capacitor() {
@@ -47,27 +35,66 @@ public class Capacitor extends Component {
 	}
 		
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
-	public double getSourceVoltage() {
-		return -(1/capacity) * charge;
-	}
 
 	public void setCapacity(double capacity) {
 		this.capacity = capacity;
+        ArrayList<Double> simulatedAngularFrequencies = getParent().getSimulatedAngularFrequencies();
+		math.Vector impedance = new math.Vector(simulatedAngularFrequencies.size());
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+					i,
+					new Complex(0, -1.0 / (Math.max(2 * Math.PI * simulatedAngularFrequencies.get(i) * capacity , 0.0000000000001)))
+			);
+		}
+		e.setImpedance(impedance);
 	}
 
 	@Override
-	public double getCurrent() {
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return Double.POSITIVE_INFINITY; }
+
+	@Override
+	public Vector getFrequencyDomainCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
-		return getSourceVoltage();
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
 	}
 
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		math.Vector impedance = new math.Vector(simulatedAngularFrequencies.size());
+		for (int i = 0; i < impedance.dimension; i++) {
+			impedance.setAt(
+					i,
+					new Complex(0, -1.0 / (Math.max(2 * Math.PI * simulatedAngularFrequencies.get(i) * capacity , 0.0000000000001)))
+			);
+		}
+		e.setImpedance(impedance);
+
+		math.Vector current = new math.Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		math.Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
+
 	//Build/Destroy:------------------------------------------------------------------------------------
-	
+
 	@Override
 	public void build() {
 		super.generateEndNodes();
@@ -75,10 +102,8 @@ public class Capacitor extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(this.getSourceVoltage());
-		
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
+
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 		
@@ -90,7 +115,7 @@ public class Capacitor extends Component {
 		prop.editable = false;
 		prop.name = "forrás feszültség:";
 		prop.unit = "V";
-		prop.value = String.valueOf(getSourceVoltage());
+		prop.value = String.valueOf(e.getTimeDomainVoltageDrop());
 		getProperties().put("voltage", prop);
 
 		prop = new ComponentProperty();
@@ -114,21 +139,6 @@ public class Capacitor extends Component {
 		
 		super.getParent().removeEdge(e);
 	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(Duration duration) {
-		double I = e.getCurrent();
-		charge += (I + prevCurrent) * duration.toSeconds();
-		prevCurrent = I;
-		e.setSourceVoltage(this.getSourceVoltage());
-		//System.out.println(e.getSourceVoltage());
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
-		getParent().setUpdateAll();
-	}
-
 
 	//Persistence:-----------------------------------------------------------------------------------
 	
@@ -162,6 +172,15 @@ public class Capacitor extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -186,6 +205,7 @@ public class Capacitor extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
 		//Construction:
@@ -203,9 +223,9 @@ public class Capacitor extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				getParent().isValid(),
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -222,45 +242,48 @@ public class Capacitor extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
-		e.setSourceVoltage(0.0F);
-		setCharge(0.0F);
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("capacity").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setCapacity(val);
-				
-			} catch (Exception e) {
-				e.printStackTrace();
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("capacity").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setCapacity(val);
+
+				} catch (Exception e) {
+				}
+				//System.out.println("Updated value:" + getCapacity());
+				getProperties().get("capacity").value = String.valueOf(getCapacity());
 			}
-			getParent().setUpdateAll();
-			//System.out.println("Updated value:" + getCapacity());
-			getProperties().get("capacity").value = String.valueOf(getCapacity());
 		}
 	}
 
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
 			setProperty("capacity", this::getCapacity);
-		}		
+		}
 	}
 
-
-	@Override
-	public double getResistance() {
-		return 0;
-	}
-
-	
+    @Override
+    public Capacitor clone() {
+        try {
+            Capacitor clone = (Capacitor) super.clone();
+			clone.e = this.e.clone();
+			clone.capacity = this.capacity;
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

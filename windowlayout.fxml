@@ -9,6 +9,7 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -20,7 +21,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
+<VBox prefHeight="700.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainController">
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
@@ -52,30 +53,49 @@
           <Button fx:id="btnStart" mnemonicParsing="false" onAction="#btnStartAction" text="Indít" />
             <Button fx:id="btnPause" mnemonicParsing="false" onAction="#btnPauseAction" text="Szünetel" />
             <Button fx:id="btnStop" mnemonicParsing="false" onAction="#btnStopAction" text="Leállít" />
+            <Label text="Hangerő:" />
+            <Slider fx:id="volumeSlider" />
+            <Button fx:id="btnAudioMode" mnemonicParsing="false" text="Potenciál" />
         </items>
       </ToolBar>
-    <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" minHeight="0.0" minWidth="0.0" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" minHeight="0.0" minWidth="0.0" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
       <items>
-        <AnchorPane>
+        <AnchorPane fx:id="leftPane">
           <children>
                   <ListView fx:id="lvLeftListView" minWidth="-Infinity" prefHeight="504.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
           </children>
         </AnchorPane>
-      <AnchorPane id="Content" fx:id="apCanvas" minHeight="-Infinity" minWidth="-Infinity">
+      <AnchorPane id="Content" fx:id="middlePane" minHeight="0.0" minWidth="0.0">
         <children>
-                  <Canvas height="604.0" width="591.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" fx:id="xCanvas" />
+                  <Canvas fx:id="circuitCanvas" height="611.0" width="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
         </children>
       </AnchorPane>
-        <AnchorPane>
+        <AnchorPane fx:id="rightPane">
           <children>
-                  <SplitPane dividerPositions="0.5" layoutX="-20.0" layoutY="-3.0" minWidth="-Infinity" orientation="VERTICAL" prefHeight="504.0" prefWidth="240.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <SplitPane fx:id="rightSplitPane" dividerPositions="0.5" layoutX="-20.0" layoutY="-3.0" minWidth="-Infinity" orientation="VERTICAL" prefHeight="504.0" prefWidth="240.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <items>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="160.0">
+                        <AnchorPane fx:id="rightTopPane" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="160.0">
                            <children>
-                              <Canvas fx:id="scopeCanvas" height="302.0" nodeOrientation="INHERIT" width="294.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Canvas fx:id="scopeCanvas" height="302.0" nodeOrientation="INHERIT" width="294.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                              <Button fx:id="scopeModeToggleBtn" layoutX="236.0" layoutY="2.0" mnemonicParsing="false" onAction="#btnScopeModeToggleAction" text="Mód" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                              <Button fx:id="btnScopeHorizontalMinus" layoutX="218.0" layoutY="263.0" mnemonicParsing="false" text="-" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="35.0" />
+                              <Button fx:id="btnScopeHorizontalPlus" layoutX="251.0" layoutY="263.0" mnemonicParsing="false" text="+" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="btnScopeVerticalMinus" layoutX="261.0" layoutY="71.0" mnemonicParsing="false" text="-" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="70.0" />
+                              <Button fx:id="btnScopeVerticalPlus" layoutX="258.0" layoutY="39.0" mnemonicParsing="false" text="+" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="40.0">
+                                 <font>
+                                    <Font name="System Bold" size="12.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="btnScopeRight" layoutX="178.0" layoutY="272.0" mnemonicParsing="false" text="&gt;" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="65.0" />
+                              <Button fx:id="btnScopeLeft" layoutX="162.0" layoutY="247.0" mnemonicParsing="false" text="&lt;" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="95.0" />
+                              <Button fx:id="btnScopeReset" layoutX="161.0" layoutY="28.0" mnemonicParsing="false" text="Reset" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="5.0" />
                            </children>
                         </AnchorPane>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                      <AnchorPane fx:id="rightBottomPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                            <children>
                               <Label fx:id="lblPropertiesTitle" text="Tulajdonságok" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <font>

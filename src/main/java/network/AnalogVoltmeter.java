@@ -1,14 +1,15 @@
 package network;
 
-import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Voltage meter.
@@ -36,24 +37,47 @@ public class AnalogVoltmeter extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getCurrent() {
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return resistance; }
+
+	public void setResistance(double r) {
+		this.resistance = r;
+		e.getImpedance().fill(new Complex(resistance, 0));
+	}
+
+	@Override
+	public Vector getFrequencyDomainCurrent() {
 		return e.getCurrent();
 	}
 
 	@Override
-	public double getVoltage() {
+	public Vector getFrequencyDomainVoltageDrop() {
 		return e.getVoltageDrop();
 	}
 
 	@Override
-	public double getResistance() {
-		return e.getResistance();
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(resistance, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
 	}
 
-	public void setResistance(double resistance) {
-		this.resistance = resistance;
-		e.setResistance(resistance);
-	}
 
 	// Build/Destroy:------------------------------------------------------------------------------------
 
@@ -64,9 +88,7 @@ public class AnalogVoltmeter extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		e.setCurrent(0);
-		e.setResistance(resistance); // !
-		e.setSourceVoltage(0);
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
@@ -92,7 +114,7 @@ public class AnalogVoltmeter extends Component {
 		prop.editable = true;
 		prop.name = "ellenállás:";
 		prop.unit = "Ohm";
-		prop.value = String.valueOf(getResistance());
+		prop.value = String.valueOf(getTimeDomainResistance());
 		getProperties().put("resistance", prop);
 
 		prop = new ComponentProperty();
@@ -109,14 +131,6 @@ public class AnalogVoltmeter extends Component {
 		super.getParent().removeEdge(e);
 	}
 
-	// Update:-------------------------------------------------------------------------------------------
-
-	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
-	}
-
 	// Persistence:-----------------------------------------------------------------------------------
 
 	@Override
@@ -125,7 +139,7 @@ public class AnalogVoltmeter extends Component {
 		writer.append("class: ");
 		writer.append(this.getClass().getCanonicalName());
 		writer.append("; resistance: ");
-		writer.append(resistance);
+		writer.append(getTimeDomainResistance());
 		writer.append("; scale: ");
 		writer.append(scale);
 
@@ -153,10 +167,20 @@ public class AnalogVoltmeter extends Component {
 	}
 
 	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Resistance [resistance=");
-		builder.append(resistance);
+		builder.append(getTimeDomainResistance());
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
 		builder.append(",");
@@ -220,7 +244,7 @@ public class AnalogVoltmeter extends Component {
 				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
 				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
 
-		angle = 1.5708f + (float)(getVoltage() * scale) * 0.017453f;
+		angle = 1.5708f + (float)(getTimeDomainVoltageDrop() * scale) * 0.017453f;
 		angle = (angle + needlePrevAngle) / 2.0f;
 		if (2.7489f < angle) {
 			angle = 2.7489f; 
@@ -245,8 +269,8 @@ public class AnalogVoltmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -263,47 +287,46 @@ public class AnalogVoltmeter extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
-
 	}
 
 	@Override
 	public void updatePropertyModel() {
-		String str = getProperties().get("resistance").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				setResistance(val);
+		synchronized (getParent().getMutexObj())
+		{
+			String str = getProperties().get("resistance").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					setResistance(val);
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (RuntimeException e) {
+				}
+				getProperties().get("resistance").value = String.valueOf(getTimeDomainResistance());
 			}
-			getParent().setUpdateAll();
-			getProperties().get("resistance").value = String.valueOf(getResistance());
-		}
 
-		str = getProperties().get("scale").value;
-		if (str != null && str.length() > 0) {
-			try {
-				double val = Double.parseDouble(str);
-				scale = val;
+			str = getProperties().get("scale").value;
+			if (str != null && str.length() > 0) {
+				try {
+					double val = Double.parseDouble(str);
+					scale = val;
 
-			} catch (Exception e) {
-				e.printStackTrace();
+				} catch (RuntimeException e) {
+				}
+				getProperties().get("scale").value = String.valueOf(scale);
 			}
-			getProperties().get("scale").value = String.valueOf(scale);
 		}
 	}
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		setProperty("voltage", this::getVoltage);
-		setProperty("current", this::getCurrent);
+		setProperty("voltage", this::getTimeDomainVoltageDrop);
+		setProperty("current", this::getTimeDomainCurrent);
 		if (updateEditable) {
-			setProperty("resistance", this::getResistance);
+			setProperty("resistance", this::getTimeDomainResistance);
 			setProperty("scale", this::getScale);
-		}		
+		}
 	}
 
 	public double getScale() {
@@ -312,6 +335,20 @@ public class AnalogVoltmeter extends Component {
 
 	public void setScale(double scale) {
 		this.scale = scale;
+	}
+
+	@Override
+	public AnalogVoltmeter clone() {
+		try {
+			AnalogVoltmeter clone = (AnalogVoltmeter) super.clone();
+			clone.e = this.e.clone();
+			clone.resistance = this.resistance;
+			clone.scale = this.scale;
+			clone.needlePrevAngle = this.needlePrevAngle;
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
 	}
 
 }

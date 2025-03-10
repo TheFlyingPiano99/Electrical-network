@@ -1,7 +1,5 @@
 package network;
 
-import javafx.util.Duration;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,16 +7,16 @@ import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
 import gui.DrawingHelper;
+import math.Complex;
 import math.Coordinate;
 import math.Line;
+import math.Vector;
 
 /**
  * Current input, with adjustable value.
  * @author Simon Zoltán
  *
  */
-
-
 
 public class Ground extends Component {
 	private Edge e;
@@ -27,9 +25,45 @@ public class Ground extends Component {
 	
 	public Ground() {
 	}
-			
+
+	@Override
+	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
+		Vector current = new Vector(simulatedAngularFrequencies.size());
+		current.fill(new Complex(0, 0));
+		e.setCurrent(current);
+		Vector impedance = new Vector(simulatedAngularFrequencies.size());
+		impedance.fill(new Complex(0, 0));
+		e.setImpedance(impedance);
+		Vector sourceVoltage = new Vector(simulatedAngularFrequencies.size());
+		sourceVoltage.fill(new Complex(0, 0));
+		e.setSourceVoltage(sourceVoltage);
+
+		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
+		inputCurrentVector.fill(new Complex(0, 0));
+		e.getInput().setInputCurrent(inputCurrentVector);
+		e.getOutput().setInputCurrent(inputCurrentVector);
+	}
+
 	//Getters/Setters:------------------------------------------------------------------------------------
-	
+
+	@Override
+	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+
+	@Override
+	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+
+	@Override
+	public double getTimeDomainResistance() { return 0; }
+
+	@Override
+	public Vector getFrequencyDomainCurrent() {
+		return e.getCurrent();
+	}
+
+	@Override
+	public Vector getFrequencyDomainVoltageDrop() {
+		return e.getVoltageDrop();
+	}
 
 	//Build/Destroy:------------------------------------------------------------------------------------
 	
@@ -40,10 +74,7 @@ public class Ground extends Component {
 		e = new Edge();
 		super.getParent().addEdgeWithGroundedOutput(e);
 
-		e.setCurrent(0);
-		e.setResistance(0);
-		e.setSourceVoltage(0);
-
+		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
 		
 		getInput().setVertexBinding(e.getInput());
 		//getOutput().setVertexBinding(e.getOutput());
@@ -55,7 +86,7 @@ public class Ground extends Component {
 		prop.editable = false;
 		prop.name = "elnyelt áram:";
 		prop.unit = "A";
-		prop.value = String.valueOf(getCurrent());
+		prop.value = String.valueOf(getTimeDomainCurrent());
 		getProperties().put("current", prop);
 	}
 	
@@ -65,15 +96,6 @@ public class Ground extends Component {
 		
 		super.getParent().removeEdge(e);
 	}
-
-	//Update:----------------------------------------------------------------------------------------
-	
-	@Override
-	public void update(Duration duration) {
-		increaseCurrentVisualisationOffset();
-		updatePropertyView(false);
-	}
-
 
 	//Persistence:-----------------------------------------------------------------------------------
 	
@@ -103,6 +125,15 @@ public class Ground extends Component {
 		updatePropertyView(true);
 	}
 
+	@Override
+	public void updateTimeDomainParameters(double totalTimeSec, ArrayList<Double> omegas) {
+		e.updateTimeDomainParameters(omegas, totalTimeSec);
+	}
+
+	@Override
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
+	}
 
 	@Override
 	public String toString() {
@@ -125,6 +156,7 @@ public class Ground extends Component {
 
 	@Override
 	public void draw(GraphicsContext ctx) {
+		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
 		float  defaultSize = getDEFAULT_SIZE();
@@ -144,9 +176,9 @@ public class Ground extends Component {
 				defaultSize,
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
-				true,
-				(float)e.getInput().getPotential(),
-				(float)e.getOutput().getPotential());
+				getParent().isValid(),
+				(float)e.getInput().getTimeDomainPotential(),
+				(float)e.getOutput().getTimeDomainPotential());
 	}
 
 
@@ -163,7 +195,7 @@ public class Ground extends Component {
 
 	@Override
 	public void reset() {
-		e.setCurrent(0.0F);
+		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
@@ -174,29 +206,21 @@ public class Ground extends Component {
 
 
 	@Override
-	public void updatePropertyView(boolean updateEditable) {		
-		setProperty("current", this::getCurrent);
+	public void updatePropertyView(boolean updateEditable)
+	{
+		setProperty("current", this::getTimeDomainCurrent);
 	}
 
 
-	@Override
-	public double getCurrent() {
-		return e.getCurrent();
-	}
+    @Override
+    public Ground clone() {
+        try {
+            Ground clone = (Ground) super.clone();
+			clone.e = this.e.clone();
 
-
-	@Override
-	public double getVoltage() {
-		return 0;
-	}
-
-
-	@Override
-	public double getResistance() {
-		return 0;
-	}
-
-
-
-	
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

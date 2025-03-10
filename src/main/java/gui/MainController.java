@@ -5,67 +5,47 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Animation;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextField;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import math.Coordinate;
-import network.AnalogVoltmeter;
-import network.AnalogeAmmeter;
-import network.Capacitor;
-import network.Component;
-import network.ComponentNode;
-import network.ComponentProperty;
-import network.CurrentSource;
-import network.Ground;
-import network.Inductor;
-import network.Network;
-import network.Resistance;
-import network.VoltageSource;
-import network.Wire;
+import network.*;
 
 public class MainController {
 	
 	static MainController mainController = null;
 	
-	private DrawingHelper helper;
 	private Network network = new Network();
 	private Component     grabbedComponent = null;
 	private ComponentNode grabbedNode = null;
 	private Component selectedComponent = null;
-	private int idx = 0;
-	
+	AudioPlayer audioPlayer = new AudioPlayer();
+
 	boolean snapToGrid = true;
-	Boolean simulating = null; 
+	Boolean simulating = null;
+	double totalTimeSec = 0;
 
 //FXML items:-----------------------------------------------------------------	
 	
@@ -108,11 +88,17 @@ public class MainController {
     @FXML
     private Button btnStop;
 
+	@FXML
+	private Slider volumeSlider;
+
+	@FXML
+	private Button btnAudioMode;
+
     @FXML
     private ListView<String> lvLeftListView;
 
     @FXML
-    private Canvas xCanvas;
+    private Canvas circuitCanvas;
 
     @FXML
     private Canvas scopeCanvas;
@@ -134,9 +120,38 @@ public class MainController {
 
     @FXML
     private GridPane propertyGrid;
-  
-    
-//Menu item actions:------------------------------------------------------------------------------------------
+
+	@FXML
+	private AnchorPane middlePane;
+
+	@FXML
+	private AnchorPane rightTopPane;
+
+	@FXML
+	private Button scopeModeToggleBtn;
+
+	@FXML
+	private Button btnScopeHorizontalPlus;
+
+	@FXML
+	private Button btnScopeHorizontalMinus;
+
+	@FXML
+	private Button btnScopeVerticalPlus;
+
+	@FXML
+	private Button btnScopeVerticalMinus;
+
+	@FXML
+	private Button btnScopeLeft;
+
+	@FXML
+	private Button btnScopeRight;
+
+	@FXML
+	private Button btnScopeReset;
+
+	//Menu item actions:------------------------------------------------------------------------------------------
     
     /**
      * Show about window.
@@ -144,7 +159,7 @@ public class MainController {
      */
     @FXML
     void miAboutAction(ActionEvent event) {
-    	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán, 2020", ButtonType.OK);
+    	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán (2025)", ButtonType.OK);
     	dlg.show();
     }
 
@@ -154,13 +169,23 @@ public class MainController {
      */
     @FXML
     void miNewAction(ActionEvent event) {
-    	network.clear();
-    	helper.updateCanvasContent(xCanvas, network);
-    	selectedComponent = null;
-    	grabbedNode = null;
-    	grabbedComponent = null;
-    	simulating = null;
-    	destroyPropertyView();
+		synchronized (network.getMutexObj())
+		{
+			selectedComponent = null;
+			grabbedNode = null;
+			grabbedComponent = null;
+			simulating = null;
+			destroyPropertyView();
+			network.clear();
+			network.evaluate(true);
+			audioPlayer.setSelectedComponent(null);
+			audioPlayer.stopPlayback();
+			DrawingHelper.resetScope();
+			DrawingHelper.toggleScopeMode();
+			DrawingHelper.resetScope();
+			DrawingHelper.toggleScopeMode();
+			DrawingHelper.updateScopeSamples(null);
+		}
     }
 
     /**
@@ -182,8 +207,13 @@ public class MainController {
         File f = fileChooser.showOpenDialog(App.globalStage);
         if (f != null && f.exists()) {
         	String fileName = f.getAbsolutePath();
-        	network.load(fileName);
-        	DrawingHelper.updateCanvasContent(xCanvas, network);
+			synchronized (network.getMutexObj())
+			{
+				network.clear();
+				network.evaluate(true);
+				network.load(fileName);
+				network.evaluate(true);
+			}
         }
     }
 
@@ -193,7 +223,9 @@ public class MainController {
      */
     @FXML
     void miQuitAction(ActionEvent event) {
-    	Platform.exit();
+		audioPlayer.terminatePlayback();
+		System.out.println("Exiting");
+		Platform.exit();
     }
 
     /**
@@ -226,6 +258,7 @@ public class MainController {
     void miStartAction(ActionEvent event) {
     	simulating = true;
     	leftStatus.setText("Szimuláció folyamatban.");
+		audioPlayer.startPlayback();
     }
 
     /**
@@ -238,6 +271,7 @@ public class MainController {
         	leftStatus.setText("Szimuláció szüneteltetve.");    		
     	}
     	simulating = false;
+		audioPlayer.pausePlayback();
     }
 
     /**
@@ -246,18 +280,19 @@ public class MainController {
      */
     @FXML
     void miStopAction(ActionEvent event) {
-    	network.reset();
-    	simulating = null;
-    	leftStatus.setText("Szimuláció leállítva.");
-		DrawingHelper.clearScopeImage(scopeCanvas);
+		synchronized (network.getMutexObj())
+		{
+			simulating = null;
+			leftStatus.setText("Szimuláció leállítva.");
+			audioPlayer.stopPlayback();
+			totalTimeSec = 0;
+		}
 	}
 
     //Button actions:--------------------------------------------------------------------------
 
     @FXML
-    void btnStartAction(ActionEvent event) {
-    	miStartAction(event);
-    }
+    void btnStartAction(ActionEvent event) { miStartAction(event); }
 
     @FXML
     void btnPauseAction(ActionEvent event) {
@@ -268,6 +303,9 @@ public class MainController {
     void btnStopAction(ActionEvent event) {
     	miStopAction(event);
     }
+
+	@FXML
+	void btnScopeModeToggleAction(ActionEvent event) { DrawingHelper.toggleScopeMode(); };
     
 //Initialize:----------------------------------------------------------------------------------------------
     
@@ -288,21 +326,34 @@ public class MainController {
         assert btnStart != null : "fx:id=\"btnStart\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert btnPause != null : "fx:id=\"btnPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert volumeSlider != null : "fx:id=\"volumeSlider\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnAudioMode != null : "fx:id=\"btnAudioMode\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lvLeftListView != null : "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert xCanvas != null : "fx:id=\"xCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
+        assert circuitCanvas != null : "fx:id=\"circuitCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert scopeCanvas != null : "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert lblPropertiesTitle != null : "fx:id=\"lblPropertiesTitle\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert leftStatus != null : "fx:id=\"leftStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
         assert rightStatus != null : "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert middlePane != null : "fx:id=\"middlePane\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert rightTopPane != null : "fx:id=\"rightTopPane\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert scopeModeToggleBtn != null : "fx:id=\"scopeModeToggleBtn\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeHorizontalPlus != null : "fx:id=\"btnScopeHorizontalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeHorizontalMinus != null : "fx:id=\"btnScopeHorizontalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeVerticalPlus != null : "fx:id=\"btnScopeVerticalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeVerticalMinus != null : "fx:id=\"btnScopeVerticalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeLeft != null : "fx:id=\"btnScopeLeft\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeRight != null : "fx:id=\"btnScopeRight\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeReset != null : "fx:id=\"btnScopeReset\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
-
-        helper = new DrawingHelper();
-        
         mainController = this;
         
         lvLeftListView.getItems().add("Feszültségforrás");
+		lvLeftListView.getItems().add("Szinuszos feszültségforrás");
+		lvLeftListView.getItems().add("Négyszög feszültségforrás");
+		lvLeftListView.getItems().add("Háromszög feszültségforrás");
+		lvLeftListView.getItems().add("Fűrészfog feszültségforrás");
         lvLeftListView.getItems().add("Ellenállás");
         lvLeftListView.getItems().add("Vezeték");
         lvLeftListView.getItems().add("Kondenzátor");
@@ -314,11 +365,19 @@ public class MainController {
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText("Szimuláció leállítva.");    		
-    	rightStatus.setText("Hibás kapcsolás!");    		
+    	rightStatus.setText("Hibás kapcsolás!");
+
+		// Canvas Width / Height binding:
+
+		circuitCanvas.widthProperty().bind(middlePane.widthProperty());
+		circuitCanvas.heightProperty().bind(middlePane.heightProperty());
+
+		scopeCanvas.widthProperty().bind(rightTopPane.widthProperty());
+		scopeCanvas.heightProperty().bind(rightTopPane.heightProperty());
+
+		//Keyboard:
     	
-//Keyboard:---------------------------------------------------------------------------------------
-    	
-		xCanvas.setOnKeyPressed(
+		circuitCanvas.setOnKeyPressed(
 			event-> {
 				handleKeyboardPressed(event);
 			}
@@ -332,7 +391,7 @@ public class MainController {
 
 
     	
-//Mouse:------------------------------------------------------------------------------------------
+		//Mouse:
     	
         lvLeftListView.setOnMouseClicked(
     		event ->  {
@@ -358,7 +417,7 @@ public class MainController {
     		}
         );
  
-        xCanvas.setOnDragOver(
+        circuitCanvas.setOnDragOver(
     		event -> {
     			//System.out.println("target DragOver");
     	        Dragboard dragboard = event.getDragboard();
@@ -371,151 +430,247 @@ public class MainController {
     		}
 		);
     
-        xCanvas.setOnDragDropped(
+        circuitCanvas.setOnDragDropped(
     		event -> {
-       			Dragboard dragboard = event.getDragboard();
-    	        if (dragboard.hasString())
-    	        {
-    	            event.setDropCompleted(true);
-    	            String str = dragboard.getString();
-    	            if (str.equals("Feszültségforrás")) {
-    	            	network.dropComponent(new VoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Ellenállás")) {
-    	            	network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Vezeték")) {
-    	            	network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Kondenzátor")) {
-    	            	network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Induktor")) {
-    	            	network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Analóg voltmérő")) {
-    	            	network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Analóg ampermérő")) {
-    	            	network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Áramforrás")) {
-    	            	network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	            else if (str.equals("Földelés")) {
-    	            	network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
-    	            }
-    	         
-    	            selectedComponent = network.getSelected();
-    	            destroyPropertyView();
-    	            buildPropertyView(selectedComponent);
-    	            helper.updateCanvasContent(xCanvas, network);
-    	            //System.out.println("Successfuly dropped " + dragboard.getString());
-    	        } else {
-    	            event.setDropCompleted(false);
-    	            //System.out.println("Failed!");
-    	        }
-    	        event.consume();        			
+				synchronized (network.getMutexObj())
+				{
+					Dragboard dragboard = event.getDragboard();
+					if (dragboard.hasString())
+					{
+						event.setDropCompleted(true);
+						String str = dragboard.getString();
+						if (str.equals("Feszültségforrás")) {
+							network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Szinuszos feszültségforrás")) {
+							network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Négyszög feszültségforrás")) {
+							network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Háromszög feszültségforrás")) {
+							network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Fűrészfog feszültségforrás")) {
+							network.dropComponent(new SawtoothVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Ellenállás")) {
+							network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Vezeték")) {
+							network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Kondenzátor")) {
+							network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Induktor")) {
+							network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Analóg voltmérő")) {
+							network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Analóg ampermérő")) {
+							network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Áramforrás")) {
+							network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals("Földelés")) {
+							network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+
+						selectedComponent = network.getSelected();
+						destroyPropertyView();
+						buildPropertyView(selectedComponent);
+						network.evaluate(true);
+						audioPlayer.setSelectedComponent(selectedComponent);
+						DrawingHelper.updateScopeSamples(selectedComponent);
+					} else {
+						event.setDropCompleted(false);
+					}
+					event.consume();
+				}
     		}
 		);
         
-        xCanvas.setOnMousePressed(
+        circuitCanvas.setOnMousePressed(
     		event -> {
     			if (event.getButton() ==  MouseButton.PRIMARY) {
     				Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
     				grabbedNode = network.getNodeAtPos(cursorPos);
     				if (grabbedNode != null) {
     					network.grabComponentNode(grabbedNode, cursorPos);
-        				helper.updateCanvasContent(xCanvas, network);
     				} else {
     					grabbedComponent = network.getComponentAtPos(cursorPos);
     					if (grabbedComponent != null) {
     						network.grabComponent(grabbedComponent, cursorPos);
-            				helper.updateCanvasContent(xCanvas, network);
-            				if (null != network.getSelected() &&
+							network.evaluate(true);
+							if (null != network.getSelected() &&
             						(selectedComponent == null || selectedComponent != network.getSelected())) {
                 				selectedComponent = network.getSelected();
                 				destroyPropertyView();
             					buildPropertyView(selectedComponent);
             				}
-            				
     					}
     				}
     			}
     		}
         );
         
-        xCanvas.setOnMouseDragged(
+        circuitCanvas.setOnMouseDragged(
     		event -> {
     			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
     			if (grabbedNode != null) {
         			//System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
     				network.dragComponentNode(grabbedNode, cursorPos);
-    				helper.updateCanvasContent(xCanvas, network);
     			} else if (grabbedComponent != null) {
 					//System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
 					network.dragComponent(grabbedComponent, cursorPos);
-    				helper.updateCanvasContent(xCanvas, network);
     			}
     	        event.consume();        			
     		}
         );
         
 
-        xCanvas.setOnMouseReleased(
+        circuitCanvas.setOnMouseReleased(
     		event -> {
-    			if (grabbedNode != null) {
-    				network.releaseComponentNode(grabbedNode);
-    				grabbedNode = null;
-    				helper.updateCanvasContent(xCanvas, network);
-    			} else if (grabbedComponent != null) {
-					network.releaseComponent(grabbedComponent);
-					grabbedComponent = null;
-    				helper.updateCanvasContent(xCanvas, network);
-    			}
-    		}
+				synchronized (network.getMutexObj())
+					{
+					if (grabbedNode != null) {
+						network.releaseComponentNode(grabbedNode);
+						network.evaluate(true);
+						grabbedNode = null;
+					} else if (grabbedComponent != null) {
+						network.releaseComponent(grabbedComponent);
+						grabbedComponent = null;
+						network.evaluate(true);
+						audioPlayer.setSelectedComponent(selectedComponent);
+						DrawingHelper.updateScopeSamples(selectedComponent);
+					}
+	    		}
+			}
         );
 
-        xCanvas.setOnMouseExited(
+        circuitCanvas.setOnMouseExited(
     		event -> {
     			//System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
     		}
         );
-        
-//Timer:----------------------------------------------------------------------------------------
+
+		volumeSlider.setMin(0);
+		volumeSlider.setMax(100);
+		volumeSlider.setBlockIncrement(1);
+		volumeSlider.valueProperty().addListener(
+			(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+				if (!Objects.equals(oldValue, newValue)) {
+					audioPlayer.setMasterVolume((double)newValue / 100.0);
+				}
+			}
+		);
+		volumeSlider.setValue(100);
+		audioPlayer.setMasterVolume(1);
+
+		btnAudioMode.setOnAction(
+			(event) -> {
+				AudioPlayer.PlaybackMode newMode = audioPlayer.toogleMode();
+				String text = "";
+				switch (newMode) {
+					case AudioPlayer.PlaybackMode.CURRENT -> text = "    Áram    ";
+					case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = " Feszültség ";
+					case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = "Potenciál (be)";
+					case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = "Potenciál (ki)";
+				}
+				btnAudioMode.setText(text);
+			}
+		);
+		btnAudioMode.setText(" Feszültség ");
+		audioPlayer.setPlaybackMode(AudioPlayer.PlaybackMode.VOLTAGE_DROP);
+
+		btnScopeHorizontalPlus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeXInterval();
+					DrawingHelper.setScopeXInterval(currentVal * 0.5);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeHorizontalMinus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeXInterval();
+					DrawingHelper.setScopeXInterval(currentVal * 2.0);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeVerticalPlus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeYScale();
+					DrawingHelper.setScopeYScale(currentVal * 2.0);
+				}
+		);
+
+		btnScopeVerticalMinus.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeYScale();
+					DrawingHelper.setScopeYScale(currentVal * 0.5);
+				}
+		);
+
+		btnScopeLeft.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeXStart();
+					DrawingHelper.setScopeXStart(currentVal - DrawingHelper.getScopeXInterval() * 0.25);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeRight.setOnAction(
+				(event) -> {
+					double currentVal = DrawingHelper.getScopeXStart();
+					DrawingHelper.setScopeXStart(currentVal + DrawingHelper.getScopeXInterval() * 0.25);
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		btnScopeReset.setOnAction(
+				(event) -> {
+					DrawingHelper.resetScope();
+					DrawingHelper.updateScopeSamples(selectedComponent);
+				}
+		);
+
+		// Timer
         
         Duration duration = Duration.millis(50);
         Timeline timeline = new Timeline(new KeyFrame(
             duration,
             ae -> {
-        		try {
-					if (simulating != null && simulating && network != null) {
-						network.simulate(duration);
-						if (network.isValid()) {
-							rightStatus.setText("Helyes kapcsolás.");
-						}
-						else {
-					    	rightStatus.setText("Hibás kapcsolás!");    		
-						}
+				synchronized (network.getMutexObj()) {
+					if (network.isValid()) {
+						rightStatus.setText("Helyes kapcsolás.");
+					} else {
+						rightStatus.setText("Hibás kapcsolás!");
 					}
-					DrawingHelper.updateCanvasContent(xCanvas, network);
+					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec, ((simulating != null && simulating) ? duration.toSeconds() : 0));
+					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
 					if (simulating != null && simulating) {
-						DrawingHelper.updateScopeImage(scopeCanvas, network);
+						totalTimeSec += duration.toSeconds();
 					}
-				} catch (Exception e) {
-					System.out.println("simulate error");
-					e.printStackTrace();
 				}
             }
         ));
+
+
+
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
-        
-    	DrawingHelper.updateCanvasContent(xCanvas, network);
-		DrawingHelper.clearScopeImage(scopeCanvas);
+
+		audioPlayer.initializePlayback();
     }
-    
-//PropertyView:---------------------------------------------------------------------------------
+
+
+
+	//PropertyView:
     
 	/**
 	 * Build property view of the given component.
@@ -536,8 +691,14 @@ public class MainController {
         		if (prop.editable) {
         			prop.valueN.textProperty().addListener((observable, oldValue, newValue) -> {
         				if (newValue != null  && !newValue.equals(oldValue)) {
-        					prop.value = prop.valueN.getText().trim();
-        					component.updatePropertyModel();
+							synchronized (network.getMutexObj())
+							{
+								prop.value = prop.valueN.getText().trim();
+								component.updatePropertyModel();
+								network.evaluate(true);
+								audioPlayer.setSelectedComponent(component);
+								DrawingHelper.updateScopeSamples(component);
+							}
         				}
         			});
         		}
@@ -561,7 +722,7 @@ public class MainController {
     		it.next();
 			it.remove();
 		}
-    }    
+    }
     
     /**
      * Process keyboardPressed events.
@@ -569,39 +730,55 @@ public class MainController {
      */
     public void handleKeyboardPressed(KeyEvent event) {
     	switch (event.getCode()) {
-    		case ENTER:
-    			break;
-    		case DELETE:
-    			if (selectedComponent != null) {
-        			network.removeComponent(selectedComponent);
-        			destroyPropertyView();
-        			helper.updateCanvasContent(xCanvas, network);
-    				selectedComponent = null;
-    			}
-    			break;
-    		case ESCAPE:
-    			if (selectedComponent != null) {
-    				network.cancelSelection();
-        			destroyPropertyView();
-        			helper.updateCanvasContent(xCanvas, network);
-    				selectedComponent = null;
-    			}
-    			break;
-    		case G:
-    			if (snapToGrid || network.isSnapToGrid()) {
-    				this.snapToGrid = false;
-    				network.setSnapToGrid(false);
-    				DrawingHelper.updateCanvasContent(xCanvas, network);
-    			}
-    			else if (!snapToGrid && !network.isSnapToGrid()) {
-    				this.snapToGrid = true;
-    				network.setSnapToGrid(true);
-    				DrawingHelper.updateCanvasContent(xCanvas, network);
-    			}
-    			break;
-    		default:
-    			break;
-    	} 
-    }   
+    		case ENTER -> {}
+    		case DELETE -> {
+				synchronized (network.getMutexObj())
+				{
+					if (selectedComponent != null) {
+						network.cancelSelection();
+						network.removeComponent(selectedComponent);
+						destroyPropertyView();
+						selectedComponent = null;
+						network.evaluate(true);
+						audioPlayer.setSelectedComponent(null);
+						DrawingHelper.updateScopeSamples(null);
+					}
+				}
+			}
+    		case ESCAPE -> {
+				synchronized (network.getMutexObj())
+				{
+					if (selectedComponent != null) {
+						network.cancelSelection();
+						destroyPropertyView();
+						selectedComponent = null;
+						audioPlayer.setSelectedComponent(null);
+						DrawingHelper.updateScopeSamples(null);
+					}
+				}
+			}
+			case KeyCode.G -> {
+				synchronized (network.getMutexObj())
+				{
+					if (network.isSnapToGrid()) {
+						this.snapToGrid = false;
+						network.setSnapToGrid(false);
+					}
+					else {
+						this.snapToGrid = true;
+						network.setSnapToGrid(true);
+					}
+				}
+			}
+    		default -> {}
+    	}
+		event.consume();
+    }
+
+	public void handleCloseRequest(WindowEvent event)
+	{
+		audioPlayer.terminatePlayback();
+		System.out.println("Exiting");
+	}
 
 }
