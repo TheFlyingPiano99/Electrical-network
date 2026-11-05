@@ -60,6 +60,7 @@
     </dependencies>
 
     <build>
+        <testSourceDirectory>${project.basedir}/test/test/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -80,33 +81,13 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Copy dependencies to lib/ folder for modular JAR approach -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <prependGroupId>false</prependGroupId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- Build executable JAR with classpath manifest -->
+                <!-- Build the application JAR; the jlink image is the runnable distribution. -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>gui.App</mainClass>
                         </manifest>
                     </archive>
@@ -118,8 +99,23 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>gui.App</mainClass>
+                    <mainClass>ElectricalNetwork/gui.App</mainClass>
+                    <launcher>ElectricalNetwork</launcher>
+                    <jlinkZipName>ElectricalNetwork</jlinkZipName>
+                    <jlinkImageName>ElectricalNetwork</jlinkImageName>
+                    <noManPages>true</noManPages>
+                    <stripDebug>true</stripDebug>
+                    <noHeaderFiles>true</noHeaderFiles>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>create-runtime-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jlink</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

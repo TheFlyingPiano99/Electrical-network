@@ -1,18 +1,12 @@
 #!/bin/bash
-# Run the Electrical Network Simulator application
-# This script properly sets up JavaFX module path for Linux/Mac
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+APP="$SCRIPT_DIR/target/ElectricalNetwork/bin/ElectricalNetwork"
 
-# Navigate to the target directory where the JAR is located
-cd "$SCRIPT_DIR/target"
-
-# Check if the JAR exists
-if [ ! -f "ElectricalNetwork.jar" ]; then
-    echo "Error: ElectricalNetwork.jar not found in target directory"
-    echo "Please run: mvn clean package"
+if [ ! -x "$APP" ]; then
+    echo "Error: bundled application not found at \"$APP\"" >&2
+    echo 'Run "mvn clean package" from the project root first.' >&2
     exit 1
 fi
 
-# Run the application with JavaFX module path
-java --module-path lib --add-modules javafx.controls,javafx.fxml,javafx.graphics -jar ElectricalNetwork.jar
+exec "$APP" "$@"

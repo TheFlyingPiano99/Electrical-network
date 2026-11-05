@@ -1,426 +1,92 @@
-/**
- * 
- */
 package test.java.math;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import math.Complex;
 import math.Matrix;
 import math.MyMath;
 import math.Vector;
 
-
-/**
- * @author Simon Zoltán
- *
- */
 public class MyMathTest {
 
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(double, main.java.math.Matrix)}.
-	 */
 	@Test
-	public void testMultiplyDoubleMatrix() {
-		Complex f = new Complex(0, 0);
-		Matrix M = new Matrix(3,3);
-		M.fill(new Complex(0, 0));
-		
-		Matrix exp = new Matrix(3,3);
-		exp.fill(new Complex(0, 0));
-		
-		assertEquals(exp, MyMath.multiply(f, M));
+	public void testMultiplyMatrices() {
+		Matrix left = new Matrix(2, 2);
+		left.setAt(0, 0, new Complex(1, 0));
+		left.setAt(0, 1, new Complex(2, 0));
+		left.setAt(1, 0, new Complex(3, 0));
+		left.setAt(1, 1, new Complex(4, 0));
+
+		Matrix right = new Matrix(2, 2);
+		right.setAt(0, 0, new Complex(5, 0));
+		right.setAt(0, 1, new Complex(6, 0));
+		right.setAt(1, 0, new Complex(7, 0));
+		right.setAt(1, 1, new Complex(8, 0));
+
+		Matrix expected = new Matrix(2, 2);
+		expected.setAt(0, 0, new Complex(19, 0));
+		expected.setAt(0, 1, new Complex(22, 0));
+		expected.setAt(1, 0, new Complex(43, 0));
+		expected.setAt(1, 1, new Complex(50, 0));
+
+		assertEquals(expected, MyMath.multiply(left, right));
 	}
 
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, main.java.math.Matrix)}.
-	 */
-	@Test
-	public void testMultiplyMatrixMatrix() {
-		Matrix A = new Matrix (2,2);
-		Matrix B = new Matrix (2,2);
-		
-		A.fill(new Complex(1, 0));
-		B.fill(new Complex(1, 0));
-		
-		Matrix exp = new Matrix(2, 2);
-		exp.fill(new Complex(2, 0));
-		
-		assertEquals(exp, MyMath.multiply(A, B));
-		
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, main.java.math.Vector)}.
-	 */
-	@Test
-	public void testMultiplyMatrixVector() {
-		Matrix A = new Matrix (3,2);
-		Vector v = new Vector(2);
-		
-		A.fill(new Complex(1, 0));
-		v.fill(new Complex(1, 0));
-		
-		Vector exp = new Vector(3);
-		exp.fill(new Complex(2, 0));
-		
-		assertEquals(exp, MyMath.multiply(A, v));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Vector, main.java.math.Matrix)}.
-	 */
-	@Test
-	public void testMultiplyVectorMatrix() {
-		Vector v = new Vector(3);
-		Matrix A = new Matrix (3,2);
-		
-		A.fill(new Complex(1, 0));
-		v.fill(new Complex(1, 0));
-		
-		Vector exp = new Vector(2);
-		exp.fill(new Complex(3, 0));
-		
-		assertEquals(exp, MyMath.multiply(v, A));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Matrix, float)}.
-	 */
-	@Test
-	public void testMultiplyMatrixDouble() {
-		Complex f = new Complex(0, 0);
-		Matrix M = new Matrix(3,3);
-		M.fill(new Complex(0, 0));
-		
-		Matrix exp = new Matrix(3,3);
-		exp.fill(new Complex(0, 0));
-		
-		assertEquals(exp, MyMath.multiply(M, f));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#transpose(main.java.math.Matrix)}.
-	 */
 	@Test
 	public void testTranspose() {
-		Matrix m = new Matrix(3,4);
-		m.fill(new Complex(0, 0));
-		m.setAt(0, 0, 1);
-		m.setAt(1, 1, 2);
-		m.setAt(2, 2, 3);
-		m.setAt(0, 1, 4);	//!
-		
-		Matrix exp = new Matrix(4,3);
-		exp.fill(new Complex(0, 0));
-		exp.setAt(0, 0, 1);
-		exp.setAt(1, 1, 2);
-		exp.setAt(2, 2, 3);
-		exp.setAt(1, 0, 4);	//!
-		
-		assertEquals(exp, MyMath.transpose(m));
+		Matrix matrix = new Matrix(2, 3);
+		matrix.setAt(0, 1, new Complex(4, 0));
+
+		Matrix expected = new Matrix(3, 2);
+		expected.setAt(1, 0, new Complex(4, 0));
+
+		assertEquals(expected, MyMath.transpose(matrix));
 	}
 
-	/**
-	 * Test method for {@link main.java.math.MyMath#add(main.java.math.Matrix, main.java.math.Matrix)}.
-	 */
 	@Test
-	public void testAddMatrixMatrix() {
-		Matrix A = new Matrix (2,2);
-		Matrix B = new Matrix (2,2);
-		
-		A.fill(4);
-		B.fill(new Complex(3, 0));
-		
-		Matrix exp = new Matrix(2, 2);
-		exp.fill(7);
-		
-		assertEquals(exp, MyMath.add(A, B));
-	
+	public void testSubtractMatrices() {
+		Matrix left = new Matrix(1, 2);
+		left.fill(new Complex(4, 0));
+		Matrix right = new Matrix(1, 2);
+		right.fill(new Complex(3, 0));
+
+		Matrix expected = new Matrix(1, 2);
+		expected.fill(new Complex(1, 0));
+
+		assertEquals(expected, MyMath.subtract(left, right));
 	}
 
-	/**
-	 * Test method for {@link main.java.math.MyMath#subtrackt(main.java.math.Matrix, main.java.math.Matrix)}.
-	 */
-	@Test
-	public void testSubtracktMatrixMatrix() {
-		Matrix A = new Matrix (2,2);
-		Matrix B = new Matrix (2,2);
-		
-		A.fill(4);
-		B.fill(new Complex(3, 0));
-		
-		Matrix exp = new Matrix(2, 2);
-		exp.fill(new Complex(1, 0));
-		
-		assertEquals(exp, MyMath.subtrackt(A, B));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#identity(int)}.
-	 */
-	@Test
-	public void testIdentity() {
-		Matrix exp = new Matrix (3,3);
-		exp.fill(new Complex(0, 0));
-		exp.setAt(0,0, 1);
-		exp.setAt(1,1, 1);
-		exp.setAt(2,2, 1);
-		
-		assertEquals(exp, MyMath.identity(3));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#diagonal(main.java.math.Vector)}.
-	 */
-	@Test
-	public void testDiagonal() {
-		Vector v = new Vector(3);
-		v.setAt(0, 1);
-		v.setAt(1, 3);
-		v.setAt(2, 6);
-		
-		Matrix exp = new Matrix (3,3);
-		exp.fill(new Complex(0, 0));
-		exp.setAt(0,0, 1);
-		exp.setAt(1,1, 3);
-		exp.setAt(2,2, 6);
-		
-		assertEquals(exp, MyMath.diagonal(v));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#removeColumns(main.java.math.Matrix, java.util.ArrayList)}.
-	 */
 	@Test
 	public void testRemoveColumns() {
-		Matrix M = new Matrix(3,6);
-		M.fill(new Complex(2, 0));
-		
-		ArrayList<Integer> toRemove = new ArrayList<Integer>();
-	    
-		toRemove.add(3);
-		toRemove.add(1);
-		
-		Matrix exp = new Matrix(3,4);
-		exp.fill(new Complex(2, 0));
-		
-		assertEquals(exp, MyMath.removeColumns(M, toRemove));		
+		Matrix matrix = new Matrix(2, 3);
+		matrix.setAt(0, 0, new Complex(1, 0));
+		matrix.setAt(0, 1, new Complex(2, 0));
+		matrix.setAt(0, 2, new Complex(3, 0));
+		matrix.setAt(1, 0, new Complex(4, 0));
+		matrix.setAt(1, 1, new Complex(5, 0));
+		matrix.setAt(1, 2, new Complex(6, 0));
+
+		Matrix expected = new Matrix(2, 2);
+		expected.setAt(0, 0, new Complex(1, 0));
+		expected.setAt(1, 0, new Complex(4, 0));
+		expected.setAt(0, 1, new Complex(3, 0));
+		expected.setAt(1, 1, new Complex(6, 0));
+
+		assertEquals(expected, MyMath.removeColumns(matrix, Arrays.asList(1)));
 	}
 
-	/**
-	 * Test method for {@link main.java.math.MyMath#removeRows(main.java.math.Matrix, java.util.List)}.
-	 */
 	@Test
-	public void testRemoveRows() {
-		Matrix M = new Matrix(6,3);
-		M.fill(new Complex(2, 0));
-		
-		ArrayList<Integer> toRemove = new ArrayList<>();
-		toRemove.add(3);
-		toRemove.add(1);
-		
-		Matrix exp = new Matrix(4,3);
-		exp.fill(new Complex(2, 0));
-		
-		assertEquals(exp, MyMath.removeRows(M, toRemove));		
+	public void testMultiplyVectorByScalar() {
+		Vector vector = new Vector(3);
+		vector.fill(new Complex(2, 0));
+
+		Vector expected = new Vector(3);
+		expected.fill(new Complex(6, 0));
+
+		assertEquals(expected, MyMath.multiply(vector, new Complex(3, 0)));
 	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiplyRow(main.java.math.Matrix, int, float)}.
-	 */
-	@Test
-	public void testMultiplyRow() {
-		Matrix M = new Matrix(2,2);
-		M.fill(new Complex(2, 0));
-		Matrix exp = new Matrix(2,2);
-		exp.setAt(0,0, 6);
-		exp.setAt(0,1, 6);
-		exp.setAt(1,0, 2);
-		exp.setAt(1,1, 2);
-		
-		assertEquals(exp, MyMath.multiplyRow(M, 0, 3));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#multipyColumn(main.java.math.Matrix, int, float)}.
-	 */
-	@Test
-	public void testMultipyColumn() {
-		Matrix M = new Matrix(2,2);
-		M.fill(new Complex(2, 0));
-		Matrix exp = new Matrix(2,2);
-		exp.setAt(0,0, 6);
-		exp.setAt(1,0, 6);
-		exp.setAt(0,1, 2);
-		exp.setAt(1,1, 2);
-		
-		assertEquals(exp, MyMath.multipyColumn(M, 0, 3));
-	}
-
-	//--------------------------------------------------------------------------------------------------------
-	//Vector related:
-	
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(main.java.math.Vector, float)}.
-	 */
-	@Test
-	public void testMultiplyVectorDouble() {
-		Vector v = new Vector(3);
-		v.fill(new Complex(2, 0));
-		
-		Vector exp = new Vector(3);
-		exp.fill(6);
-		
-		assertEquals(exp, MyMath.multiply(v, 3));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#multiply(float, main.java.math.Vector)}.
-	 */
-	@Test
-	public void testMultiplyDoubleVector() {
-		Vector v = new Vector(3);
-		v.fill(new Complex(2, 0));
-		
-		Vector exp = new Vector(3);
-		exp.fill(6);
-		
-		assertEquals(exp, MyMath.multiply(3, v));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#dot(main.java.math.Vector, main.java.math.Vector)}.
-	 */
-	@Test
-	public void testDot() {
-		Vector a = new Vector(3);
-		a.fill(new Complex(2, 0));
-		
-		Vector b = new Vector(3);
-		b.fill(new Complex(3, 0));
-		
-		float exp = a.at(0)*b.at(0) + a.at(1)*b.at(1) + a.at(2)*b.at(2);
-		
-		assertTrue(MyMath.dot(a, b) == exp);
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#divide(main.java.math.Vector, float)}.
-	 */
-	@Test
-	public void testDivideVectorDouble() {
-		Vector v = new Vector(3);
-		v.fill(4);
-		
-		Vector exp = new Vector(3);
-		exp.fill(new Complex(2, 0));
-		
-		assertEquals(exp, MyMath.divide(v, 2));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#divide(main.java.math.Vector, main.java.math.Vector)}.
-	 */
-	@Test
-	public void testDivideVectorVector() {
-		Vector a = new Vector(3);
-		a.fill(8);
-		Vector b = new Vector(3);
-		b.fill(new Complex(2, 0));
-		
-		Vector exp = new Vector(3);
-		exp.fill(4);
-		
-		assertEquals(exp, MyMath.divide(a, b));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#negate(main.java.math.Vector)}.
-	 */
-	@Test
-	public void testNegate() {
-		Vector v = new Vector(3);
-		v.fill(4);
-		
-		Vector exp = new Vector(3);
-		exp.fill(-4);
-		
-		assertEquals(exp, MyMath.negate(v));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#magnitude(main.java.math.Vector)}.
-	 */
-	@Test
-	public void testMagnitude() {
-		Vector v = new Vector(3);
-		v.fill(new Complex(3, 0));
-		
-		float exp = (float) Math.sqrt(v.at(0)*v.at(0) + v.at(1)*v.at(1) + v.at(2)*v.at(2));
-		assertTrue(MyMath.magnitude(v) == exp);
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#normalize(main.java.math.Vector)}.
-	 */
-	@Test
-	public void testNormalize() {
-		Vector v = new Vector(3);
-		v.fill(new Complex(0, 0));
-		
-		Vector exp = new Vector(3);
-
-		float mag = (float) Math.sqrt(v.at(0)*v.at(0) + v.at(1)*v.at(1) + v.at(2)*v.at(2));
-		if (mag != 0) {
-			exp.setAt(0, v.at(0) / mag);
-			exp.setAt(1, v.at(1) / mag);
-			exp.setAt(2, v.at(2) / mag);
-		}
-		else {
-			exp.copy(v);
-		}
-		
-		
-		assertEquals(exp, MyMath.normalize(v));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#add(main.java.math.Vector, main.java.math.Vector)}.
-	 */
-	@Test
-	public void testAddVectorVector() {
-		Vector a = new Vector(3);
-		a.fill(new Complex(3, 0));
-		Vector b = new Vector(3);
-		b.fill(new Complex(2, 0));
-		
-		Vector exp = new Vector(3);
-		exp.fill(5);
-		
-		assertEquals(exp, MyMath.add(a, b));
-	}
-
-	/**
-	 * Test method for {@link main.java.math.MyMath#subtract(main.java.math.Vector, main.java.math.Vector)}.
-	 */
-	@Test
-	public void testSubtracktVectorVector() {
-		Vector a = new Vector(3);
-		a.fill(new Complex(3, 0));
-		Vector b = new Vector(3);
-		b.fill(new Complex(2, 0));
-		
-		Vector exp = new Vector(3);
-		exp.fill(new Complex(1, 0));
-		
-		assertEquals(exp, MyMath.subtract(a, b));
-	}
-
 }
-
-

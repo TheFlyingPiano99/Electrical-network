@@ -3,6 +3,7 @@ package math;
 /**
  * int coordinates of 2D point.
  * HUN: int koordináta 2D-ós pont leírására.
+ * 
  * @author Simon Zoltán
  *
  */
@@ -38,27 +39,27 @@ public class Coordinate {
 		this.x = x;
 		this.y = y;
 	}
-	
+
 	public Coordinate(Coordinate coor) {
 		if (coor != this) {
 			this.x = coor.x;
 			this.y = coor.y;
 		}
 	}
+
 	public static Coordinate snapToGrid(Coordinate coord, int gridSize) {
 		double m = coord.x % gridSize;
-    	coord.x = (int)((double)coord.x / (double)gridSize) * gridSize;
-    	if (m >gridSize * 0.5) {
-    		coord.x += gridSize;
-    	}
-    	m = coord.y % gridSize;
-    	coord.y = (int)((double)coord.y / (double)gridSize) * gridSize; 
-    	if (m > gridSize * 0.5) {
-    		coord.y += gridSize;
-    	}
-    	
-    	return new Coordinate(coord.x, coord.y);
-    }
+		coord.x = (int) ((double) coord.x / (double) gridSize) * gridSize;
+		if (m > gridSize * 0.5) {
+			coord.x += gridSize;
+		}
+		m = coord.y % gridSize;
+		coord.y = (int) ((double) coord.y / (double) gridSize) * gridSize;
+		if (m > gridSize * 0.5) {
+			coord.y += gridSize;
+		}
+
+		return new Coordinate(coord.x, coord.y);
+	}
 
 }
-

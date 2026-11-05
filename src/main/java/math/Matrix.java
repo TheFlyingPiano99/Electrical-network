@@ -78,7 +78,7 @@ public class Matrix {
 			return false;
 		for (int c = 0; c < column; c++) {
 			for (int r = 0; r < row; r++) {
-				if (n[c * row + r] != other.at(r, c)) {
+				if (!n[c * row + r].equals(other.at(r, c))) {
 					return false;
 				}
 			}
@@ -182,4 +182,3 @@ public class Matrix {
 	//double Determinant (Matrix M);
     
 }
-

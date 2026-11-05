@@ -57,7 +57,7 @@ public class Vector implements Cloneable {
 		if (dimension != other.dimension)
 			return false;
 		for (int i = 0; i < n.length; i++) {
-			if (n[i] != other.at(i)) {
+			if (!n[i].equals(other.at(i))) {
 				return false;
 			}			
 		}
@@ -244,4 +244,3 @@ public class Vector implements Cloneable {
         }
     }
 }
-

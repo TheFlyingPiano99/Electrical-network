@@ -10,13 +10,14 @@ import javafx.stage.Stage;
 
 /**
  * Main class
+ * 
  * @author Simon Zoltán
  *
  */
 public class App extends Application {
-		
+
 	static Stage globalStage;
-	
+
 	public static void main(String[] args) throws Exception {
 		launch(args);
 	}
@@ -30,14 +31,14 @@ public class App extends Application {
 		stage.show();
 		stage.setTitle("Áramkör szimulátor");
 		stage.getScene().setOnKeyPressed(
-			event-> {
-				if (MainController.mainController != null) {
-					MainController.mainController.handleKeyboardPressed(event);
-				}
-			}
-		);
-		stage.setOnCloseRequest((event) -> { MainController.mainController.handleCloseRequest(event); });
+				event -> {
+					if (MainController.mainController != null) {
+						MainController.mainController.handleKeyboardPressed(event);
+					}
+				});
+		stage.setOnCloseRequest((event) -> {
+			MainController.mainController.handleCloseRequest(event);
+		});
 	}
 
 }
-

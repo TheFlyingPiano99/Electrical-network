@@ -18,3 +18,14 @@ The visual representation of the components helps to understand the direction of
 ## Requirements
 - Java 23
 - JavaFX
+
+## Run
+
+Build the application and its bundled JavaFX runtime image with:
+
+```sh
+mvn clean package
+```
+
+Run `run.bat` on Windows or `./run.sh` on Linux/macOS. The runtime image is
+specific to the operating system and architecture on which it is built.

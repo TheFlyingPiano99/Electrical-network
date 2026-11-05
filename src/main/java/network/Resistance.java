@@ -47,7 +47,6 @@ public class Resistance extends Component {
 
 	public Resistance(double r) {
 		this.resistance = r;
-		e.getImpedance().fill(new Complex(resistance, 0));
 	}
 
 	// Getters/Setters:------------------------------------------------------------------------------------
@@ -270,5 +269,4 @@ public class Resistance extends Component {
         }
     }
 }
-
 

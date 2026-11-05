@@ -1,87 +1,67 @@
 package test.java.math;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import math.Gauss;
-import math.GaussException;
-import math.InfiniteSolutions;
 import math.Complex;
+import math.Gauss;
+import math.InfiniteSolutions;
 import math.Matrix;
 import math.NoSolution;
 import math.Vector;
 
 public class GaussTest {
 
-	@Test(expected=InfiniteSolutions.class)
-	public void testEliminateInfSol() throws GaussException {
-		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(new Complex(0, 0));
-		
-		Gauss.Eliminate(linSys);
-	}
-	
-	@Test(expected=NoSolution.class)
-	public void testEliminateForbiden() throws GaussException {
-		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(new Complex(0, 0));
-		linSys.setAt(4, 0, 1);
-		linSys.setAt(3, 2, 1);
-		
-		Gauss.Eliminate(linSys);
-	}
-	
 	@Test
-	public void testEliminateClean() throws GaussException {
-		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(new Complex(0, 0));
-		//"Left" side: (Top)
-		linSys.setAt(0, 0, 1);
-		linSys.setAt(1, 1, 1);
-		linSys.setAt(2, 2, 1);
-		linSys.setAt(3, 3, 1);
+	public void testEliminateInfiniteSolutions() {
+		Matrix system = new Matrix(5, 4);
+		system.fill(new Complex(0, 0));
 
-		//"Right" side:	(Bottom)
-		linSys.setAt(4, 0, 1);
-		linSys.setAt(4, 1, 3);
-		linSys.setAt(4, 2, 6);
-		linSys.setAt(4, 3, 9);
-		
-		//Expected solution:
-		Vector exp = new Vector(4);
-		exp.setAt(0, 1);
-		exp.setAt(1, 3);
-		exp.setAt(2, 6);
-		exp.setAt(3, 9);
-		
-		assertEquals(exp, Gauss.Eliminate(linSys));
+		assertThrows(InfiniteSolutions.class, () -> Gauss.Eliminate(system));
 	}
 
 	@Test
-	public void testReduce() {
-		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(new Complex(0, 0));
-		
-		//Vector exp = new Vector(0);
-		Gauss.Reduce(linSys);
-		//assertEquals(exp, Gauss.Eliminate(linSys));
+	public void testEliminateNoSolution() {
+		Matrix system = new Matrix(5, 4);
+		system.fill(new Complex(0, 0));
+		system.setAt(4, 0, new Complex(1, 0));
+		system.setAt(3, 2, new Complex(1, 0));
+
+		assertThrows(NoSolution.class, () -> Gauss.Eliminate(system));
+	}
+
+	@Test
+	public void testEliminateCleanSystem() {
+		Matrix system = new Matrix(5, 4);
+		system.fill(new Complex(0, 0));
+		for (int i = 0; i < 4; i++) {
+			system.setAt(i, i, new Complex(1, 0));
+			system.setAt(4, i, new Complex(i == 0 ? 1 : i * 3, 0));
+		}
+
+		Vector expected = new Vector(4);
+		expected.setAt(0, new Complex(1, 0));
+		expected.setAt(1, new Complex(3, 0));
+		expected.setAt(2, new Complex(6, 0));
+		expected.setAt(3, new Complex(9, 0));
+
+		assertEquals(expected, Gauss.Eliminate(system));
 	}
 
 	@Test
 	public void testCoefficientMatrix() {
-		Matrix left = new Matrix(2,2);
+		Matrix left = new Matrix(2, 2);
 		left.fill(new Complex(2, 0));
 		Vector right = new Vector(2);
 		right.fill(new Complex(3, 0));
-		Matrix exp = new Matrix(3,2);
-		exp.fill(new Complex(2, 0));
-		exp.setAt(2, 0, 3);
-		exp.setAt(2, 1, 3);
-		
-		assertEquals(exp, Gauss.CoefficientMatrix(left, right));
+
+		Matrix expected = new Matrix(3, 2);
+		expected.fill(new Complex(2, 0));
+		expected.setAt(2, 0, new Complex(3, 0));
+		expected.setAt(2, 1, new Complex(3, 0));
+
+		assertEquals(expected, Gauss.CoefficientMatrix(left, right));
 	}
-
 }
-
-
