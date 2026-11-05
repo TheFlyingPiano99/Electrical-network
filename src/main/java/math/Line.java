@@ -58,3 +58,4 @@ public class Line {
 		line.b = MyMath.add(line.b, offset);
 	}
 }
+

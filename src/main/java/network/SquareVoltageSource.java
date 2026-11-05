@@ -432,3 +432,5 @@ public class SquareVoltageSource extends Component {
 		}
 	}
 }
+
+

@@ -360,3 +360,5 @@ public class AnalogeAmmeter extends Component {
         }
     }
 }
+
+

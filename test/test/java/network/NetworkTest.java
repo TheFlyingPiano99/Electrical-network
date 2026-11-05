@@ -11,16 +11,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import math.Coordinate;
-import main.java.math.Gauss;
-import main.java.math.Matrix;
-import main.java.math.Vector;
-import main.java.network.Component;
-import main.java.network.Edge;
-import main.java.network.LinearSystemForCurrent;
-import main.java.network.Network;
-import main.java.network.Resistance;
-import main.java.network.VoltageSource;
-import main.java.network.Wire;
+import math.Gauss;
+import math.Matrix;
+import math.Vector;
+import network.Component;
+import network.Edge;
+import network.LinearSystemForCurrent;
+import network.Network;
+import network.Resistance;
+import network.VoltageSource;
+import network.Wire;
 
 /**
  * @author Simon Zoltán
@@ -470,3 +470,4 @@ public class NetworkTest {
 }
 	
 }
+

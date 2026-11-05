@@ -26,8 +26,7 @@ public class App extends Application {
 	public void start(Stage stage) throws Exception {
 		globalStage = stage;
 		final URL url = Paths.get("windowlayout.fxml").toUri().toURL();
-		FXMLLoader loader = new FXMLLoader();
-		Parent content = loader.load(url);
+		Parent content = FXMLLoader.load(url);
 		stage.setScene(new Scene(content));
 		stage.show();
 		stage.setTitle("Áramkör szimulátor");
@@ -42,3 +41,4 @@ public class App extends Application {
 	}
 
 }
+

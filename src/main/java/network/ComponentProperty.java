@@ -9,3 +9,5 @@ public class ComponentProperty {
 	public String value = "";
 	public javafx.scene.control.TextField valueN = null;
 }
+
+

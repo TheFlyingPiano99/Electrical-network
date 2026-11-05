@@ -9,9 +9,9 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import main.java.math.Matrix;
-import main.java.math.MyMath;
-import main.java.math.Vector;
+import math.Matrix;
+import math.MyMath;
+import math.Vector;
 
 
 /**
@@ -421,3 +421,4 @@ public class MyMathTest {
 	}
 
 }
+

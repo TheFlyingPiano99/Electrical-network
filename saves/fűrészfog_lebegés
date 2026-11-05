@@ -1,0 +1,6 @@
+class: network.SawtoothVoltageSource; voltage: 1.0; frequency: 2766.0; phase: 0.0; inputPos: [180, 150]; outputPos: [240, 150]
+class: network.SawtoothVoltageSource; voltage: 1.0; frequency: 2764.0; phase: 0.0; inputPos: [240, 150]; outputPos: [300, 150]
+class: network.Wire; inputPos: [300, 150]; outputPos: [300, 300]
+class: network.Resistance; resistance: 1.0; inputPos: [240, 300]; outputPos: [300, 300]
+class: network.Wire; inputPos: [180, 300]; outputPos: [180, 150]
+class: network.Inductor; inductance: 1.0E-5; inputPos: [180, 300]; outputPos: [240, 300]

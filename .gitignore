@@ -12,6 +12,7 @@
 
 # Package Files #
 *.jar
+*.zip
 *.war
 *.nar
 *.ear
@@ -24,3 +25,6 @@ hs_err_pid*
 /bin/
 /doc/javaDoc/
 /target/
+.classpath
+.project
+

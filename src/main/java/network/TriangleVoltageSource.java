@@ -437,3 +437,5 @@ public class TriangleVoltageSource extends Component {
 		}
 	}
 }
+
+

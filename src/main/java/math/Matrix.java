@@ -182,3 +182,4 @@ public class Matrix {
 	//double Determinant (Matrix M);
     
 }
+

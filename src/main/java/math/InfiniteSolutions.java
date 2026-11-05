@@ -10,3 +10,4 @@ public final class InfiniteSolutions extends GaussException {
         return "Infinite solutions of the matrix.";
     }
 }
+

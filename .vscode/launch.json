@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "ElectricalNetwork App",
+            "request": "launch",
+            "mainClass": "gui.App",
+            "projectName": "ElectricalNetwork",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "java: build workspace"
+        }
+    ]
+}
