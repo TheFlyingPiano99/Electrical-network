@@ -46,6 +46,12 @@
             <MenuItem fx:id="miAbout" mnemonicParsing="false" onAction="#miAboutAction" text="Az alkalmazásról..." />
           </items>
         </Menu>
+        <Menu fx:id="menuLanguage" mnemonicParsing="false" text="Language">
+          <items>
+            <MenuItem fx:id="miLanguageHungarian" mnemonicParsing="false" onAction="#miLanguageHungarianAction" text="Magyar" />
+            <MenuItem fx:id="miLanguageEnglish" mnemonicParsing="false" onAction="#miLanguageEnglishAction" text="English" />
+          </items>
+        </Menu>
       </menus>
     </MenuBar>
       <ToolBar prefHeight="40.0" prefWidth="200.0">

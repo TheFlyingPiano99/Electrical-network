@@ -217,6 +217,11 @@ public class AudioPlayer {
         commandQueue.add(new SetPlaybackMode(m));
     }
 
+    public PlaybackMode getPlaybackMode()
+    {
+        return mode;
+    }
+
     public void initializePlayback()
     {
         workThread = new Thread(

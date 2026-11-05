@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Observer;
+import java.util.Observable;
 import java.util.ResourceBundle;
 
 import javafx.animation.KeyFrame;
@@ -33,7 +35,7 @@ import javafx.util.Duration;
 import math.Coordinate;
 import network.*;
 
-public class MainController {
+public class MainController implements Observer {
 	
 	static MainController mainController = null;
 	
@@ -42,6 +44,7 @@ public class MainController {
 	private ComponentNode grabbedNode = null;
 	private Component selectedComponent = null;
 	AudioPlayer audioPlayer = new AudioPlayer();
+	private LanguageManager languageManager = LanguageManager.getInstance();
 
 	boolean snapToGrid = true;
 	Boolean simulating = null;
@@ -78,6 +81,15 @@ public class MainController {
 
     @FXML
     private MenuItem miAbout;
+
+    @FXML
+    private Menu menuLanguage;
+
+    @FXML
+    private MenuItem miLanguageHungarian;
+
+    @FXML
+    private MenuItem miLanguageEnglish;
 
     @FXML
     private Button btnStart;
@@ -159,7 +171,7 @@ public class MainController {
      */
     @FXML
     void miAboutAction(ActionEvent event) {
-    	Dialog dlg = new Alert(AlertType.NONE, "Áramkör szimulátor\nSimon Zoltán (2025)", ButtonType.OK);
+    	Dialog dlg = new Alert(AlertType.NONE, languageManager.get("app.author"), ButtonType.OK);
     	dlg.show();
     }
 
@@ -196,10 +208,10 @@ public class MainController {
     @FXML
     void miOpenAction(ActionEvent event) {
     	FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Fájl megnyitás...");
+        fileChooser.setTitle(languageManager.get("file.open"));
         fileChooser.getExtensionFilters().addAll(
-        		new ExtensionFilter("Az összes fájl", "*.*"),
-        		new ExtensionFilter("Szöveges fájlok", "*.txt"));
+        		new ExtensionFilter(languageManager.get("file.all"), "*.*"),
+        		new ExtensionFilter(languageManager.get("file.text"), "*.txt"));
         
         String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
         fileChooser.setInitialDirectory(new File(currentPath));
@@ -235,10 +247,10 @@ public class MainController {
     @FXML
     void miSaveAction(ActionEvent event) {
     	FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Fájl mentés...");
+        fileChooser.setTitle(languageManager.get("file.save"));
         fileChooser.getExtensionFilters().addAll(
-        		new ExtensionFilter("Az összes fájl", "*.*"),
-        		new ExtensionFilter("Szöveges fájlok", "*.txt"));
+        		new ExtensionFilter(languageManager.get("file.all"), "*.*"),
+        		new ExtensionFilter(languageManager.get("file.text"), "*.txt"));
         
         String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
         fileChooser.setInitialDirectory(new File(currentPath));
@@ -257,7 +269,7 @@ public class MainController {
     @FXML
     void miStartAction(ActionEvent event) {
     	simulating = true;
-    	leftStatus.setText("Szimuláció folyamatban.");
+    	leftStatus.setText(languageManager.get("sim.running"));
 		audioPlayer.startPlayback();
     }
 
@@ -268,7 +280,7 @@ public class MainController {
     @FXML
     void miPauseAction(ActionEvent event) {
     	if (simulating != null && simulating == true) {
-        	leftStatus.setText("Szimuláció szüneteltetve.");    		
+        	leftStatus.setText(languageManager.get("sim.paused"));    		
     	}
     	simulating = false;
 		audioPlayer.pausePlayback();
@@ -283,11 +295,29 @@ public class MainController {
 		synchronized (network.getMutexObj())
 		{
 			simulating = null;
-			leftStatus.setText("Szimuláció leállítva.");
+			leftStatus.setText(languageManager.get("sim.stopped"));
 			audioPlayer.stopPlayback();
 			totalTimeSec = 0;
 		}
 	}
+
+    /**
+     * Switch to Hungarian language.
+     * @param event
+     */
+    @FXML
+    void miLanguageHungarianAction(ActionEvent event) {
+        languageManager.setLanguage(LanguageManager.Language.HUNGARIAN);
+    }
+
+    /**
+     * Switch to English language.
+     * @param event
+     */
+    @FXML
+    void miLanguageEnglishAction(ActionEvent event) {
+        languageManager.setLanguage(LanguageManager.Language.ENGLISH);
+    }
 
     //Button actions:--------------------------------------------------------------------------
 
@@ -348,24 +378,25 @@ public class MainController {
 		assert btnScopeReset != null : "fx:id=\"btnScopeReset\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
         mainController = this;
+        languageManager.addObserver(this);
         
-        lvLeftListView.getItems().add("Feszültségforrás");
-		lvLeftListView.getItems().add("Szinuszos feszültségforrás");
-		lvLeftListView.getItems().add("Négyszög feszültségforrás");
-		lvLeftListView.getItems().add("Háromszög feszültségforrás");
-		lvLeftListView.getItems().add("Fűrészfog feszültségforrás");
-        lvLeftListView.getItems().add("Ellenállás");
-        lvLeftListView.getItems().add("Vezeték");
-        lvLeftListView.getItems().add("Kondenzátor");
-        lvLeftListView.getItems().add("Induktor");
-        lvLeftListView.getItems().add("Analóg voltmérő");
-        lvLeftListView.getItems().add("Analóg ampermérő");
-        lvLeftListView.getItems().add("Áramforrás");
-        lvLeftListView.getItems().add("Földelés");
+        lvLeftListView.getItems().add(languageManager.get("component.voltage"));
+		lvLeftListView.getItems().add(languageManager.get("component.sine"));
+		lvLeftListView.getItems().add(languageManager.get("component.square"));
+		lvLeftListView.getItems().add(languageManager.get("component.triangle"));
+		lvLeftListView.getItems().add(languageManager.get("component.sawtooth"));
+        lvLeftListView.getItems().add(languageManager.get("component.resistance"));
+        lvLeftListView.getItems().add(languageManager.get("component.wire"));
+        lvLeftListView.getItems().add(languageManager.get("component.capacitor"));
+        lvLeftListView.getItems().add(languageManager.get("component.inductor"));
+        lvLeftListView.getItems().add(languageManager.get("component.voltmeter"));
+        lvLeftListView.getItems().add(languageManager.get("component.ammeter"));
+        lvLeftListView.getItems().add(languageManager.get("component.current"));
+        lvLeftListView.getItems().add(languageManager.get("component.ground"));
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
-    	leftStatus.setText("Szimuláció leállítva.");    		
-    	rightStatus.setText("Hibás kapcsolás!");
+    	leftStatus.setText(languageManager.get("sim.stopped"));    		
+    	rightStatus.setText(languageManager.get("connection.wrong"));
 
 		// Canvas Width / Height binding:
 
@@ -439,43 +470,43 @@ public class MainController {
 					{
 						event.setDropCompleted(true);
 						String str = dragboard.getString();
-						if (str.equals("Feszültségforrás")) {
+						if (str.equals(languageManager.get("component.voltage"))) {
 							network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Szinuszos feszültségforrás")) {
+						else if (str.equals(languageManager.get("component.sine"))) {
 							network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Négyszög feszültségforrás")) {
+						else if (str.equals(languageManager.get("component.square"))) {
 							network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Háromszög feszültségforrás")) {
+						else if (str.equals(languageManager.get("component.triangle"))) {
 							network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Fűrészfog feszültségforrás")) {
+						else if (str.equals(languageManager.get("component.sawtooth"))) {
 							network.dropComponent(new SawtoothVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Ellenállás")) {
+						else if (str.equals(languageManager.get("component.resistance"))) {
 							network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Vezeték")) {
+						else if (str.equals(languageManager.get("component.wire"))) {
 							network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Kondenzátor")) {
+						else if (str.equals(languageManager.get("component.capacitor"))) {
 							network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Induktor")) {
+						else if (str.equals(languageManager.get("component.inductor"))) {
 							network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Analóg voltmérő")) {
+						else if (str.equals(languageManager.get("component.voltmeter"))) {
 							network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Analóg ampermérő")) {
+						else if (str.equals(languageManager.get("component.ammeter"))) {
 							network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Áramforrás")) {
+						else if (str.equals(languageManager.get("component.current"))) {
 							network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
-						else if (str.equals("Földelés")) {
+						else if (str.equals(languageManager.get("component.ground"))) {
 							network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
 
@@ -575,15 +606,15 @@ public class MainController {
 				AudioPlayer.PlaybackMode newMode = audioPlayer.toogleMode();
 				String text = "";
 				switch (newMode) {
-					case AudioPlayer.PlaybackMode.CURRENT -> text = "    Áram    ";
-					case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = " Feszültség ";
-					case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = "Potenciál (be)";
-					case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = "Potenciál (ki)";
+					case AudioPlayer.PlaybackMode.CURRENT -> text = languageManager.get("audio.current");
+					case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = languageManager.get("audio.voltage");
+					case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = languageManager.get("audio.input");
+					case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = languageManager.get("audio.output");
 				}
 				btnAudioMode.setText(text);
 			}
 		);
-		btnAudioMode.setText(" Feszültség ");
+		btnAudioMode.setText(languageManager.get("audio.voltage"));
 		audioPlayer.setPlaybackMode(AudioPlayer.PlaybackMode.VOLTAGE_DROP);
 
 		btnScopeHorizontalPlus.setOnAction(
@@ -647,9 +678,9 @@ public class MainController {
             ae -> {
 				synchronized (network.getMutexObj()) {
 					if (network.isValid()) {
-						rightStatus.setText("Helyes kapcsolás.");
+						rightStatus.setText(languageManager.get("connection.correct"));
 					} else {
-						rightStatus.setText("Hibás kapcsolás!");
+						rightStatus.setText(languageManager.get("connection.wrong"));
 					}
 					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec, ((simulating != null && simulating) ? duration.toSeconds() : 0));
 					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
@@ -779,6 +810,46 @@ public class MainController {
 	{
 		audioPlayer.terminatePlayback();
 		System.out.println("Exiting");
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		updateUILanguage();
+	}
+
+	private void updateUILanguage() {
+		lvLeftListView.getItems().clear();
+		lvLeftListView.getItems().add(languageManager.get("component.voltage"));
+		lvLeftListView.getItems().add(languageManager.get("component.sine"));
+		lvLeftListView.getItems().add(languageManager.get("component.square"));
+		lvLeftListView.getItems().add(languageManager.get("component.triangle"));
+		lvLeftListView.getItems().add(languageManager.get("component.sawtooth"));
+		lvLeftListView.getItems().add(languageManager.get("component.resistance"));
+		lvLeftListView.getItems().add(languageManager.get("component.wire"));
+		lvLeftListView.getItems().add(languageManager.get("component.capacitor"));
+		lvLeftListView.getItems().add(languageManager.get("component.inductor"));
+		lvLeftListView.getItems().add(languageManager.get("component.voltmeter"));
+		lvLeftListView.getItems().add(languageManager.get("component.ammeter"));
+		lvLeftListView.getItems().add(languageManager.get("component.current"));
+		lvLeftListView.getItems().add(languageManager.get("component.ground"));
+
+		if (simulating == null || !simulating) {
+			leftStatus.setText(languageManager.get("sim.stopped"));
+		}
+		if (network.isValid()) {
+			rightStatus.setText(languageManager.get("connection.correct"));
+		} else {
+			rightStatus.setText(languageManager.get("connection.wrong"));
+		}
+		AudioPlayer.PlaybackMode currentMode = audioPlayer.getPlaybackMode();
+		String text = "";
+		switch (currentMode) {
+			case AudioPlayer.PlaybackMode.CURRENT -> text = languageManager.get("audio.current");
+			case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = languageManager.get("audio.voltage");
+			case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = languageManager.get("audio.input");
+			case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = languageManager.get("audio.output");
+		}
+		btnAudioMode.setText(text);
 	}
 
 }
