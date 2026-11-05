@@ -9,18 +9,25 @@ import gui.DrawingHelper;
 import math.*;
 
 /**
- *	Ideal wire, with zero resistance.
- *	HUN: Ideális vezeték, nulla ellenállással.
+ * Ideal wire, with zero resistance.
+ * HUN: Ideális vezeték, nulla ellenállással.
+ * 
  * @author Simon Zoltán
  * 
  */
 public class Wire extends Component {
 	private Edge e;
 
-	//Getters/Setters:------------------------------------------------------------------------------------
+	// Getters/Setters:------------------------------------------------------------------------------------
+
+	public Edge getEdgeReference() {
+		return e;
+	}
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
 	public double getTimeDomainVoltageDrop() {
@@ -42,7 +49,7 @@ public class Wire extends Component {
 		return e.getVoltageDrop();
 	}
 
-	//Build/Destroy:------------------------------------------------------------------------------------
+	// Build/Destroy:------------------------------------------------------------------------------------
 
 	@Override
 	public void updateFrequencyDependentParameters(ArrayList<Double> simulatedAngularFrequencies) {
@@ -73,8 +80,8 @@ public class Wire extends Component {
 
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
-		
-		//Properties:
+
+		// Properties:
 		setProperties(new HashMap<String, ComponentProperty>());
 
 		ComponentProperty prop = new ComponentProperty();
@@ -98,12 +105,12 @@ public class Wire extends Component {
 		super.getParent().removeEdge(e);
 	}
 
-	//Persistence:-----------------------------------------------------------------------------------
+	// Persistence:-----------------------------------------------------------------------------------
 
 	@Override
 	public void save(StringBuilder writer) {
-		writer.append("class: ");				
-		writer.append(this.getClass().getCanonicalName());		
+		writer.append("class: ");
+		writer.append(this.getClass().getCanonicalName());
 		writer.append("; inputPos: ");
 		writer.append(String.format("[%d, %d]", getInput().getPos().x, getInput().getPos().y));
 
@@ -117,10 +124,10 @@ public class Wire extends Component {
 	public void load(String[] pairs) {
 		String coordIn[] = pairs[1].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
-		
+
 		String coordOut[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
-		
+
 		updatePropertyView(true);
 	}
 
@@ -130,7 +137,8 @@ public class Wire extends Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -140,30 +148,30 @@ public class Wire extends Component {
 		builder.append("Wire [");
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
-		builder.append(",");		
+		builder.append(",");
 		builder.append(getInput().getPos().y);
-		builder.append("]");		
+		builder.append("]");
 		builder.append(", outputPos= [");
 		builder.append(getOutput().getPos().x);
-		builder.append(",");		
+		builder.append(",");
 		builder.append(getOutput().getPos().y);
-		builder.append("]");		
-		builder.append("]");		
+		builder.append("]");
+		builder.append("]");
 		return builder.toString();
 	}
 
 	@Override
 	public void draw(GraphicsContext ctx) {
 		updatePropertyView(false);
-		List<Line> lines = new ArrayList<Line>();		
-		Coordinate inputPos  = getInput().getPos(); 
+		List<Line> lines = new ArrayList<Line>();
+		Coordinate inputPos = getInput().getPos();
 		Coordinate outputPos = getOutput().getPos();
 
-		//boolean eqX = (outputPos.x == inputPos.x);
-		//boolean eqY = (outputPos.y == inputPos.y);
-		
+		// boolean eqX = (outputPos.x == inputPos.x);
+		// boolean eqY = (outputPos.y == inputPos.y);
+
 		lines.add(new Line(0, 0, getDEFAULT_SIZE(), 0));
-		
+
 		DrawingHelper.drawShape(ctx,
 				inputPos,
 				outputPos,
@@ -172,53 +180,50 @@ public class Wire extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				getParent().isValid(),
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 
-/*
-		//Construction:
-		if (eqX || eqY) {
-			lines.add(new Line(inputPos.x, inputPos.y, outputPos.x, outputPos.y));
-		} else {
-
-			// 2 segments: [input -> breaking point] and [breaking point -> output]
-			int brX = outputPos.x;
-			int brY = outputPos.y;
-			if (outputPos.x != inputPos.x) {
-				brX = inputPos.x;
-			} else if (outputPos.y != inputPos.y) {
-				brY = inputPos.y;
-			}
-			lines.add(new Line(inputPos.x, inputPos.y, brX, brY));
-			lines.add(new Line(brX, brY, outputPos.x, outputPos.y));
-
-		}
-
-		//call drawWire
-		DrawingHelper.drawWire(ctx, lines);
-*/
+		/*
+		 * //Construction:
+		 * if (eqX || eqY) {
+		 * lines.add(new Line(inputPos.x, inputPos.y, outputPos.x, outputPos.y));
+		 * } else {
+		 * 
+		 * // 2 segments: [input -> breaking point] and [breaking point -> output]
+		 * int brX = outputPos.x;
+		 * int brY = outputPos.y;
+		 * if (outputPos.x != inputPos.x) {
+		 * brX = inputPos.x;
+		 * } else if (outputPos.y != inputPos.y) {
+		 * brY = inputPos.y;
+		 * }
+		 * lines.add(new Line(inputPos.x, inputPos.y, brX, brY));
+		 * lines.add(new Line(brX, brY, outputPos.x, outputPos.y));
+		 * 
+		 * }
+		 * 
+		 * //call drawWire
+		 * DrawingHelper.drawWire(ctx, lines);
+		 */
 	}
 
 	@Override
-	public
-	void disconnectGraphRepresentation() {
+	public void disconnectGraphRepresentation() {
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
-		
+
 		getParent().disconnectEndOfEdge(e, e.getOutput());
 		getOutput().setVertexBinding(e.getOutput());
 	}
 
 	@Override
-	public
-	void reset() {
+	public void reset() {
 		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
 	@Override
-	public
-	void updatePropertyModel() {
+	public void updatePropertyModel() {
 	}
 
 	@Override
@@ -226,15 +231,14 @@ public class Wire extends Component {
 		setProperty("current", this::getTimeDomainCurrent);
 	}
 
-    @Override
-    public Wire clone() {
-        try {
-            Wire clone = (Wire) super.clone();
-            clone.e = this.e.clone();
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+	@Override
+	public Wire clone() {
+		try {
+			Wire clone = (Wire) super.clone();
+			clone.e = this.e.clone();
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }
-

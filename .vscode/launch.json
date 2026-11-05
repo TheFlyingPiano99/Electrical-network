@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "ElectricalNetwork/gui.App",
+            "projectName": "ElectricalNetwork"
+        },
+        {
+            "type": "java",
             "name": "ElectricalNetwork App",
             "request": "launch",
             "mainClass": "gui.App",

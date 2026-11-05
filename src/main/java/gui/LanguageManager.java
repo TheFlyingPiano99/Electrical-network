@@ -83,6 +83,10 @@ public class LanguageManager {
         hungarianMap.put("menu.help", "Súgó");
         hungarianMap.put("menu.about", "Névjegy");
         hungarianMap.put("menu.language", "Nyelv");
+        hungarianMap.put("toolbar.volume", "Hangerő:");
+        hungarianMap.put("properties.title", "Tulajdonságok");
+        hungarianMap.put("scope.mode", "Mód");
+        hungarianMap.put("scope.reset", "Visszaállítás");
         
         translations.put(Language.HUNGARIAN.getCode(), hungarianMap);
         
@@ -128,6 +132,10 @@ public class LanguageManager {
         englishMap.put("menu.help", "Help");
         englishMap.put("menu.about", "About");
         englishMap.put("menu.language", "Language");
+        englishMap.put("toolbar.volume", "Volume:");
+        englishMap.put("properties.title", "Properties");
+        englishMap.put("scope.mode", "Mode");
+        englishMap.put("scope.reset", "Reset");
         
         translations.put(Language.ENGLISH.getCode(), englishMap);
     }

@@ -59,6 +59,18 @@ public class MainController implements PropertyChangeListener {
     private URL location;
 
     @FXML
+    private Menu menuFile;
+
+    @FXML
+    private Menu menuSimulation;
+
+    @FXML
+    private Menu menuHelp;
+
+    @FXML
+    private Label lblVolume;
+
+    @FXML
     private MenuItem miNew;
 
     @FXML
@@ -379,6 +391,7 @@ public class MainController implements PropertyChangeListener {
 
         mainController = this;
         languageManager.addLanguageListener(this);
+        updateStaticTexts();
         
         lvLeftListView.getItems().add(languageManager.get("component.voltage"));
 		lvLeftListView.getItems().add(languageManager.get("component.sine"));
@@ -819,7 +832,33 @@ public class MainController implements PropertyChangeListener {
 		}
 	}
 
+	private void updateStaticTexts() {
+		menuFile.setText(languageManager.get("menu.file"));
+		miNew.setText(languageManager.get("menu.new"));
+		miOpen.setText(languageManager.get("menu.open"));
+		miSave.setText(languageManager.get("menu.save"));
+		miQuit.setText(languageManager.get("menu.exit"));
+		menuSimulation.setText(languageManager.get("menu.simulation"));
+		miStart.setText(languageManager.get("menu.start"));
+		miPause.setText(languageManager.get("menu.pause"));
+		miStop.setText(languageManager.get("menu.stop"));
+		menuHelp.setText(languageManager.get("menu.help"));
+		miAbout.setText(languageManager.get("menu.about"));
+		menuLanguage.setText(languageManager.get("menu.language"));
+		btnStart.setText(languageManager.get("menu.start"));
+		btnPause.setText(languageManager.get("menu.pause"));
+		btnStop.setText(languageManager.get("menu.stop"));
+		lblVolume.setText(languageManager.get("toolbar.volume"));
+		lblPropertiesTitle.setText(languageManager.get("properties.title"));
+		scopeModeToggleBtn.setText(languageManager.get("scope.mode"));
+		btnScopeReset.setText(languageManager.get("scope.reset"));
+		if (App.globalStage != null) {
+			App.globalStage.setTitle(languageManager.get("app.title"));
+		}
+	}
+
 	private void updateUILanguage() {
+		updateStaticTexts();
 		lvLeftListView.getItems().clear();
 		lvLeftListView.getItems().add(languageManager.get("component.voltage"));
 		lvLeftListView.getItems().add(languageManager.get("component.sine"));

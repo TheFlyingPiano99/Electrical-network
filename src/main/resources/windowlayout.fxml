@@ -25,7 +25,7 @@
   <children>
     <MenuBar VBox.vgrow="NEVER">
       <menus>
-        <Menu mnemonicParsing="false" text="Fájl">
+        <Menu fx:id="menuFile" mnemonicParsing="false" text="Fájl">
           <items>
             <MenuItem fx:id="miNew" mnemonicParsing="false" onAction="#miNewAction" text="Új" />
             <MenuItem fx:id="miOpen" mnemonicParsing="false" onAction="#miOpenAction" text="Megnyit…" />
@@ -34,14 +34,14 @@
             <MenuItem fx:id="miQuit" mnemonicParsing="false" onAction="#miQuitAction" text="Bezár" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Szimuláció">
+        <Menu fx:id="menuSimulation" mnemonicParsing="false" text="Szimuláció">
           <items>
             <MenuItem fx:id="miStart" mnemonicParsing="false" onAction="#miStartAction" text="Indít" />
             <MenuItem fx:id="miPause" mnemonicParsing="false" onAction="#miPauseAction" text="Szünetel" />
             <MenuItem fx:id="miStop" mnemonicParsing="false" onAction="#miStopAction" text="Leállít" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Súgó">
+        <Menu fx:id="menuHelp" mnemonicParsing="false" text="Súgó">
           <items>
             <MenuItem fx:id="miAbout" mnemonicParsing="false" onAction="#miAboutAction" text="Az alkalmazásról..." />
           </items>
@@ -59,7 +59,7 @@
           <Button fx:id="btnStart" mnemonicParsing="false" onAction="#btnStartAction" text="Indít" />
             <Button fx:id="btnPause" mnemonicParsing="false" onAction="#btnPauseAction" text="Szünetel" />
             <Button fx:id="btnStop" mnemonicParsing="false" onAction="#btnStopAction" text="Leállít" />
-            <Label text="Hangerő:" />
+            <Label fx:id="lblVolume" text="Hangerő:" />
             <Slider fx:id="volumeSlider" />
             <Button fx:id="btnAudioMode" mnemonicParsing="false" text="Potenciál" />
         </items>
