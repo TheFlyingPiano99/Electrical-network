@@ -25,6 +25,7 @@ hs_err_pid*
 /bin/
 /doc/javaDoc/
 /target/
+/build/
 .classpath
 .project
 
