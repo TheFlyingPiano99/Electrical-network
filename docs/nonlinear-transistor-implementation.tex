@@ -1,0 +1,757 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  showstringspaces=false
+}
+
+\title{Refactoring a Java Fourier-Domain Circuit Simulator\\
+for Nonlinear Transistor Support}
+\author{Architecture and Implementation Guide}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Purpose and scope}
+
+The existing simulator represents signals using selected Fourier
+coefficients, models linear components by complex impedances, and solves
+a linear system at each frequency.
+
+The proposed extension is:
+\begin{enumerate}
+  \item Assemble linear components using admittance stamps and modified
+        nodal analysis (MNA).
+  \item Preserve the existing independent-frequency linear solver.
+  \item Introduce nonlinear device models defined by terminal currents,
+        terminal charges, and their derivatives.
+  \item Solve nonlinear periodic steady states using harmonic balance.
+  \item Adapt the active frequency set using omitted-equation residuals
+        and estimated voltage errors.
+\end{enumerate}
+
+Do not replace nonlinear transistors with fixed small-signal impedances:
+that approach cannot generate harmonics or intermodulation.
+
+This guide targets steady-state simulation. General transients,
+autonomous oscillators, subharmonic solutions, and chaotic behavior
+require additional methods.
+
+\section{Conventions}
+
+Use the Fourier convention
+\[
+  v(t)=\sum_{k\in\mathcal K}V_k e^{j k\omega_0t}.
+\]
+For real signals,
+\[
+  V_{-k}=V_k^*, \qquad V_0\in\mathbb R.
+\]
+
+Use current injected into a network node as positive on the
+right-hand side. Device terminal currents are positive into the device.
+
+Choose a ground node and omit its voltage unknown. Always retain DC,
+even when all independent sources are AC.
+
+Internally, represent the independent Fourier unknowns using real
+numbers:
+\[
+  x=
+  [X_0,\Re X_1,\Im X_1,\ldots]^T.
+\]
+Here $X_k$ contains node voltages and any MNA branch-current unknowns.
+Generate negative-frequency coefficients by conjugation.
+
+Do not store both conjugate coefficients as independent unknowns.
+
+\section{Linear component assembly}
+
+\subsection{Two-terminal admittance stamp}
+
+For a component between nodes $a$ and $b$,
+\[
+  y(\omega)=\frac{1}{Z(\omega)}, \qquad
+  I_{ab}=y(V_a-V_b).
+\]
+
+Stamp:
+\[
+\begin{aligned}
+ Y_{aa}&\mathrel{+}=y,& Y_{ab}&\mathrel{-}=y,\\
+ Y_{ba}&\mathrel{-}=y,& Y_{bb}&\mathrel{+}=y.
+\end{aligned}
+\]
+
+Skip entries involving the ground row or column.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Component & Admittance & DC treatment\\
+\midrule
+Resistor & $1/R$ & Same stamp\\
+Capacitor & $j\omega C$ & Open circuit\\
+Inductor & $1/(j\omega L)$ & Use MNA\\
+General impedance & $1/Z(\omega)$ & Handle singular limits explicitly\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Do not approximate ideal shorts using arbitrarily large admittances.
+
+\subsection{Independent current source}
+
+A current source $I_s$ directed from $a$ to $b$ contributes
+\[
+  S_a\mathrel{-}=I_s,\qquad S_b\mathrel{+}=I_s.
+\]
+For periodic sources, use their Fourier coefficients at each frequency.
+
+\subsection{Modified nodal analysis}
+
+Use MNA for ideal voltage sources, inductors, and other constraints
+that require branch-current unknowns.
+
+For a branch from $a$ to $b$, let $b$ denote its incidence vector:
+$+1$ at node $a$, $-1$ at node $b$, and zero elsewhere.
+
+An ideal voltage source with unknown current $I_s$ gives
+\[
+\begin{bmatrix}
+Y & b\\
+b^T & 0
+\end{bmatrix}
+\begin{bmatrix}
+V\\ I_s
+\end{bmatrix}
+=
+\begin{bmatrix}
+S\\ V_s
+\end{bmatrix}.
+\]
+
+An inductor with current $I_L$ satisfies
+\[
+ b^T V-j\omega L I_L=0,
+\]
+and contributes the block
+\[
+\begin{bmatrix}
+Y & b\\
+b^T & -j\omega L
+\end{bmatrix}.
+\]
+At DC this enforces a short circuit without division by zero.
+
+Call the complete linear MNA matrix $A_{\mathrm L}(\omega)$.
+It need not be symmetric.
+
+\subsection{Voltage-controlled current source}
+
+For an output current from $a$ to $b$,
+\[
+ I_{ab}=g(V_c-V_d),
+\]
+stamp
+\[
+\begin{aligned}
+Y_{ac}&\mathrel{+}=g,&Y_{ad}&\mathrel{-}=g,\\
+Y_{bc}&\mathrel{-}=g,&Y_{bd}&\mathrel{+}=g.
+\end{aligned}
+\]
+
+This is the basic building block of small-signal transistor models.
+
+\section{Nonlinear device contract}
+
+For each device, define reduced terminal voltages
+\[
+ u=B V,
+\]
+where $B$ extracts voltage differences from global node voltages.
+
+Define reduced conductive currents and charges:
+\[
+ f(u), \qquad q(u).
+\]
+
+The device contributes node currents
+\[
+ i_{\mathrm{node}}
+ =B^T\left(f(u)+\frac{d}{dt}q(u)\right).
+\]
+
+The model must also provide
+\[
+ G(u)=\frac{\partial f}{\partial u},\qquad
+ C(u)=\frac{\partial q}{\partial u}.
+\]
+
+The mapping and current definitions must be paired correctly.
+Reduced currents are not necessarily currents entering the terminals
+used to define the voltage differences.
+
+For a first implementation, allow $q=0$ and $C=0$.
+Add charge storage only after conductive models are validated.
+
+Charge-based modeling is preferred to inserting an arbitrary
+voltage-dependent capacitance: the physical current is $dq/dt$.
+
+\section{Initial transistor model: Ebers--Moll BJT}
+
+For an NPN device, define
+\[
+ u=
+ \begin{bmatrix}
+ v_B-v_E\\
+ v_B-v_C
+ \end{bmatrix}.
+\]
+
+Let
+\[
+ I_F=I_{ES}\left(e^{v_{BE}/V_T}-1\right),\qquad
+ I_R=I_{CS}\left(e^{v_{BC}/V_T}-1\right),
+\]
+where
+\[
+ V_T=\frac{k_B T}{q_e}.
+\]
+
+Terminal currents positive into the transistor are
+\[
+\begin{aligned}
+ i_C&=\alpha_F I_F-I_R,\\
+ i_E&=-I_F+\alpha_R I_R,\\
+ i_B&=(1-\alpha_F)I_F+(1-\alpha_R)I_R.
+\end{aligned}
+\]
+Verify
+\[
+ i_B+i_C+i_E=0.
+\]
+
+For this voltage mapping, use the reduced current vector
+\[
+ f(u)=
+ \begin{bmatrix}
+ -i_E\\ -i_C
+ \end{bmatrix}
+ =
+ \begin{bmatrix}
+ I_F-\alpha_R I_R\\
+ -\alpha_F I_F+I_R
+ \end{bmatrix}.
+\]
+
+With
+\[
+ g_F=\frac{I_{ES}}{V_T}e^{v_{BE}/V_T},\qquad
+ g_R=\frac{I_{CS}}{V_T}e^{v_{BC}/V_T},
+\]
+the derivative is
+\[
+ G(u)=
+ \begin{bmatrix}
+ g_F&-\alpha_R g_R\\
+ -\alpha_F g_F&g_R
+ \end{bmatrix}.
+\]
+
+For a physically consistent Ebers--Moll parameterization, enforce
+\[
+ \alpha_F I_{ES}=\alpha_R I_{CS},
+ \qquad 0<\alpha_F,\alpha_R<1.
+\]
+
+This initial model omits Early effect, breakdown, and detailed charge
+storage. Document these limitations.
+
+Use numerically stable exponential evaluation, including
+\texttt{expm1} near zero. Use Newton step limiting or a documented,
+derivative-consistent exponential continuation to prevent overflow.
+Do not silently clamp currents while retaining inconsistent derivatives.
+
+\section{Harmonic-balance equations}
+
+For each retained harmonic,
+\[
+ R_k=
+ A_{\mathrm L}(k\omega_0)X_k+
+ I_{\mathrm{NL},k}(X)-S_k=0.
+\]
+
+Nonlinear currents enter the node-equation rows. Their contribution
+to auxiliary branch-constraint rows is zero unless a particular device
+model explicitly introduces additional equations.
+
+Linear components remain independent between frequencies.
+Nonlinear components couple frequencies.
+
+\subsection{Alternating frequency/time evaluation}
+
+For period $T=2\pi/\omega_0$, choose
+\[
+ t_m=\frac{mT}{M},\qquad m=0,\ldots,M-1.
+\]
+
+Reconstruct terminal voltages:
+\[
+ u_{d,m}=
+ \sum_{\ell\in\mathcal K}B_d V_\ell
+ e^{j\ell\omega_0t_m}.
+\]
+
+Evaluate
+\[
+ f_{d,m}=f_d(u_{d,m}),\qquad
+ q_{d,m}=q_d(u_{d,m}).
+\]
+
+Transform back:
+\[
+ F_{d,k}=\frac1M\sum_m f_{d,m}e^{-jk\omega_0t_m},
+ \qquad
+ Q_{d,k}=\frac1M\sum_m q_{d,m}e^{-jk\omega_0t_m}.
+\]
+
+Then
+\[
+ \boxed{
+ I_{\mathrm{NL},k}
+ =\sum_d B_d^T
+ \left(F_{d,k}+jk\omega_0Q_{d,k}\right).
+ }
+\]
+
+For sparse active spectra, zero-fill inactive coefficients on the FFT
+grid. Document the FFT library's normalization and index conventions.
+
+A grid capable of reconstructing the voltage spectrum is not necessarily
+large enough to resolve the nonlinear current spectrum. Oversample and
+increase $M$ until retained coefficients and candidate error indicators
+stabilize. Exponential models have no finite exactly alias-free grid.
+
+\subsection{Newton Jacobian}
+
+At every time sample evaluate $G_d(u)$ and $C_d(u)$, then transform
+these derivative matrices to obtain coefficients $G_{d,p}$ and
+$C_{d,p}$.
+
+For a signed-frequency representation, the node-voltage blocks are
+\[
+ \boxed{
+ J_{k\ell}
+ =
+ \delta_{k\ell}A_{\mathrm L}(k\omega_0)
+ +\sum_d B_d^T
+ \left(G_{d,k-\ell}+jk\omega_0C_{d,k-\ell}\right)B_d.
+ }
+\]
+
+In this formula, embed $B_d$ and the nonlinear stamps into the full MNA
+layout as necessary. The charge multiplier is the output frequency
+$jk\omega_0$, not the input frequency $j\ell\omega_0$.
+
+Solve
+\[
+ J\Delta x=-R,
+ \qquad x_{\mathrm{new}}=x+\lambda\Delta x,
+ \qquad 0<\lambda\leq1.
+\]
+
+For a real packed spectrum, include the dependence of negative-frequency
+coefficients on conjugate positive-frequency coefficients. Do not simply
+discard the negative-frequency Jacobian blocks.
+
+A practical alternative is a Jacobian-vector product:
+\begin{enumerate}
+ \item Reconstruct the voltage perturbation in time.
+ \item Compute $\delta f_m=G_m\delta u_m$ and
+       $\delta q_m=C_m\delta u_m$.
+ \item Transform back and form
+       $\delta F_k+jk\omega_0\delta Q_k$.
+ \item Add the linear MNA product.
+\end{enumerate}
+
+Initially use a directly assembled Jacobian for small test circuits.
+Introduce matrix-free Newton--Krylov methods only after validation.
+
+\subsection{Convergence and robustness}
+
+Use:
+\begin{itemize}
+ \item A DC operating-point solve before AC continuation.
+ \item Source stepping from small AC amplitude to the target amplitude.
+ \item Damped Newton steps with a scaled residual merit function.
+ \item Separate absolute and relative tolerances for voltage, current,
+       and constraint equations.
+ \item Both residual and update-size convergence checks.
+ \item Iteration limits and explicit failure diagnostics.
+\end{itemize}
+
+MNA rows have different units. Never compare all raw residual entries
+using one unscaled tolerance.
+
+Detect floating nodes, inconsistent ideal-source constraints, and
+singular matrices. Do not silently hide these problems with arbitrary
+regularization.
+
+\section{Adaptive frequency selection}
+
+\subsection{Why source-only selection fails}
+
+Nonlinearities generate DC, harmonics, and mixing products. For example,
+$v^2$ produces sums and differences of input frequencies.
+Transistor exponentials can generate arbitrarily high orders.
+
+Adaptation must measure the equations omitted by the active spectrum,
+rather than only inspect source types.
+
+\subsection{Active and candidate sets}
+
+Maintain:
+\begin{itemize}
+ \item An active set $\mathcal K$ used by the nonlinear solve.
+ \item A larger candidate set $\mathcal P$ inspected for spectral error.
+ \item A time-sampling grid sufficiently large to inspect $\mathcal P$.
+\end{itemize}
+
+Always retain DC. Add and remove conjugate pairs together.
+
+Maintain source coefficients on the candidate set even when they are
+not active. This matters for truncated square and sawtooth sources.
+
+\subsection{Omitted-equation residual}
+
+After convergence on $\mathcal K$, evaluate nonlinear currents on the
+larger grid. For omitted $p$, set $X_p=0$ and compute
+\[
+ \boxed{r_p=I_{\mathrm{NL},p}-S_p.}
+\]
+
+This residual may include nonzero voltage-source constraint entries
+through $S_p$.
+
+Current magnitude alone is not a reliable spectral error measure:
+small currents near resonances can cause large voltages.
+
+Estimate the missing solution by
+\[
+ \Delta\widehat X_p=-D_p^{-1}r_p,
+\]
+where
+\[
+ D_p=A_{\mathrm L}(\omega_p)
+ +\operatorname{embed}
+ \left[
+ \sum_d B_d^T(G_{d,0}+j\omega_pC_{d,0})B_d
+ \right].
+\]
+
+This is an approximate incremental loading calculation. It ignores
+cross-frequency corrections.
+
+For node-voltage entries define
+\[
+ \eta_p=
+ \max_n
+ \frac{|\Delta\widehat V_{n,p}|}
+ {V_{\mathrm{abs}}+V_{\mathrm{rel}}V_{\mathrm{scale},n}}.
+\]
+
+Add separate current or observable error indicators if needed.
+A voltage-only indicator does not bound every branch-current error.
+
+If the estimator block is singular or ill-conditioned, do not classify
+the candidate as harmless. Expand the candidate solve, improve the
+coupled estimator, or report an unresolved error.
+
+\subsection{Adaptation loop}
+
+\begin{lstlisting}
+active = initialSourceHarmonicsPlusDC()
+x = solveDCAndInitialize(active)
+
+repeat:
+    x = solveHarmonicBalance(active, x)
+    ensureSamplingConvergence(x)
+
+    candidates = buildGuardSpectrum(active, sources)
+    residuals = evaluateOmittedEquations(x, candidates)
+    indicators = estimateMissingSolutionErrors(residuals)
+
+    additions = selectWorstCandidates(indicators)
+    if additions is empty and guardSpectrumIsAdequate:
+        return convergedResult
+
+    active = active union additions
+    x = warmStartWithPredictedCoefficients(x, additions)
+
+until resourceLimit
+
+return explicitNonconvergenceDiagnostics
+\end{lstlisting}
+
+Inspect beyond the immediate active spectrum and enlarge the guard band
+until its outer edge is insignificant. A small residual inside a narrow
+candidate set does not prove that more distant harmonics are negligible.
+
+For removal, require:
+\begin{enumerate}
+ \item Small contribution for several adaptation cycles.
+ \item A removal threshold lower than the addition threshold.
+ \item An omitted-residual test after trial removal.
+ \item Re-solution of the reduced system.
+\end{enumerate}
+
+Never remove DC or explicitly protected source components.
+
+Declare separate outcomes for nonlinear convergence, spectral
+convergence, and sampling convergence.
+
+\section{Frequency representation}
+
+\subsection{Commensurate sources}
+
+For a common fundamental, use integer indices
+\[
+ \omega_k=k\omega_0.
+\]
+Do not identify harmonics by floating-point equality.
+
+Sparse active coefficients can coexist with a dense FFT workspace.
+
+\subsection{Incommensurate sources}
+
+For independent fundamentals $\Omega_1,\ldots,\Omega_d$, use integer
+tuples:
+\[
+ \omega_{\mathbf k}=\mathbf k\cdot\boldsymbol\Omega,
+ \qquad \mathbf k\in\mathbb Z^d.
+\]
+
+Examples:
+\[
+ (1,0)\mapsto\Omega_1,\quad
+ (1,-1)\mapsto\Omega_1-\Omega_2,\quad
+ (2,1)\mapsto2\Omega_1+\Omega_2.
+\]
+
+Evaluate the quasiperiodic waveform on a multidimensional phase grid.
+The charge multiplier becomes $j\omega_{\mathbf k}$.
+Use multidimensional FFTs or equivalent Fourier projection.
+
+Reduce rationally dependent fundamentals to an independent basis.
+Otherwise different tuples can describe the same physical frequency.
+
+Implement the one-fundamental periodic solver first. Multitone
+adaptation is a later milestone because its frequency lattice can grow
+rapidly.
+
+\section{Suggested Java architecture}
+
+Adapt names and types to the existing repository. Avoid introducing
+duplicate complex-number or sparse-matrix libraries unnecessarily.
+
+\begin{lstlisting}[language=Java]
+interface LinearComponent {
+    void allocateUnknowns(UnknownAllocator allocator);
+    void stamp(
+        double angularFrequency,
+        ComplexMatrixAccumulator matrix,
+        ComplexVectorAccumulator rhs,
+        UnknownLayout layout);
+}
+
+interface NonlinearDevice {
+    TerminalMapping mapping();
+
+    // Currents and charges use the reduced terminal coordinates.
+    void evaluate(
+        double[] terminalVoltages,
+        double[] currents,
+        double[] charges,
+        double[][] currentJacobian,
+        double[][] chargeJacobian);
+}
+
+interface PeriodicSource {
+    Complex coefficient(int harmonicIndex);
+}
+
+interface SpectrumTransform {
+    // Enforce documented normalization and conjugate symmetry.
+    void toTime(Spectrum spectrum, TimeSamples output);
+    void toFrequency(TimeSamples samples, Spectrum output);
+}
+\end{lstlisting}
+
+Recommended responsibilities:
+\begin{description}
+ \item[UnknownLayout] Ground handling, node indices, auxiliary currents,
+       and real-spectrum packing.
+ \item[LinearAssembler] Frequency-dependent MNA stamps and source vectors.
+ \item[DeviceEvaluator] Time-domain device evaluation and derivatives.
+ \item[HarmonicBalanceResidual] Transform orchestration and residual assembly.
+ \item[NewtonSolver] Scaling, damping, convergence, and diagnostics.
+ \item[SpectrumController] Candidate generation, error estimation,
+       additions, removals, and hysteresis.
+ \item[SamplingController] FFT grid selection and aliasing checks.
+\end{description}
+
+Cache linear matrices when frequency and component parameters are
+unchanged. Reuse work arrays and sparse symbolic factorizations where
+supported. Never reuse numerical factorizations after matrix entries
+change.
+
+\section{Implementation milestones for Copilot}
+
+\subsection*{Milestone 1: inspect and preserve behavior}
+\begin{enumerate}
+ \item Inspect the existing graph representation, ground convention,
+       Fourier normalization, solver, and component APIs.
+ \item Identify tests and establish baseline results.
+ \item Propose a minimal migration plan before large edits.
+ \item Preserve public APIs where feasible.
+\end{enumerate}
+
+\subsection*{Milestone 2: linear stamps and MNA}
+\begin{enumerate}
+ \item Wrap existing scalar impedances with a two-terminal stamp.
+ \item Add current-source and voltage-source stamps.
+ \item Add branch-current treatment for inductors, including DC.
+ \item Validate existing linear simulations before introducing nonlinear
+       frequency coupling.
+\end{enumerate}
+
+\subsection*{Milestone 3: DC nonlinear solver}
+\begin{enumerate}
+ \item Add nonlinear device current and derivative contracts.
+ \item Implement a diode and conductive Ebers--Moll NPN.
+ \item Implement damped Newton and source stepping.
+ \item Validate analytic derivatives against finite differences.
+\end{enumerate}
+
+\subsection*{Milestone 4: fixed-spectrum harmonic balance}
+\begin{enumerate}
+ \item Implement real Fourier packing and transform tests.
+ \item Implement time-domain nonlinear evaluation.
+ \item Implement residual and coupled Jacobian assembly.
+ \item Solve a user-specified harmonic set.
+ \item Validate against enlarged fixed-spectrum solutions.
+\end{enumerate}
+
+\subsection*{Milestone 5: adaptive spectrum}
+\begin{enumerate}
+ \item Add guard-spectrum evaluation and omitted residuals.
+ \item Add incremental missing-voltage estimation.
+ \item Add batch expansion and warm starts.
+ \item Add sampling refinement.
+ \item Add conservative removal only after addition is reliable.
+\end{enumerate}
+
+\subsection*{Milestone 6: charge and advanced models}
+\begin{enumerate}
+ \item Add documented terminal charge models and derivatives.
+ \item Validate the output-frequency charge multiplier.
+ \item Add improved BJT or MOSFET models as separate implementations.
+ \item Consider multitone and matrix-free solvers after the periodic
+       implementation is stable.
+\end{enumerate}
+
+Each milestone should compile, include tests, and avoid unrelated
+refactoring.
+
+\section{Required verification tests}
+
+\subsection{Linear assembly}
+\begin{itemize}
+ \item Resistor divider.
+ \item RC and RL frequency responses.
+ \item Voltage-source polarity and current-source direction.
+ \item Inductor at DC.
+ \item Controlled-source signs.
+ \item Explicit detection of floating or inconsistent circuits.
+ \item Agreement with the original solver for supported circuits.
+\end{itemize}
+
+\subsection{Device models}
+\begin{itemize}
+ \item BJT terminal-current conservation.
+ \item Finite-difference verification of every derivative entry.
+ \item Reverse-biased and forward-biased junction behavior.
+ \item Bias points spanning cutoff, forward active operation, and saturation.
+ \item Consistency of charge derivatives when charge models are added.
+\end{itemize}
+
+\subsection{Fourier and harmonic balance}
+\begin{itemize}
+ \item FFT round trip, DC normalization, and conjugate symmetry.
+ \item For $v=A\cos(\omega_0t)$ and $i=a v^2$, verify
+       $I_0=aA^2/2$ and $I_{\pm2}=aA^2/4$.
+ \item A linear circuit solved by harmonic balance must reproduce the
+       independent-frequency solver.
+ \item A small nonlinear perturbation must approach the corresponding
+       small-signal result.
+ \item A driven nonlinear circuit must generate DC and harmonics.
+ \item Compare Jacobian-vector products with finite-difference residual
+       perturbations, including charge terms.
+ \item Increasing the sampling grid must stabilize retained results.
+\end{itemize}
+
+\subsection{Adaptive spectrum}
+\begin{itemize}
+ \item Begin with DC and the driven fundamental; verify generated
+       harmonics are added.
+ \item Use a resonant network to verify that a small omitted current with
+       a large voltage effect is retained.
+ \item Compare adaptive solutions with generously sized fixed-spectrum
+       reference solutions.
+ \item Verify tighter tolerances reduce observable error.
+ \item Verify removal hysteresis prevents repeated add/remove cycles.
+ \item Verify resource limits report unresolved spectral error rather
+       than claiming convergence.
+\end{itemize}
+
+\section{Acceptance criteria}
+
+The refactor is complete when:
+\begin{enumerate}
+ \item Existing linear results remain correct.
+ \item Ideal voltage sources and inductors work at DC using MNA.
+ \item Nonlinear transistors generate DC shifts and harmonics.
+ \item Newton derivatives pass numerical verification.
+ \item Adaptive solutions agree with expanded-spectrum references within
+       configured tolerances.
+ \item Aliasing checks are independent of active-set convergence.
+ \item Unsupported regimes and convergence failures are clearly reported.
+\end{enumerate}
+
+\section{Limitations to document}
+
+Harmonic balance solves an assumed periodic or quasiperiodic steady
+state. Convergence does not prove dynamic stability or uniqueness.
+
+Autonomous oscillators require an unknown oscillation frequency and a
+phase condition. Subharmonic solutions may require a lower fundamental
+than the source frequency. General startup behavior and chaotic signals
+require time-domain simulation or other specialized methods.
+
+Adaptive frequency indicators are practical error estimates, not a
+universal rigorous bound. Validate their effectiveness against larger
+spectra and refined sampling grids.
+
+\end{document}

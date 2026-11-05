@@ -30,3 +30,15 @@ hs_err_pid*
 .project
 *.dll
 
+# Latex
+*.aux
+*.bbl
+*.blg
+*.brf
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.synctex.gz
+
