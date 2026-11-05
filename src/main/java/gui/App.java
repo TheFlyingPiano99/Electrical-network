@@ -1,7 +1,6 @@
 package gui;
 
 import java.net.URL;
-import java.nio.file.Paths;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -25,7 +24,7 @@ public class App extends Application {
 	@Override
 	public void start(Stage stage) throws Exception {
 		globalStage = stage;
-		final URL url = Paths.get("windowlayout.fxml").toUri().toURL();
+		final URL url = App.class.getResource("/windowlayout.fxml");
 		Parent content = FXMLLoader.load(url);
 		stage.setScene(new Scene(content));
 		stage.show();
