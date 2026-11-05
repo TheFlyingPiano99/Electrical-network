@@ -8,7 +8,7 @@
             "mainClass": "gui.App",
             "projectName": "ElectricalNetwork",
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "java: build workspace"
+            "console": "integratedTerminal"
         }
     ]
 }

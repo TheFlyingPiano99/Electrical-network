@@ -1,13 +1,11 @@
 package gui;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.ArrayList;
-import java.util.List;
 
-public class LanguageManager extends Observable {
+public class LanguageManager {
     
     public enum Language {
         HUNGARIAN("hu"),
@@ -26,12 +24,12 @@ public class LanguageManager extends Observable {
     private static LanguageManager instance = null;
     private Language currentLanguage;
     private Map<String, Map<String, String>> translations;
-    private List<Observer> observers;
+    private PropertyChangeSupport pcs;
     
     private LanguageManager() {
         currentLanguage = Language.HUNGARIAN;
         translations = new HashMap<>();
-        observers = new ArrayList<>();
+        pcs = new PropertyChangeSupport(this);
         loadTranslations();
     }
     
@@ -141,8 +139,9 @@ public class LanguageManager extends Observable {
     
     public void setLanguage(Language language) {
         if (currentLanguage != language) {
+            Language oldLanguage = currentLanguage;
             currentLanguage = language;
-            notifyObservers();
+            pcs.firePropertyChange("language", oldLanguage, language);
         }
     }
     
@@ -150,22 +149,11 @@ public class LanguageManager extends Observable {
         return currentLanguage;
     }
     
-    @Override
-    public synchronized void addObserver(Observer o) {
-        if (!observers.contains(o)) {
-            observers.add(o);
-        }
+    public void addLanguageListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener("language", listener);
     }
     
-    @Override
-    public synchronized void deleteObserver(Observer o) {
-        observers.remove(o);
-    }
-    
-    @Override
-    public void notifyObservers() {
-        for (Observer o : observers) {
-            o.update(this, null);
-        }
+    public void removeLanguageListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener("language", listener);
     }
 }

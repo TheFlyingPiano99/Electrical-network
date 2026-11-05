@@ -7,6 +7,7 @@ import org.junit.Test;
 import math.Gauss;
 import math.GaussException;
 import math.InfiniteSolutions;
+import math.Complex;
 import math.Matrix;
 import math.NoSolution;
 import math.Vector;
@@ -16,7 +17,7 @@ public class GaussTest {
 	@Test(expected=InfiniteSolutions.class)
 	public void testEliminateInfSol() throws GaussException {
 		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(0);
+		linSys.fill(new Complex(0, 0));
 		
 		Gauss.Eliminate(linSys);
 	}
@@ -24,7 +25,7 @@ public class GaussTest {
 	@Test(expected=NoSolution.class)
 	public void testEliminateForbiden() throws GaussException {
 		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(0);
+		linSys.fill(new Complex(0, 0));
 		linSys.setAt(4, 0, 1);
 		linSys.setAt(3, 2, 1);
 		
@@ -34,7 +35,7 @@ public class GaussTest {
 	@Test
 	public void testEliminateClean() throws GaussException {
 		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(0);
+		linSys.fill(new Complex(0, 0));
 		//"Left" side: (Top)
 		linSys.setAt(0, 0, 1);
 		linSys.setAt(1, 1, 1);
@@ -60,7 +61,7 @@ public class GaussTest {
 	@Test
 	public void testReduce() {
 		Matrix linSys = new Matrix(5, 4);
-		linSys.fill(0);
+		linSys.fill(new Complex(0, 0));
 		
 		//Vector exp = new Vector(0);
 		Gauss.Reduce(linSys);
@@ -70,11 +71,11 @@ public class GaussTest {
 	@Test
 	public void testCoefficientMatrix() {
 		Matrix left = new Matrix(2,2);
-		left.fill(2);
+		left.fill(new Complex(2, 0));
 		Vector right = new Vector(2);
-		right.fill(3);
+		right.fill(new Complex(3, 0));
 		Matrix exp = new Matrix(3,2);
-		exp.fill(2);
+		exp.fill(new Complex(2, 0));
 		exp.setAt(2, 0, 3);
 		exp.setAt(2, 1, 3);
 		
@@ -82,4 +83,5 @@ public class GaussTest {
 	}
 
 }
+
 

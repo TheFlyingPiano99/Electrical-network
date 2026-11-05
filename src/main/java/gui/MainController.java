@@ -1,13 +1,13 @@
 package gui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Observer;
-import java.util.Observable;
 import java.util.ResourceBundle;
 
 import javafx.animation.KeyFrame;
@@ -35,7 +35,7 @@ import javafx.util.Duration;
 import math.Coordinate;
 import network.*;
 
-public class MainController implements Observer {
+public class MainController implements PropertyChangeListener {
 	
 	static MainController mainController = null;
 	
@@ -378,7 +378,7 @@ public class MainController implements Observer {
 		assert btnScopeReset != null : "fx:id=\"btnScopeReset\" was not injected: check your FXML file 'windowlayout.fxml'.";
 
         mainController = this;
-        languageManager.addObserver(this);
+        languageManager.addLanguageListener(this);
         
         lvLeftListView.getItems().add(languageManager.get("component.voltage"));
 		lvLeftListView.getItems().add(languageManager.get("component.sine"));
@@ -813,8 +813,10 @@ public class MainController implements Observer {
 	}
 
 	@Override
-	public void update(Observable o, Object arg) {
-		updateUILanguage();
+	public void propertyChange(PropertyChangeEvent evt) {
+		if ("language".equals(evt.getPropertyName())) {
+			updateUILanguage();
+		}
 	}
 
 	private void updateUILanguage() {

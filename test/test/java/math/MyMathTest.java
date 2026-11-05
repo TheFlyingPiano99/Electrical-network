@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import math.Complex;
 import math.Matrix;
 import math.MyMath;
 import math.Vector;
@@ -25,12 +26,12 @@ public class MyMathTest {
 	 */
 	@Test
 	public void testMultiplyDoubleMatrix() {
-		double f = 0;
+		Complex f = new Complex(0, 0);
 		Matrix M = new Matrix(3,3);
-		M.fill(0);
+		M.fill(new Complex(0, 0));
 		
 		Matrix exp = new Matrix(3,3);
-		exp.fill(0);
+		exp.fill(new Complex(0, 0));
 		
 		assertEquals(exp, MyMath.multiply(f, M));
 	}
@@ -43,11 +44,11 @@ public class MyMathTest {
 		Matrix A = new Matrix (2,2);
 		Matrix B = new Matrix (2,2);
 		
-		A.fill(1);
-		B.fill(1);
+		A.fill(new Complex(1, 0));
+		B.fill(new Complex(1, 0));
 		
 		Matrix exp = new Matrix(2, 2);
-		exp.fill(2);
+		exp.fill(new Complex(2, 0));
 		
 		assertEquals(exp, MyMath.multiply(A, B));
 		
@@ -61,11 +62,11 @@ public class MyMathTest {
 		Matrix A = new Matrix (3,2);
 		Vector v = new Vector(2);
 		
-		A.fill(1);
-		v.fill(1);
+		A.fill(new Complex(1, 0));
+		v.fill(new Complex(1, 0));
 		
 		Vector exp = new Vector(3);
-		exp.fill(2);
+		exp.fill(new Complex(2, 0));
 		
 		assertEquals(exp, MyMath.multiply(A, v));
 	}
@@ -78,11 +79,11 @@ public class MyMathTest {
 		Vector v = new Vector(3);
 		Matrix A = new Matrix (3,2);
 		
-		A.fill(1);
-		v.fill(1);
+		A.fill(new Complex(1, 0));
+		v.fill(new Complex(1, 0));
 		
 		Vector exp = new Vector(2);
-		exp.fill(3);
+		exp.fill(new Complex(3, 0));
 		
 		assertEquals(exp, MyMath.multiply(v, A));
 	}
@@ -92,12 +93,12 @@ public class MyMathTest {
 	 */
 	@Test
 	public void testMultiplyMatrixDouble() {
-		float f = 0;
+		Complex f = new Complex(0, 0);
 		Matrix M = new Matrix(3,3);
-		M.fill(0);
+		M.fill(new Complex(0, 0));
 		
 		Matrix exp = new Matrix(3,3);
-		exp.fill(0);
+		exp.fill(new Complex(0, 0));
 		
 		assertEquals(exp, MyMath.multiply(M, f));
 	}
@@ -108,14 +109,14 @@ public class MyMathTest {
 	@Test
 	public void testTranspose() {
 		Matrix m = new Matrix(3,4);
-		m.fill(0);
+		m.fill(new Complex(0, 0));
 		m.setAt(0, 0, 1);
 		m.setAt(1, 1, 2);
 		m.setAt(2, 2, 3);
 		m.setAt(0, 1, 4);	//!
 		
 		Matrix exp = new Matrix(4,3);
-		exp.fill(0);
+		exp.fill(new Complex(0, 0));
 		exp.setAt(0, 0, 1);
 		exp.setAt(1, 1, 2);
 		exp.setAt(2, 2, 3);
@@ -133,7 +134,7 @@ public class MyMathTest {
 		Matrix B = new Matrix (2,2);
 		
 		A.fill(4);
-		B.fill(3);
+		B.fill(new Complex(3, 0));
 		
 		Matrix exp = new Matrix(2, 2);
 		exp.fill(7);
@@ -151,10 +152,10 @@ public class MyMathTest {
 		Matrix B = new Matrix (2,2);
 		
 		A.fill(4);
-		B.fill(3);
+		B.fill(new Complex(3, 0));
 		
 		Matrix exp = new Matrix(2, 2);
-		exp.fill(1);
+		exp.fill(new Complex(1, 0));
 		
 		assertEquals(exp, MyMath.subtrackt(A, B));
 	}
@@ -165,7 +166,7 @@ public class MyMathTest {
 	@Test
 	public void testIdentity() {
 		Matrix exp = new Matrix (3,3);
-		exp.fill(0);
+		exp.fill(new Complex(0, 0));
 		exp.setAt(0,0, 1);
 		exp.setAt(1,1, 1);
 		exp.setAt(2,2, 1);
@@ -184,7 +185,7 @@ public class MyMathTest {
 		v.setAt(2, 6);
 		
 		Matrix exp = new Matrix (3,3);
-		exp.fill(0);
+		exp.fill(new Complex(0, 0));
 		exp.setAt(0,0, 1);
 		exp.setAt(1,1, 3);
 		exp.setAt(2,2, 6);
@@ -198,7 +199,7 @@ public class MyMathTest {
 	@Test
 	public void testRemoveColumns() {
 		Matrix M = new Matrix(3,6);
-		M.fill(2);
+		M.fill(new Complex(2, 0));
 		
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
 	    
@@ -206,7 +207,7 @@ public class MyMathTest {
 		toRemove.add(1);
 		
 		Matrix exp = new Matrix(3,4);
-		exp.fill(2);
+		exp.fill(new Complex(2, 0));
 		
 		assertEquals(exp, MyMath.removeColumns(M, toRemove));		
 	}
@@ -217,14 +218,14 @@ public class MyMathTest {
 	@Test
 	public void testRemoveRows() {
 		Matrix M = new Matrix(6,3);
-		M.fill(2);
+		M.fill(new Complex(2, 0));
 		
 		ArrayList<Integer> toRemove = new ArrayList<>();
 		toRemove.add(3);
 		toRemove.add(1);
 		
 		Matrix exp = new Matrix(4,3);
-		exp.fill(2);
+		exp.fill(new Complex(2, 0));
 		
 		assertEquals(exp, MyMath.removeRows(M, toRemove));		
 	}
@@ -235,7 +236,7 @@ public class MyMathTest {
 	@Test
 	public void testMultiplyRow() {
 		Matrix M = new Matrix(2,2);
-		M.fill(2);
+		M.fill(new Complex(2, 0));
 		Matrix exp = new Matrix(2,2);
 		exp.setAt(0,0, 6);
 		exp.setAt(0,1, 6);
@@ -251,7 +252,7 @@ public class MyMathTest {
 	@Test
 	public void testMultipyColumn() {
 		Matrix M = new Matrix(2,2);
-		M.fill(2);
+		M.fill(new Complex(2, 0));
 		Matrix exp = new Matrix(2,2);
 		exp.setAt(0,0, 6);
 		exp.setAt(1,0, 6);
@@ -270,7 +271,7 @@ public class MyMathTest {
 	@Test
 	public void testMultiplyVectorDouble() {
 		Vector v = new Vector(3);
-		v.fill(2);
+		v.fill(new Complex(2, 0));
 		
 		Vector exp = new Vector(3);
 		exp.fill(6);
@@ -284,7 +285,7 @@ public class MyMathTest {
 	@Test
 	public void testMultiplyDoubleVector() {
 		Vector v = new Vector(3);
-		v.fill(2);
+		v.fill(new Complex(2, 0));
 		
 		Vector exp = new Vector(3);
 		exp.fill(6);
@@ -298,10 +299,10 @@ public class MyMathTest {
 	@Test
 	public void testDot() {
 		Vector a = new Vector(3);
-		a.fill(2);
+		a.fill(new Complex(2, 0));
 		
 		Vector b = new Vector(3);
-		b.fill(3);
+		b.fill(new Complex(3, 0));
 		
 		float exp = a.at(0)*b.at(0) + a.at(1)*b.at(1) + a.at(2)*b.at(2);
 		
@@ -317,7 +318,7 @@ public class MyMathTest {
 		v.fill(4);
 		
 		Vector exp = new Vector(3);
-		exp.fill(2);
+		exp.fill(new Complex(2, 0));
 		
 		assertEquals(exp, MyMath.divide(v, 2));
 	}
@@ -330,7 +331,7 @@ public class MyMathTest {
 		Vector a = new Vector(3);
 		a.fill(8);
 		Vector b = new Vector(3);
-		b.fill(2);
+		b.fill(new Complex(2, 0));
 		
 		Vector exp = new Vector(3);
 		exp.fill(4);
@@ -358,7 +359,7 @@ public class MyMathTest {
 	@Test
 	public void testMagnitude() {
 		Vector v = new Vector(3);
-		v.fill(3);
+		v.fill(new Complex(3, 0));
 		
 		float exp = (float) Math.sqrt(v.at(0)*v.at(0) + v.at(1)*v.at(1) + v.at(2)*v.at(2));
 		assertTrue(MyMath.magnitude(v) == exp);
@@ -370,7 +371,7 @@ public class MyMathTest {
 	@Test
 	public void testNormalize() {
 		Vector v = new Vector(3);
-		v.fill(0);
+		v.fill(new Complex(0, 0));
 		
 		Vector exp = new Vector(3);
 
@@ -394,9 +395,9 @@ public class MyMathTest {
 	@Test
 	public void testAddVectorVector() {
 		Vector a = new Vector(3);
-		a.fill(3);
+		a.fill(new Complex(3, 0));
 		Vector b = new Vector(3);
-		b.fill(2);
+		b.fill(new Complex(2, 0));
 		
 		Vector exp = new Vector(3);
 		exp.fill(5);
@@ -410,15 +411,16 @@ public class MyMathTest {
 	@Test
 	public void testSubtracktVectorVector() {
 		Vector a = new Vector(3);
-		a.fill(3);
+		a.fill(new Complex(3, 0));
 		Vector b = new Vector(3);
-		b.fill(2);
+		b.fill(new Complex(2, 0));
 		
 		Vector exp = new Vector(3);
-		exp.fill(1);
+		exp.fill(new Complex(1, 0));
 		
 		assertEquals(exp, MyMath.subtract(a, b));
 	}
 
 }
+
 
