@@ -168,6 +168,11 @@ public class BJTTransistor extends Component implements NonlinearDevice {
         baseNode = getTerminal(1);
         collectorNode = getTerminal(2);
         
+        // For backward compatibility with Network.dropComponent positioning:
+        // Set input/output to emitter/collector for drag-and-drop placement
+        setInput(emitterNode);
+        setOutput(collectorNode);
+        
         // Create virtual edges for network representation
         collectorEdge = new Edge();
         baseEdge = new Edge();
