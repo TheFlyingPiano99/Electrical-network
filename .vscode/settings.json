@@ -1,0 +1,20 @@
+{
+    "maven.executable.preferMavenWrapper": true,
+    "maven.terminal.favorites": [
+        "clean compile",
+        "clean javafx:run",
+        "clean package -DskipTests",
+        "clean install",
+        "clean test",
+        "compile",
+        "package"
+    ],
+    "maven.pomFilePath": "${workspaceFolder}/pom.xml",
+    "java.configuration.maven.defaultMojoExecutionAction": "execute",
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true
+    },
+    "redhat.telemetry.enabled": false
+}
