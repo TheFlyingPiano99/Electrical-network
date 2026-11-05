@@ -39,6 +39,13 @@ public class NativeNetworkInterfaceTest {
     }
     
     @Test
+    @DisplayName("JNI bridge answers testJNI")
+    public void testJniBridgeResponds() {
+        assertTrue(nativeLibraryAvailable);
+        assertTrue(NativeNetworkInterface.testJNI().contains("JNI Library Loaded"));
+    }
+
+    @Test
     @DisplayName("Network simulation uses native implementation")
     public void testNetworkUsesNativeImplementation() {
         if (!nativeLibraryAvailable) {

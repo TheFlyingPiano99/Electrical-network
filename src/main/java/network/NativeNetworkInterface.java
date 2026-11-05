@@ -14,7 +14,7 @@ public class NativeNetworkInterface {
     private static final String LIBRARY_NAME = "ElectricalJNI";
     private static boolean libraryLoaded = false;
     private static String loadError = null;
-    private static final String[] DEPENDENCY_DLLS = {"ElectricalMath.dll", "ElectricalNetwork.dll"};
+    private static final String[] DEPENDENCY_DLLS = {};
     
     // Static initializer - loads native library
     static {
@@ -113,30 +113,4 @@ public class NativeNetworkInterface {
         int matrix_rows,
         int matrix_cols,
         double[] matrix_data) throws GaussException;
-    
-    /**
-     * Calculates impedance for a component at given frequency.
-     * C++23 optimized calculation.
-     * 
-     * @param resistance Resistance in ohms
-     * @param inductance Inductance in henries
-     * @param capacitance Capacitance in farads
-     * @param angular_frequency Angular frequency in rad/s
-     * @return [real_part, imag_part] of impedance
-     */
-    public static native double[] calculateImpedance(
-        double resistance,
-        double inductance,
-        double capacitance,
-        double angular_frequency);
-    
-    /**
-     * Calculates magnitude of complex number
-     */
-    public static native double complexMagnitude(double real, double imag);
-    
-    /**
-     * Calculates phase of complex number
-     */
-    public static native double complexPhase(double real, double imag);
 }

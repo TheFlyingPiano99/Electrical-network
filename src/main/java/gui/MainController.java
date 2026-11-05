@@ -406,6 +406,7 @@ public class MainController implements PropertyChangeListener {
         lvLeftListView.getItems().add(languageManager.get("component.ammeter"));
         lvLeftListView.getItems().add(languageManager.get("component.current"));
         lvLeftListView.getItems().add(languageManager.get("component.ground"));
+        lvLeftListView.getItems().add(languageManager.get("component.bjt"));
         lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
     	leftStatus.setText(languageManager.get("sim.stopped"));    		
@@ -521,6 +522,9 @@ public class MainController implements PropertyChangeListener {
 						}
 						else if (str.equals(languageManager.get("component.ground"))) {
 							network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
+						}
+						else if (str.equals(languageManager.get("component.bjt"))) {
+							network.dropComponent(new BJTTransistor(), new Coordinate((int)event.getX(), (int)event.getY()));
 						}
 
 						selectedComponent = network.getSelected();

@@ -2,34 +2,23 @@
 // Connects Java GUI with C++23 network engine
 
 #include <jni.h>
-#include "electrical/math/gauss.hpp"
-#include "electrical/math/matrix.hpp"
+#include <complex>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
-using namespace electrical::math;
+using Complex = std::complex<double>;
 
 /**
  * Called by Java to test if JNI library loaded successfully
  */
 extern "C" JNIEXPORT jstring JNICALL
-Java_network_Network_testJNI(JNIEnv* env, jclass clazz) {
+Java_network_NativeNetworkInterface_testJNI(JNIEnv* env, jclass clazz) {
     return env->NewStringUTF("JNI Library Loaded Successfully - C++23");
 }
 
 /**
- * Solves a linear system using C++23 Gaussian elimination.
- * Called from Java NativeNetworkInterface.solveLinearSystem()
- *
- * @param env JNI environment
- * @param clazz Java class
- * @param matrix_rows Number of matrix rows
- * @param matrix_cols Number of matrix columns  
- * @param matrix_data Complex values in row-major order (re, im, re, im, ...)
- * @return Solution vector as double array (re, im, re, im, ...)
- */
-/**
- * Solves a linear system using C++23 Gaussian elimination.
+ * Solves a linear system using Gaussian elimination.
  * Called from Java NativeNetworkInterface.solveLinearSystem()
  *
  * @param env JNI environment
@@ -101,7 +90,7 @@ Java_network_NativeNetworkInterface_solveLinearSystem(
             int pivot_row = -1;
             double max_magnitude = epsilon;
             for (int row = pivot_row_index; row < num_equations; ++row) {
-                double mag = M[row][col].magnitude();
+                double mag = std::abs(M[row][col]);
                 if (mag > max_magnitude) {
                     max_magnitude = mag;
                     pivot_row = row;
@@ -135,7 +124,7 @@ Java_network_NativeNetworkInterface_solveLinearSystem(
         
         // Remaining equations must be consistent (0 = 0).
         for (int row = pivot_row_index; row < num_equations; ++row) {
-            if (M[row][num_unknowns].magnitude() > 1e-9) {
+            if (std::abs(M[row][num_unknowns]) > 1e-9) {
                 env->ReleaseDoubleArrayElements(matrix_data, matrix_ptr, JNI_ABORT);
                 env->ThrowNew(env->FindClass("math/GaussException"), 
                              "Inconsistent linear system: no solution");
@@ -187,64 +176,4 @@ Java_network_NativeNetworkInterface_solveLinearSystem(
                      "Unknown error in solveLinearSystem");
         return nullptr;
     }
-}
-
-/**
- * Calculates complex impedance for a component.
- * Z = R + j*ωL + 1/(j*ωC) = R + j*(ωL - 1/(ωC))
- */
-extern "C" JNIEXPORT jdoubleArray JNICALL
-Java_network_NativeNetworkInterface_calculateImpedance(
-    JNIEnv* env,
-    jclass clazz,
-    jdouble resistance,      // R in ohms
-    jdouble inductance,      // L in henries
-    jdouble capacitance,     // C in farads
-    jdouble angular_frequency) { // ω in rad/s
-    
-    try {
-        // Calculate impedance
-        double real_z = resistance;
-        double imag_z = angular_frequency * inductance - 1.0 / (angular_frequency * capacitance + 1e-12);
-        
-        // Return as [real, imag]
-        jdoubleArray result = env->NewDoubleArray(2);
-        if (result != nullptr) {
-            jdouble values[2] = {real_z, imag_z};
-            env->SetDoubleArrayRegion(result, 0, 2, values);
-        }
-        return result;
-        
-    } catch (const std::exception& e) {
-        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
-        return nullptr;
-    }
-}
-
-/**
- * Calculates the magnitude of a complex number.
- */
-extern "C" JNIEXPORT jdouble JNICALL
-Java_network_NativeNetworkInterface_complexMagnitude(
-    JNIEnv* env,
-    jclass clazz,
-    jdouble real_part,
-    jdouble imag_part) {
-    
-    Complex c(real_part, imag_part);
-    return c.magnitude();
-}
-
-/**
- * Calculates the phase of a complex number.
- */
-extern "C" JNIEXPORT jdouble JNICALL
-Java_network_NativeNetworkInterface_complexPhase(
-    JNIEnv* env,
-    jclass clazz,
-    jdouble real_part,
-    jdouble imag_part) {
-    
-    Complex c(real_part, imag_part);
-    return c.phase();
 }

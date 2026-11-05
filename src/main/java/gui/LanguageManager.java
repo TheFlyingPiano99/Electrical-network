@@ -27,7 +27,7 @@ public class LanguageManager {
     private PropertyChangeSupport pcs;
     
     private LanguageManager() {
-        currentLanguage = Language.HUNGARIAN;
+        currentLanguage = Language.ENGLISH;
         translations = new HashMap<>();
         pcs = new PropertyChangeSupport(this);
         loadTranslations();
@@ -67,6 +67,7 @@ public class LanguageManager {
         hungarianMap.put("component.ammeter", "Analóg ampermérő");
         hungarianMap.put("component.ground", "Földelés");
         hungarianMap.put("component.current", "Áramforrás");
+        hungarianMap.put("component.bjt", "BJT Tranzisztor");
         hungarianMap.put("audio.voltage", "Feszültség");
         hungarianMap.put("audio.current", "Áram");
         hungarianMap.put("audio.input", "Potenciál (be)");
@@ -87,6 +88,8 @@ public class LanguageManager {
         hungarianMap.put("properties.title", "Tulajdonságok");
         hungarianMap.put("scope.mode", "Mód");
         hungarianMap.put("scope.reset", "Visszaállítás");
+        hungarianMap.put("scope.start", "Intervallum kezdete");
+        hungarianMap.put("scope.length", "Intervallum hossza");
         
         translations.put(Language.HUNGARIAN.getCode(), hungarianMap);
         
@@ -116,6 +119,7 @@ public class LanguageManager {
         englishMap.put("component.ammeter", "Analog Ammeter");
         englishMap.put("component.ground", "Ground");
         englishMap.put("component.current", "Current Source");
+        englishMap.put("component.bjt", "BJT Transistor");
         englishMap.put("audio.voltage", "Voltage");
         englishMap.put("audio.current", "Current");
         englishMap.put("audio.input", "Potential (In)");
@@ -136,6 +140,8 @@ public class LanguageManager {
         englishMap.put("properties.title", "Properties");
         englishMap.put("scope.mode", "Mode");
         englishMap.put("scope.reset", "Reset");
+        englishMap.put("scope.start", "Interval start");
+        englishMap.put("scope.length", "Interval length");
         
         translations.put(Language.ENGLISH.getCode(), englishMap);
     }

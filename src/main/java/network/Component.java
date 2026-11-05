@@ -10,6 +10,7 @@ import math.*;
 
 /**
  * Abstract parent of all network components.
+ * Supports 2-terminal components (traditional) and multi-terminal components (3+ poles).
  * HUN: Minden komponens absztrakt ősosztálya.
  * @author Simon Zoltán
  *
@@ -45,6 +46,13 @@ public abstract class Component implements Cloneable {
 	}
 
 	private ComponentNode output;
+	
+	/**
+	 * Terminal nodes for multi-terminal components (3 or more poles).
+	 * For 2-terminal components, input and output are used instead.
+	 * For 3+ terminal components, this list contains all terminal nodes.
+	 */
+	protected ArrayList<ComponentNode> terminals = new ArrayList<>();
 		
 	//Manipulation related:
 	boolean grabbed = false;
@@ -81,6 +89,7 @@ public abstract class Component implements Cloneable {
 		clone.parent = this.parent;
 		clone.input = this.input;
 		clone.output = this.output;
+		clone.terminals = new ArrayList<>(this.terminals);
 		return clone;
 	}
 
@@ -118,6 +127,40 @@ public abstract class Component implements Cloneable {
 		this.output = output;
 	}
 	
+	/**
+	 * Returns the list of all terminal nodes for multi-terminal components.
+	 * For 2-terminal components, this is empty (use getInput/getOutput instead).
+	 */
+	public ArrayList<ComponentNode> getTerminals() {
+		return terminals;
+	}
+	
+	/**
+	 * Returns the number of poles (terminals) this component has.
+	 * 2-terminal components return 2.
+	 * Multi-terminal components return the size of the terminals list.
+	 */
+	public int getPoleCount() {
+		if (terminals.isEmpty()) {
+			return 2;  // Legacy 2-terminal component
+		}
+		return terminals.size();
+	}
+	
+	/**
+	 * Returns terminal node by index.
+	 * For 2-terminal components: 0 = input, 1 = output.
+	 * For multi-terminal: index into terminals list.
+	 */
+	public ComponentNode getTerminal(int index) {
+		if (terminals.isEmpty()) {
+			if (index == 0) return input;
+			if (index == 1) return output;
+			throw new IndexOutOfBoundsException("2-terminal component, index " + index);
+		}
+		return terminals.get(index);
+	}
+	
 	public Map<String, ComponentProperty> getProperties() {
 		return properties;
 	}
@@ -149,6 +192,33 @@ public abstract class Component implements Cloneable {
 	}
 	
 	/**
+	 * Generates terminal nodes for a multi-terminal component.
+	 * Creates N terminal nodes and registers them with the network.
+	 * 
+	 * @param numberOfTerminals Number of poles (e.g., 3 for BJT, 4 for MOSFET)
+	 */
+	protected void generateMultiTerminalNodes(int numberOfTerminals) {
+		if (numberOfTerminals < 2) {
+			throw new IllegalArgumentException("Component must have at least 2 terminals");
+		}
+		
+		terminals.clear();
+		for (int i = 0; i < numberOfTerminals; ++i) {
+			ComponentNode node = new ComponentNode(parent);
+			terminals.add(node);
+			parent.getComponentNodes().add(node);
+			
+			// First terminal is "input" role, last is "output" role for compatibility
+			if (i == 0) {
+				node.addOutgoing(this);
+			} else if (i == numberOfTerminals - 1) {
+				node.addIncoming(this);
+			}
+		}
+	}
+	
+	
+	/**
 	 * Removes every end node to this component. Should be called in beginning of destroy method.
 	 * HUN: Megszünteti a végpontokat. Minden destroy metódus elején meg kell hívni!
 	 */
@@ -167,6 +237,27 @@ public abstract class Component implements Cloneable {
 		else {
 			output.getIncoming().remove(this);			
 		}
+	}
+	
+	/**
+	 * Removes all terminal nodes for a multi-terminal component.
+	 * Should be called in the destroy method of multi-terminal components.
+	 */
+	protected void removeMultiTerminalNodes() {
+		for (ComponentNode node : terminals) {
+			// Similar logic to removeEndNodes
+			if (node.getNoOfIncoming() == 0 && node.getNoOfOutgoing() <= 1) {
+				parent.getComponentNodes().remove(node);
+			} else {
+				if (node.getNoOfOutgoing() > 0) {
+					node.getOutgoing().remove(this);
+				}
+				if (node.getNoOfIncoming() > 0) {
+					node.getIncoming().remove(this);
+				}
+			}
+		}
+		terminals.clear();
 	}
 	
 	//Manipulate:----------------------------------------------------------------

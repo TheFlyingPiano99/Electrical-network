@@ -93,12 +93,10 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>cmake</executable>
+                            <executable>cmd</executable>
                             <arguments>
-                                <argument>--build</argument>
-                                <argument>.</argument>
-                                <argument>--config</argument>
-                                <argument>Release</argument>
+                                <argument>/c</argument>
+                                <argument>set "jvmConfig=" &amp; set "JVMCONFIG=" &amp; cmake --build . --config Release</argument>
                             </arguments>
                             <workingDirectory>${project.basedir}/build</workingDirectory>
                             <skip>${skipCppBuild}</skip>

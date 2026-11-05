@@ -390,8 +390,8 @@ public class DrawingHelper {
 
 						setNormalDrawingAttributes(ctx);
 						ctx.setLineWidth(0.8);
-						ctx.strokeText("Intervallum kezdete = " + String.format("%,.2f", scopeTimeXStart) + " s", 10,H - 25);
-						ctx.strokeText("Intervallum hossza  = " + String.format("%,.2f", maxScopeDataPoints * scopeTimeXSampleStep) + " s", 10,H - 10);
+						ctx.strokeText(LanguageManager.getInstance().get("scope.start") + " = " + String.format("%,.2f", scopeTimeXStart) + " s", 10,H - 25);
+												ctx.strokeText(LanguageManager.getInstance().get("scope.length") + " = " + String.format("%,.2f", maxScopeDataPoints * scopeTimeXSampleStep) + " s", 10,H - 10);
 
 						double valOffset = H / 2.0;
 						double valScale = H / 2.0 * scopeTimeYScale;
@@ -412,8 +412,8 @@ public class DrawingHelper {
 
 						setNormalDrawingAttributes(ctx);
 						ctx.setLineWidth(0.8);
-						ctx.strokeText("Intervallum kezdete = " + String.format("%,.2f", scopeFrequencyXStart) + " rad/s", 5,H - 25);
-						ctx.strokeText("Intervallum hossza  = " + String.format("%,.2f", scopeFrequencyXInterval) + " rad/s", 5,H - 10);
+						ctx.strokeText(LanguageManager.getInstance().get("scope.start") + " = " + String.format("%,.2f", scopeFrequencyXStart) + " rad/s", 5,H - 25);
+												ctx.strokeText(LanguageManager.getInstance().get("scope.length") + " = " + String.format("%,.2f", scopeFrequencyXInterval) + " rad/s", 5,H - 10);
 
 						double valOffset = H * 0.8;
 						double valScale = H / 0.7 * scopeFrequencyYScale;

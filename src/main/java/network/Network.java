@@ -294,7 +294,7 @@ public class Network {
 				return;
 			}
 			needRecalculation = false;
-			System.out.println("\nCalculating system");
+			System.out.println("\nEvaluating system");
 			if (changedSetOfAngularFrequencies || forceEval) {
 				changedSetOfAngularFrequencies = false;
 				// Make sure that the ground vertex is always updated:
