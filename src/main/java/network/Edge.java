@@ -1,13 +1,14 @@
 package network;
+
 import math.*;
 
 import java.util.ArrayList;
 
-
 /**
  * The edge of the graph representation of the network.
- * HUN: A hálózat gráf-reprezentációjának élei. 
- * @author Simon Zoltán
+ * HUN: A hálózat gráf-reprezentációjának élei.
+ * 
+ * @author Zoltán Simon
  *
  */
 
@@ -16,10 +17,10 @@ public class Edge implements Cloneable {
 
 	static int gen = 0;
 	private int id;
-	
+
 	private Vertex input;
 	private Vertex output;
-	
+
 	Vector impedance = Vector.Zeros(defaultPhasorSpaceResolution);
 	Vector current = Vector.Zeros(defaultPhasorSpaceResolution);
 	Vector sourceVoltage = Vector.Zeros(defaultPhasorSpaceResolution);
@@ -30,8 +31,8 @@ public class Edge implements Cloneable {
 
 	boolean grabbed = false;
 
-	//Constructor:----------------------------------------------------------
-	
+	// Constructor:----------------------------------------------------------
+
 	public Edge() {
 		gen++;
 		id = gen;
@@ -43,18 +44,17 @@ public class Edge implements Cloneable {
 		this.impedance = impedance;
 		this.current = current;
 	}
-	
-	//Getters/Setters:----------------------------------------------------------
-	
+
+	// Getters/Setters:----------------------------------------------------------
+
 	public boolean isGrabbed() {
 		return grabbed;
 	}
 
-
 	public void setGrabbed(boolean grabbed) {
 		this.grabbed = grabbed;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
@@ -70,7 +70,7 @@ public class Edge implements Cloneable {
 	public Vector getVoltageDrop() {
 		return Vector.multiply(current, impedance);
 	}
-	
+
 	public Vertex getInput() {
 		return input;
 	}
@@ -103,8 +103,8 @@ public class Edge implements Cloneable {
 		this.current = current;
 	}
 
-	//HashCode/Equals:---------------------------------------------------
-	
+	// HashCode/Equals:---------------------------------------------------
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -112,7 +112,6 @@ public class Edge implements Cloneable {
 		result = prime * result + id;
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -128,8 +127,7 @@ public class Edge implements Cloneable {
 		return true;
 	}
 
-	public void updateTimeDomainParameters(ArrayList<Double> omega, double totalTimeSec)
-	{
+	public void updateTimeDomainParameters(ArrayList<Double> omega, double totalTimeSec) {
 		timeDomainCurrent = 0;
 		timeDomainSourceVoltage = 0;
 		timeDomainVoltageDrop = 0;
@@ -141,8 +139,8 @@ public class Edge implements Cloneable {
 		}
 	}
 
-	public void updateTimeDomainParametersUsingSpecificFrequencies(ArrayList<Double> omega, ArrayList<Integer> frequencyIndices, double totalTimeSec)
-	{
+	public void updateTimeDomainParametersUsingSpecificFrequencies(ArrayList<Double> omega,
+			ArrayList<Integer> frequencyIndices, double totalTimeSec) {
 		timeDomainCurrent = 0;
 		timeDomainSourceVoltage = 0;
 		timeDomainVoltageDrop = 0;
@@ -154,32 +152,27 @@ public class Edge implements Cloneable {
 		}
 	}
 
-	public final double getTimeDomainCurrent()
-	{
+	public final double getTimeDomainCurrent() {
 		return timeDomainCurrent;
 	}
 
-	public final double getTimeDomainSourceVoltage()
-	{
+	public final double getTimeDomainSourceVoltage() {
 		return timeDomainSourceVoltage;
 	}
 
-	public final double getTimeDomainVoltageDrop()
-	{
-		return (timeDomainSourceVoltage == 0.0f)? timeDomainVoltageDrop : -timeDomainSourceVoltage;
+	public final double getTimeDomainVoltageDrop() {
+		return (timeDomainSourceVoltage == 0.0f) ? timeDomainVoltageDrop : -timeDomainSourceVoltage;
 	}
 
-    @Override
-    public Edge clone() {
-        try {
-            Edge clone = (Edge) super.clone();
+	@Override
+	public Edge clone() {
+		try {
+			Edge clone = (Edge) super.clone();
 			clone.input = this.input.clone();
 			clone.output = this.output.clone();
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }
-
-

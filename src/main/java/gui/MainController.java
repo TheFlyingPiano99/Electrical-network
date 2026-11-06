@@ -36,11 +36,11 @@ import math.Coordinate;
 import network.*;
 
 public class MainController implements PropertyChangeListener {
-	
+
 	static MainController mainController = null;
-	
+
 	private Network network = new Network();
-	private Component     grabbedComponent = null;
+	private Component grabbedComponent = null;
 	private ComponentNode grabbedNode = null;
 	private Component selectedComponent = null;
 	AudioPlayer audioPlayer = new AudioPlayer();
@@ -50,67 +50,67 @@ public class MainController implements PropertyChangeListener {
 	Boolean simulating = null;
 	double totalTimeSec = 0;
 
-//FXML items:-----------------------------------------------------------------	
-	
+	// FXML items:-----------------------------------------------------------------
+
 	@FXML
-    private ResourceBundle resources;
+	private ResourceBundle resources;
 
-    @FXML
-    private URL location;
+	@FXML
+	private URL location;
 
-    @FXML
-    private Menu menuFile;
+	@FXML
+	private Menu menuFile;
 
-    @FXML
-    private Menu menuSimulation;
+	@FXML
+	private Menu menuSimulation;
 
-    @FXML
-    private Menu menuHelp;
+	@FXML
+	private Menu menuHelp;
 
-    @FXML
-    private Label lblVolume;
+	@FXML
+	private Label lblVolume;
 
-    @FXML
-    private MenuItem miNew;
+	@FXML
+	private MenuItem miNew;
 
-    @FXML
-    private MenuItem miOpen;
+	@FXML
+	private MenuItem miOpen;
 
-    @FXML
-    private MenuItem miSave;
+	@FXML
+	private MenuItem miSave;
 
-    @FXML
-    private MenuItem miQuit;
+	@FXML
+	private MenuItem miQuit;
 
-    @FXML
-    private MenuItem miStart;
+	@FXML
+	private MenuItem miStart;
 
-    @FXML
-    private MenuItem miPause;
+	@FXML
+	private MenuItem miPause;
 
-    @FXML
-    private MenuItem miStop;
+	@FXML
+	private MenuItem miStop;
 
-    @FXML
-    private MenuItem miAbout;
+	@FXML
+	private MenuItem miAbout;
 
-    @FXML
-    private Menu menuLanguage;
+	@FXML
+	private Menu menuLanguage;
 
-    @FXML
-    private MenuItem miLanguageHungarian;
+	@FXML
+	private MenuItem miLanguageHungarian;
 
-    @FXML
-    private MenuItem miLanguageEnglish;
+	@FXML
+	private MenuItem miLanguageEnglish;
 
-    @FXML
-    private Button btnStart;
+	@FXML
+	private Button btnStart;
 
-    @FXML
-    private Button btnPause;
+	@FXML
+	private Button btnPause;
 
-    @FXML
-    private Button btnStop;
+	@FXML
+	private Button btnStop;
 
 	@FXML
 	private Slider volumeSlider;
@@ -118,32 +118,32 @@ public class MainController implements PropertyChangeListener {
 	@FXML
 	private Button btnAudioMode;
 
-    @FXML
-    private ListView<String> lvLeftListView;
+	@FXML
+	private ListView<String> lvLeftListView;
 
-    @FXML
-    private Canvas circuitCanvas;
+	@FXML
+	private Canvas circuitCanvas;
 
-    @FXML
-    private Canvas scopeCanvas;
+	@FXML
+	private Canvas scopeCanvas;
 
-    @FXML
-    private Label lblPropertiesTitle;
+	@FXML
+	private Label lblPropertiesTitle;
 
-    @FXML
-    private Label leftStatus;
+	@FXML
+	private Label leftStatus;
 
-    @FXML
-    private Font x3;
+	@FXML
+	private Font x3;
 
-    @FXML
-    private Color x4;
+	@FXML
+	private Color x4;
 
-    @FXML
-    private Label rightStatus;
+	@FXML
+	private Label rightStatus;
 
-    @FXML
-    private GridPane propertyGrid;
+	@FXML
+	private GridPane propertyGrid;
 
 	@FXML
 	private AnchorPane middlePane;
@@ -175,26 +175,28 @@ public class MainController implements PropertyChangeListener {
 	@FXML
 	private Button btnScopeReset;
 
-	//Menu item actions:------------------------------------------------------------------------------------------
-    
-    /**
-     * Show about window.
-     * @param event
-     */
-    @FXML
-    void miAboutAction(ActionEvent event) {
-    	Dialog dlg = new Alert(AlertType.NONE, languageManager.get("app.author"), ButtonType.OK);
-    	dlg.show();
-    }
+	// Menu item
+	// actions:------------------------------------------------------------------------------------------
 
-    /**
-     * Clear canvas.
-     * @param event
-     */
-    @FXML
-    void miNewAction(ActionEvent event) {
-		synchronized (network.getMutexObj())
-		{
+	/**
+	 * Show about window.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miAboutAction(ActionEvent event) {
+		Dialog dlg = new Alert(AlertType.NONE, languageManager.get("app.author"), ButtonType.OK);
+		dlg.show();
+	}
+
+	/**
+	 * Clear canvas.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miNewAction(ActionEvent event) {
+		synchronized (network.getMutexObj()) {
 			selectedComponent = null;
 			grabbedNode = null;
 			grabbedComponent = null;
@@ -210,102 +212,106 @@ public class MainController implements PropertyChangeListener {
 			DrawingHelper.toggleScopeMode();
 			DrawingHelper.updateScopeSamples(null);
 		}
-    }
+	}
 
-    /**
-     * Load from file.
-     * Show "open file" dialog, for file selection.
-     * @param event
-     */
-    @FXML
-    void miOpenAction(ActionEvent event) {
-    	FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(languageManager.get("file.open"));
-        fileChooser.getExtensionFilters().addAll(
-        		new ExtensionFilter(languageManager.get("file.all"), "*.*"),
-        		new ExtensionFilter(languageManager.get("file.text"), "*.txt"));
-        
-        String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
-        fileChooser.setInitialDirectory(new File(currentPath));
-        
-        File f = fileChooser.showOpenDialog(App.globalStage);
-        if (f != null && f.exists()) {
-        	String fileName = f.getAbsolutePath();
-			synchronized (network.getMutexObj())
-			{
+	/**
+	 * Load from file.
+	 * Show "open file" dialog, for file selection.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miOpenAction(ActionEvent event) {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle(languageManager.get("file.open"));
+		fileChooser.getExtensionFilters().addAll(
+				new ExtensionFilter(languageManager.get("file.all"), "*.*"),
+				new ExtensionFilter(languageManager.get("file.text"), "*.txt"));
+
+		String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
+		fileChooser.setInitialDirectory(new File(currentPath));
+
+		File f = fileChooser.showOpenDialog(App.globalStage);
+		if (f != null && f.exists()) {
+			String fileName = f.getAbsolutePath();
+			synchronized (network.getMutexObj()) {
 				network.clear();
 				network.evaluate(true);
 				network.load(fileName);
 				network.evaluate(true);
 			}
-        }
-    }
+		}
+	}
 
-    /**
-     * Quit application.
-     * @param event
-     */
-    @FXML
-    void miQuitAction(ActionEvent event) {
+	/**
+	 * Quit application.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miQuitAction(ActionEvent event) {
 		audioPlayer.terminatePlayback();
 		System.out.println("Exiting");
 		Platform.exit();
-    }
+	}
 
-    /**
-     * Show "file save as" dialog window.
-     * @param event
-     */
-    @FXML
-    void miSaveAction(ActionEvent event) {
-    	FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(languageManager.get("file.save"));
-        fileChooser.getExtensionFilters().addAll(
-        		new ExtensionFilter(languageManager.get("file.all"), "*.*"),
-        		new ExtensionFilter(languageManager.get("file.text"), "*.txt"));
-        
-        String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
-        fileChooser.setInitialDirectory(new File(currentPath));
-        
-        File f = fileChooser.showSaveDialog(null);
-        if (f != null) {
-        	String fileName = f.getAbsolutePath();
-        	network.save(fileName);
-        }
-    }
+	/**
+	 * Show "file save as" dialog window.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miSaveAction(ActionEvent event) {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle(languageManager.get("file.save"));
+		fileChooser.getExtensionFilters().addAll(
+				new ExtensionFilter(languageManager.get("file.all"), "*.*"),
+				new ExtensionFilter(languageManager.get("file.text"), "*.txt"));
 
-    /**
-     * Start simulation.
-     * @param event
-     */
-    @FXML
-    void miStartAction(ActionEvent event) {
-    	simulating = true;
-    	leftStatus.setText(languageManager.get("sim.running"));
+		String currentPath = Paths.get(".").toAbsolutePath().normalize().toString();
+		fileChooser.setInitialDirectory(new File(currentPath));
+
+		File f = fileChooser.showSaveDialog(null);
+		if (f != null) {
+			String fileName = f.getAbsolutePath();
+			network.save(fileName);
+		}
+	}
+
+	/**
+	 * Start simulation.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miStartAction(ActionEvent event) {
+		simulating = true;
+		leftStatus.setText(languageManager.get("sim.running"));
 		audioPlayer.startPlayback();
-    }
+	}
 
-    /**
-     * Pause simulation.
-     * @param event
-     */
-    @FXML
-    void miPauseAction(ActionEvent event) {
-    	if (simulating != null && simulating == true) {
-        	leftStatus.setText(languageManager.get("sim.paused"));    		
-    	}
-    	simulating = false;
+	/**
+	 * Pause simulation.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miPauseAction(ActionEvent event) {
+		if (simulating != null && simulating == true) {
+			leftStatus.setText(languageManager.get("sim.paused"));
+		}
+		simulating = false;
 		audioPlayer.pausePlayback();
-    }
+	}
 
-    /**
-     * Stop simulation.
-     * @param event
-     */
-    @FXML
-    void miStopAction(ActionEvent event) {
-		synchronized (network.getMutexObj())
-		{
+	/**
+	 * Stop simulation.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miStopAction(ActionEvent event) {
+		synchronized (network.getMutexObj()) {
 			simulating = null;
 			leftStatus.setText(languageManager.get("sim.stopped"));
 			audioPlayer.stopPlayback();
@@ -313,104 +319,126 @@ public class MainController implements PropertyChangeListener {
 		}
 	}
 
-    /**
-     * Switch to Hungarian language.
-     * @param event
-     */
-    @FXML
-    void miLanguageHungarianAction(ActionEvent event) {
-        languageManager.setLanguage(LanguageManager.Language.HUNGARIAN);
-    }
+	/**
+	 * Switch to Hungarian language.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miLanguageHungarianAction(ActionEvent event) {
+		languageManager.setLanguage(LanguageManager.Language.HUNGARIAN);
+	}
 
-    /**
-     * Switch to English language.
-     * @param event
-     */
-    @FXML
-    void miLanguageEnglishAction(ActionEvent event) {
-        languageManager.setLanguage(LanguageManager.Language.ENGLISH);
-    }
+	/**
+	 * Switch to English language.
+	 * 
+	 * @param event
+	 */
+	@FXML
+	void miLanguageEnglishAction(ActionEvent event) {
+		languageManager.setLanguage(LanguageManager.Language.ENGLISH);
+	}
 
-    //Button actions:--------------------------------------------------------------------------
-
-    @FXML
-    void btnStartAction(ActionEvent event) { miStartAction(event); }
-
-    @FXML
-    void btnPauseAction(ActionEvent event) {
-    	miPauseAction(event);
-    }
-
-    @FXML
-    void btnStopAction(ActionEvent event) {
-    	miStopAction(event);
-    }
+	// Button
+	// actions:--------------------------------------------------------------------------
 
 	@FXML
-	void btnScopeModeToggleAction(ActionEvent event) { DrawingHelper.toggleScopeMode(); };
-    
-//Initialize:----------------------------------------------------------------------------------------------
-    
-    
-    /**
-     * Initializes javaFX controller.
-     * HUN: Inicializálja a javaFX kontrollert.
-     */
-	public void initialize() {
-        assert miNew != null : "fx:id=\"miNew\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miOpen != null : "fx:id=\"miOpen\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miSave != null : "fx:id=\"miSave\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miQuit != null : "fx:id=\"miQuit\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miStart != null : "fx:id=\"miStart\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miPause != null : "fx:id=\"miPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miStop != null : "fx:id=\"miStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert miAbout != null : "fx:id=\"miAbout\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert btnStart != null : "fx:id=\"btnStart\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert btnPause != null : "fx:id=\"btnPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert volumeSlider != null : "fx:id=\"volumeSlider\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnAudioMode != null : "fx:id=\"btnAudioMode\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lvLeftListView != null : "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert circuitCanvas != null : "fx:id=\"circuitCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert scopeCanvas != null : "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert lblPropertiesTitle != null : "fx:id=\"lblPropertiesTitle\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert leftStatus != null : "fx:id=\"leftStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
-        assert rightStatus != null : "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert middlePane != null : "fx:id=\"middlePane\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert rightTopPane != null : "fx:id=\"rightTopPane\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert scopeModeToggleBtn != null : "fx:id=\"scopeModeToggleBtn\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeHorizontalPlus != null : "fx:id=\"btnScopeHorizontalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeHorizontalMinus != null : "fx:id=\"btnScopeHorizontalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeVerticalPlus != null : "fx:id=\"btnScopeVerticalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeVerticalMinus != null : "fx:id=\"btnScopeVerticalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeLeft != null : "fx:id=\"btnScopeLeft\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeRight != null : "fx:id=\"btnScopeRight\" was not injected: check your FXML file 'windowlayout.fxml'.";
-		assert btnScopeReset != null : "fx:id=\"btnScopeReset\" was not injected: check your FXML file 'windowlayout.fxml'.";
+	void btnStartAction(ActionEvent event) {
+		miStartAction(event);
+	}
 
-        mainController = this;
-        languageManager.addLanguageListener(this);
-        updateStaticTexts();
-        
-        lvLeftListView.getItems().add(languageManager.get("component.voltage"));
+	@FXML
+	void btnPauseAction(ActionEvent event) {
+		miPauseAction(event);
+	}
+
+	@FXML
+	void btnStopAction(ActionEvent event) {
+		miStopAction(event);
+	}
+
+	@FXML
+	void btnScopeModeToggleAction(ActionEvent event) {
+		DrawingHelper.toggleScopeMode();
+	};
+
+	// Initialize:----------------------------------------------------------------------------------------------
+
+	/**
+	 * Initializes javaFX controller.
+	 * HUN: Inicializálja a javaFX kontrollert.
+	 */
+	public void initialize() {
+		assert miNew != null : "fx:id=\"miNew\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miOpen != null : "fx:id=\"miOpen\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miSave != null : "fx:id=\"miSave\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miQuit != null : "fx:id=\"miQuit\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miStart != null : "fx:id=\"miStart\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miPause != null : "fx:id=\"miPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miStop != null : "fx:id=\"miStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert miAbout != null : "fx:id=\"miAbout\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnStart != null : "fx:id=\"btnStart\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnPause != null : "fx:id=\"btnPause\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnStop != null : "fx:id=\"btnStop\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert volumeSlider != null
+				: "fx:id=\"volumeSlider\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnAudioMode != null
+				: "fx:id=\"btnAudioMode\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert lvLeftListView != null
+				: "fx:id=\"lvLeftListView\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert circuitCanvas != null
+				: "fx:id=\"circuitCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert scopeCanvas != null
+				: "fx:id=\"scopeCanvas\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert lblPropertiesTitle != null
+				: "fx:id=\"lblPropertiesTitle\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert leftStatus != null : "fx:id=\"leftStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert x3 != null : "fx:id=\"x3\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert x4 != null : "fx:id=\"x4\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert rightStatus != null
+				: "fx:id=\"rightStatus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert middlePane != null : "fx:id=\"middlePane\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert rightTopPane != null
+				: "fx:id=\"rightTopPane\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert scopeModeToggleBtn != null
+				: "fx:id=\"scopeModeToggleBtn\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeHorizontalPlus != null
+				: "fx:id=\"btnScopeHorizontalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeHorizontalMinus != null
+				: "fx:id=\"btnScopeHorizontalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeVerticalPlus != null
+				: "fx:id=\"btnScopeVerticalPlus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeVerticalMinus != null
+				: "fx:id=\"btnScopeVerticalMinus\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeLeft != null
+				: "fx:id=\"btnScopeLeft\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeRight != null
+				: "fx:id=\"btnScopeRight\" was not injected: check your FXML file 'windowlayout.fxml'.";
+		assert btnScopeReset != null
+				: "fx:id=\"btnScopeReset\" was not injected: check your FXML file 'windowlayout.fxml'.";
+
+		mainController = this;
+		languageManager.addLanguageListener(this);
+		updateStaticTexts();
+
+		lvLeftListView.getItems().add(languageManager.get("component.voltage"));
 		lvLeftListView.getItems().add(languageManager.get("component.sine"));
 		lvLeftListView.getItems().add(languageManager.get("component.square"));
 		lvLeftListView.getItems().add(languageManager.get("component.triangle"));
 		lvLeftListView.getItems().add(languageManager.get("component.sawtooth"));
-        lvLeftListView.getItems().add(languageManager.get("component.resistance"));
-        lvLeftListView.getItems().add(languageManager.get("component.wire"));
-        lvLeftListView.getItems().add(languageManager.get("component.capacitor"));
-        lvLeftListView.getItems().add(languageManager.get("component.inductor"));
-        lvLeftListView.getItems().add(languageManager.get("component.voltmeter"));
-        lvLeftListView.getItems().add(languageManager.get("component.ammeter"));
-        lvLeftListView.getItems().add(languageManager.get("component.current"));
-        lvLeftListView.getItems().add(languageManager.get("component.ground"));
-        lvLeftListView.getItems().add(languageManager.get("component.bjt"));
-        lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        
-    	leftStatus.setText(languageManager.get("sim.stopped"));    		
-    	rightStatus.setText(languageManager.get("connection.wrong"));
+		lvLeftListView.getItems().add(languageManager.get("component.resistance"));
+		lvLeftListView.getItems().add(languageManager.get("component.wire"));
+		lvLeftListView.getItems().add(languageManager.get("component.capacitor"));
+		lvLeftListView.getItems().add(languageManager.get("component.inductor"));
+		lvLeftListView.getItems().add(languageManager.get("component.voltmeter"));
+		lvLeftListView.getItems().add(languageManager.get("component.ammeter"));
+		lvLeftListView.getItems().add(languageManager.get("component.current"));
+		lvLeftListView.getItems().add(languageManager.get("component.ground"));
+		lvLeftListView.getItems().add(languageManager.get("component.bjt"));
+		lvLeftListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+		leftStatus.setText(languageManager.get("sim.stopped"));
+		rightStatus.setText(languageManager.get("connection.wrong"));
 
 		// Canvas Width / Height binding:
 
@@ -420,217 +448,201 @@ public class MainController implements PropertyChangeListener {
 		scopeCanvas.widthProperty().bind(rightTopPane.widthProperty());
 		scopeCanvas.heightProperty().bind(rightTopPane.heightProperty());
 
-		//Keyboard:
-    	
+		// Keyboard:
+
 		circuitCanvas.setOnKeyPressed(
-			event-> {
-				handleKeyboardPressed(event);
-			}
-		);
-		
+				event -> {
+					handleKeyboardPressed(event);
+				});
+
 		lvLeftListView.setOnKeyPressed(
-			event-> {
-				handleKeyboardPressed(event);
-			}
-		);
+				event -> {
+					handleKeyboardPressed(event);
+				});
 
+		// Mouse:
 
-    	
-		//Mouse:
-    	
-        lvLeftListView.setOnMouseClicked(
-    		event ->  {
-                ObservableList selectedItems = lvLeftListView.getSelectionModel().getSelectedIndices();
-                for(Object o : selectedItems){
-                    //System.out.println("o = " + o + " (" + o.getClass() + ")");
-                }
-            }
-        );
+		lvLeftListView.setOnMouseClicked(
+				event -> {
+					ObservableList selectedItems = lvLeftListView.getSelectionModel().getSelectedIndices();
+					for (Object o : selectedItems) {
+						// System.out.println("o = " + o + " (" + o.getClass() + ")");
+					}
+				});
 
-
-        lvLeftListView.setOnDragDetected(
-    		event -> {
-    			//System.out.println("src DragDetected");
-                String selectedItem = lvLeftListView.getSelectionModel().getSelectedItem();
-				if (selectedItem != null && !"".equals(selectedItem.trim())) {
-					Dragboard dragboard = lvLeftListView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
-					ClipboardContent content = new ClipboardContent();
-					content.putString(selectedItem);
-					dragboard.setContent(content);
-				}
-    			event.consume();
-    		}
-        );
- 
-        circuitCanvas.setOnDragOver(
-    		event -> {
-    			//System.out.println("target DragOver");
-    	        Dragboard dragboard = event.getDragboard();
-    	        if (dragboard.hasString())
-    	        {
-    	            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-    	        }
-    	        
-    	        event.consume();        			
-    		}
-		);
-    
-        circuitCanvas.setOnDragDropped(
-    		event -> {
-				synchronized (network.getMutexObj())
-				{
-					Dragboard dragboard = event.getDragboard();
-					if (dragboard.hasString())
-					{
-						event.setDropCompleted(true);
-						String str = dragboard.getString();
-						if (str.equals(languageManager.get("component.voltage"))) {
-							network.dropComponent(new DCVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.sine"))) {
-							network.dropComponent(new SinusoidalVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.square"))) {
-							network.dropComponent(new SquareVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.triangle"))) {
-							network.dropComponent(new TriangleVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.sawtooth"))) {
-							network.dropComponent(new SawtoothVoltageSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.resistance"))) {
-							network.dropComponent(new Resistance(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.wire"))) {
-							network.dropComponent(new Wire(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.capacitor"))) {
-							network.dropComponent(new Capacitor(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.inductor"))) {
-							network.dropComponent(new Inductor(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.voltmeter"))) {
-							network.dropComponent(new AnalogVoltmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.ammeter"))) {
-							network.dropComponent(new AnalogeAmmeter(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.current"))) {
-							network.dropComponent(new CurrentSource(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.ground"))) {
-							network.dropComponent(new Ground(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-						else if (str.equals(languageManager.get("component.bjt"))) {
-							network.dropComponent(new BJTTransistor(), new Coordinate((int)event.getX(), (int)event.getY()));
-						}
-
-						selectedComponent = network.getSelected();
-						destroyPropertyView();
-						buildPropertyView(selectedComponent);
-						network.evaluate(true);
-						audioPlayer.setSelectedComponent(selectedComponent);
-						DrawingHelper.updateScopeSamples(selectedComponent);
-					} else {
-						event.setDropCompleted(false);
+		lvLeftListView.setOnDragDetected(
+				event -> {
+					// System.out.println("src DragDetected");
+					String selectedItem = lvLeftListView.getSelectionModel().getSelectedItem();
+					if (selectedItem != null && !"".equals(selectedItem.trim())) {
+						Dragboard dragboard = lvLeftListView.startDragAndDrop(TransferMode.COPY_OR_MOVE);
+						ClipboardContent content = new ClipboardContent();
+						content.putString(selectedItem);
+						dragboard.setContent(content);
 					}
 					event.consume();
-				}
-    		}
-		);
-        
-        circuitCanvas.setOnMousePressed(
-    		event -> {
-    			if (event.getButton() ==  MouseButton.PRIMARY) {
-    				Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
-    				grabbedNode = network.getNodeAtPos(cursorPos);
-    				if (grabbedNode != null) {
-    					network.grabComponentNode(grabbedNode, cursorPos);
-    				} else {
-    					grabbedComponent = network.getComponentAtPos(cursorPos);
-    					if (grabbedComponent != null) {
-    						network.grabComponent(grabbedComponent, cursorPos);
-							network.evaluate(true);
-							if (null != network.getSelected() &&
-            						(selectedComponent == null || selectedComponent != network.getSelected())) {
-                				selectedComponent = network.getSelected();
-                				destroyPropertyView();
-            					buildPropertyView(selectedComponent);
-            				}
-    					}
-    				}
-    			}
-    		}
-        );
-        
-        circuitCanvas.setOnMouseDragged(
-    		event -> {
-    			Coordinate cursorPos = new Coordinate((int)event.getX(), (int)event.getY());
-    			if (grabbedNode != null) {
-        			//System.out.println(String.format("#1 xCanvas MouseMoved %d", System.currentTimeMillis()));
-    				network.dragComponentNode(grabbedNode, cursorPos);
-    			} else if (grabbedComponent != null) {
-					//System.out.println(String.format("#2 xCanvas MouseMoved %d", System.currentTimeMillis()));
-					network.dragComponent(grabbedComponent, cursorPos);
-    			}
-    	        event.consume();        			
-    		}
-        );
-        
+				});
 
-        circuitCanvas.setOnMouseReleased(
-    		event -> {
-				synchronized (network.getMutexObj())
-					{
-					if (grabbedNode != null) {
-						network.releaseComponentNode(grabbedNode);
-						network.evaluate(true);
-						grabbedNode = null;
-					} else if (grabbedComponent != null) {
-						network.releaseComponent(grabbedComponent);
-						grabbedComponent = null;
-						network.evaluate(true);
-						audioPlayer.setSelectedComponent(selectedComponent);
-						DrawingHelper.updateScopeSamples(selectedComponent);
+		circuitCanvas.setOnDragOver(
+				event -> {
+					// System.out.println("target DragOver");
+					Dragboard dragboard = event.getDragboard();
+					if (dragboard.hasString()) {
+						event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
 					}
-	    		}
-			}
-        );
 
-        circuitCanvas.setOnMouseExited(
-    		event -> {
-    			//System.out.println(String.format("xCanvas MouseExited %d", System.currentTimeMillis()));
-    		}
-        );
+					event.consume();
+				});
+
+		circuitCanvas.setOnDragDropped(
+				event -> {
+					synchronized (network.getMutexObj()) {
+						Dragboard dragboard = event.getDragboard();
+						if (dragboard.hasString()) {
+							event.setDropCompleted(true);
+							String str = dragboard.getString();
+							if (str.equals(languageManager.get("component.voltage"))) {
+								network.dropComponent(new DCVoltageSource(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.sine"))) {
+								network.dropComponent(new SinusoidalVoltageSource(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.square"))) {
+								network.dropComponent(new SquareVoltageSource(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.triangle"))) {
+								network.dropComponent(new TriangleVoltageSource(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.sawtooth"))) {
+								network.dropComponent(new SawtoothVoltageSource(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.resistance"))) {
+								network.dropComponent(new Resistance(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.wire"))) {
+								network.dropComponent(new Wire(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.capacitor"))) {
+								network.dropComponent(new Capacitor(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.inductor"))) {
+								network.dropComponent(new Inductor(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.voltmeter"))) {
+								network.dropComponent(new AnalogVoltmeter(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.ammeter"))) {
+								network.dropComponent(new AnalogeAmmeter(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.current"))) {
+								network.dropComponent(new CurrentSource(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.ground"))) {
+								network.dropComponent(new Ground(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							} else if (str.equals(languageManager.get("component.bjt"))) {
+								network.dropComponent(new BJTTransistor(),
+										new Coordinate((int) event.getX(), (int) event.getY()));
+							}
+
+							selectedComponent = network.getSelected();
+							destroyPropertyView();
+							buildPropertyView(selectedComponent);
+							network.evaluate(true);
+							audioPlayer.setSelectedComponent(selectedComponent);
+							DrawingHelper.updateScopeSamples(selectedComponent);
+						} else {
+							event.setDropCompleted(false);
+						}
+						event.consume();
+					}
+				});
+
+		circuitCanvas.setOnMousePressed(
+				event -> {
+					if (event.getButton() == MouseButton.PRIMARY) {
+						Coordinate cursorPos = new Coordinate((int) event.getX(), (int) event.getY());
+						grabbedNode = network.getNodeAtPos(cursorPos);
+						if (grabbedNode != null) {
+							network.grabComponentNode(grabbedNode, cursorPos);
+						} else {
+							grabbedComponent = network.getComponentAtPos(cursorPos);
+							if (grabbedComponent != null) {
+								network.grabComponent(grabbedComponent, cursorPos);
+								network.evaluate(true);
+								if (null != network.getSelected() &&
+										(selectedComponent == null || selectedComponent != network.getSelected())) {
+									selectedComponent = network.getSelected();
+									destroyPropertyView();
+									buildPropertyView(selectedComponent);
+								}
+							}
+						}
+					}
+				});
+
+		circuitCanvas.setOnMouseDragged(
+				event -> {
+					Coordinate cursorPos = new Coordinate((int) event.getX(), (int) event.getY());
+					if (grabbedNode != null) {
+						// System.out.println(String.format("#1 xCanvas MouseMoved %d",
+						// System.currentTimeMillis()));
+						network.dragComponentNode(grabbedNode, cursorPos);
+					} else if (grabbedComponent != null) {
+						// System.out.println(String.format("#2 xCanvas MouseMoved %d",
+						// System.currentTimeMillis()));
+						network.dragComponent(grabbedComponent, cursorPos);
+					}
+					event.consume();
+				});
+
+		circuitCanvas.setOnMouseReleased(
+				event -> {
+					synchronized (network.getMutexObj()) {
+						if (grabbedNode != null) {
+							network.releaseComponentNode(grabbedNode);
+							network.evaluate(true);
+							grabbedNode = null;
+						} else if (grabbedComponent != null) {
+							network.releaseComponent(grabbedComponent);
+							grabbedComponent = null;
+							network.evaluate(true);
+							audioPlayer.setSelectedComponent(selectedComponent);
+							DrawingHelper.updateScopeSamples(selectedComponent);
+						}
+					}
+				});
+
+		circuitCanvas.setOnMouseExited(
+				event -> {
+					// System.out.println(String.format("xCanvas MouseExited %d",
+					// System.currentTimeMillis()));
+				});
 
 		volumeSlider.setMin(0);
 		volumeSlider.setMax(100);
 		volumeSlider.setBlockIncrement(1);
 		volumeSlider.valueProperty().addListener(
-			(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-				if (!Objects.equals(oldValue, newValue)) {
-					audioPlayer.setMasterVolume((double)newValue / 100.0);
-				}
-			}
-		);
+				(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+					if (!Objects.equals(oldValue, newValue)) {
+						audioPlayer.setMasterVolume((double) newValue / 100.0);
+					}
+				});
 		volumeSlider.setValue(100);
 		audioPlayer.setMasterVolume(1);
 
 		btnAudioMode.setOnAction(
-			(event) -> {
-				AudioPlayer.PlaybackMode newMode = audioPlayer.toogleMode();
-				String text = "";
-				switch (newMode) {
-					case AudioPlayer.PlaybackMode.CURRENT -> text = languageManager.get("audio.current");
-					case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = languageManager.get("audio.voltage");
-					case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = languageManager.get("audio.input");
-					case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = languageManager.get("audio.output");
-				}
-				btnAudioMode.setText(text);
-			}
-		);
+				(event) -> {
+					AudioPlayer.PlaybackMode newMode = audioPlayer.toogleMode();
+					String text = "";
+					switch (newMode) {
+						case AudioPlayer.PlaybackMode.CURRENT -> text = languageManager.get("audio.current");
+						case AudioPlayer.PlaybackMode.VOLTAGE_DROP -> text = languageManager.get("audio.voltage");
+						case AudioPlayer.PlaybackMode.INPUT_POTENTIAL -> text = languageManager.get("audio.input");
+						case AudioPlayer.PlaybackMode.OUTPUT_POTENTIAL -> text = languageManager.get("audio.output");
+					}
+					btnAudioMode.setText(text);
+				});
 		btnAudioMode.setText(languageManager.get("audio.voltage"));
 		audioPlayer.setPlaybackMode(AudioPlayer.PlaybackMode.VOLTAGE_DROP);
 
@@ -639,149 +651,140 @@ public class MainController implements PropertyChangeListener {
 					double currentVal = DrawingHelper.getScopeXInterval();
 					DrawingHelper.setScopeXInterval(currentVal * 0.5);
 					DrawingHelper.updateScopeSamples(selectedComponent);
-				}
-		);
+				});
 
 		btnScopeHorizontalMinus.setOnAction(
 				(event) -> {
 					double currentVal = DrawingHelper.getScopeXInterval();
 					DrawingHelper.setScopeXInterval(currentVal * 2.0);
 					DrawingHelper.updateScopeSamples(selectedComponent);
-				}
-		);
+				});
 
 		btnScopeVerticalPlus.setOnAction(
 				(event) -> {
 					double currentVal = DrawingHelper.getScopeYScale();
 					DrawingHelper.setScopeYScale(currentVal * 2.0);
-				}
-		);
+				});
 
 		btnScopeVerticalMinus.setOnAction(
 				(event) -> {
 					double currentVal = DrawingHelper.getScopeYScale();
 					DrawingHelper.setScopeYScale(currentVal * 0.5);
-				}
-		);
+				});
 
 		btnScopeLeft.setOnAction(
 				(event) -> {
 					double currentVal = DrawingHelper.getScopeXStart();
 					DrawingHelper.setScopeXStart(currentVal - DrawingHelper.getScopeXInterval() * 0.25);
 					DrawingHelper.updateScopeSamples(selectedComponent);
-				}
-		);
+				});
 
 		btnScopeRight.setOnAction(
 				(event) -> {
 					double currentVal = DrawingHelper.getScopeXStart();
 					DrawingHelper.setScopeXStart(currentVal + DrawingHelper.getScopeXInterval() * 0.25);
 					DrawingHelper.updateScopeSamples(selectedComponent);
-				}
-		);
+				});
 
 		btnScopeReset.setOnAction(
 				(event) -> {
 					DrawingHelper.resetScope();
 					DrawingHelper.updateScopeSamples(selectedComponent);
-				}
-		);
+				});
 
 		// Timer
-        
-        Duration duration = Duration.millis(50);
-        Timeline timeline = new Timeline(new KeyFrame(
-            duration,
-            ae -> {
-				synchronized (network.getMutexObj()) {
-					if (network.isValid()) {
-						rightStatus.setText(languageManager.get("connection.correct"));
-					} else {
-						rightStatus.setText(languageManager.get("connection.wrong"));
+
+		Duration duration = Duration.millis(50);
+		Timeline timeline = new Timeline(new KeyFrame(
+				duration,
+				ae -> {
+					synchronized (network.getMutexObj()) {
+						if (network.isValid()) {
+							rightStatus.setText(languageManager.get("connection.correct"));
+						} else {
+							rightStatus.setText(languageManager.get("connection.wrong"));
+						}
+						DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec,
+								((simulating != null && simulating) ? duration.toSeconds() : 0));
+						DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec,
+								(simulating != null && simulating == Boolean.TRUE));
+						if (simulating != null && simulating) {
+							totalTimeSec += duration.toSeconds();
+						}
 					}
-					DrawingHelper.updateCanvasContent(circuitCanvas, network, totalTimeSec, ((simulating != null && simulating) ? duration.toSeconds() : 0));
-					DrawingHelper.updateScopeImage(scopeCanvas, network, totalTimeSec, (simulating != null && simulating == Boolean.TRUE));
-					if (simulating != null && simulating) {
-						totalTimeSec += duration.toSeconds();
-					}
-				}
-            }
-        ));
+				}));
 
-
-
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+		timeline.setCycleCount(Animation.INDEFINITE);
+		timeline.play();
 
 		audioPlayer.initializePlayback();
-    }
+	}
 
+	// PropertyView:
 
-
-	//PropertyView:
-    
 	/**
 	 * Build property view of the given component.
-	 * @param component	{@link Component} to build view of.
+	 * 
+	 * @param component {@link Component} to build view of.
 	 */
-    public void buildPropertyView(Component component) {    	
-    	int row = 0;
-    	if (component.getProperties() != null) {
-    		Insets insets = new Insets(0,0,0,5);
-        	for (Entry<String, ComponentProperty> entry : component.getProperties().entrySet()) {
-        		ComponentProperty prop = entry.getValue();
-        		prop.nameN = new Label(prop.name);
-        		prop.nameN.setPadding(insets);
-        		propertyGrid.add(prop.nameN, 0, row);
-        		
-        		prop.valueN = new TextField(prop.value);
-        		prop.valueN.setEditable(prop.editable);
-        		if (prop.editable) {
-        			prop.valueN.textProperty().addListener((observable, oldValue, newValue) -> {
-        				if (newValue != null  && !newValue.equals(oldValue)) {
-							synchronized (network.getMutexObj())
-							{
-								prop.value = prop.valueN.getText().trim();
+	public void buildPropertyView(Component component) {
+		int row = 0;
+		if (component.getProperties() != null) {
+			Insets insets = new Insets(0, 0, 0, 5);
+			for (Entry<String, ComponentProperty> entry : component.getProperties().entrySet()) {
+				ComponentProperty prop = entry.getValue();
+				ComponentPropertyJavaFX propFX = new ComponentPropertyJavaFX();
+				propFX.nameN = new Label(prop.name);
+				propFX.nameN.setPadding(insets);
+				propertyGrid.add(propFX.nameN, 0, row);
+
+				propFX.valueN = new TextField(prop.value);
+				propFX.valueN.setEditable(prop.editable);
+				if (prop.editable) {
+					propFX.valueN.textProperty().addListener((observable, oldValue, newValue) -> {
+						if (newValue != null && !newValue.equals(oldValue)) {
+							synchronized (network.getMutexObj()) {
+								prop.value = propFX.valueN.getText().trim();
 								component.updatePropertyModel();
 								network.evaluate(true);
 								audioPlayer.setSelectedComponent(component);
 								DrawingHelper.updateScopeSamples(component);
 							}
-        				}
-        			});
-        		}
-        		
-        		
-        		propertyGrid.add(prop.valueN, 1, row);
-        		prop.unitN = new Label(prop.unit);
-        		prop.unitN.setPadding(insets);
-        		propertyGrid.add(prop.unitN, 2, row);
-        		row++;
-    		}
-    	}
-    }
-    
-    /**
-     * Destroy currently active property view.
-     */
-    public void destroyPropertyView() {
-    	Iterator<Node> it = propertyGrid.getChildren().iterator();
-    	while (it.hasNext()) {
-    		it.next();
+						}
+					});
+				}
+
+				propertyGrid.add(propFX.valueN, 1, row);
+				propFX.unitN = new Label(prop.unit);
+				propFX.unitN.setPadding(insets);
+				propertyGrid.add(propFX.unitN, 2, row);
+				row++;
+			}
+		}
+	}
+
+	/**
+	 * Destroy currently active property view.
+	 */
+	public void destroyPropertyView() {
+		Iterator<Node> it = propertyGrid.getChildren().iterator();
+		while (it.hasNext()) {
+			it.next();
 			it.remove();
 		}
-    }
-    
-    /**
-     * Process keyboardPressed events.
-     * @param event
-     */
-    public void handleKeyboardPressed(KeyEvent event) {
-    	switch (event.getCode()) {
-    		case ENTER -> {}
-    		case DELETE -> {
-				synchronized (network.getMutexObj())
-				{
+	}
+
+	/**
+	 * Process keyboardPressed events.
+	 * 
+	 * @param event
+	 */
+	public void handleKeyboardPressed(KeyEvent event) {
+		switch (event.getCode()) {
+			case ENTER -> {
+			}
+			case DELETE -> {
+				synchronized (network.getMutexObj()) {
 					if (selectedComponent != null) {
 						network.cancelSelection();
 						network.removeComponent(selectedComponent);
@@ -793,9 +796,8 @@ public class MainController implements PropertyChangeListener {
 					}
 				}
 			}
-    		case ESCAPE -> {
-				synchronized (network.getMutexObj())
-				{
+			case ESCAPE -> {
+				synchronized (network.getMutexObj()) {
 					if (selectedComponent != null) {
 						network.cancelSelection();
 						destroyPropertyView();
@@ -806,25 +808,23 @@ public class MainController implements PropertyChangeListener {
 				}
 			}
 			case KeyCode.G -> {
-				synchronized (network.getMutexObj())
-				{
+				synchronized (network.getMutexObj()) {
 					if (network.isSnapToGrid()) {
 						this.snapToGrid = false;
 						network.setSnapToGrid(false);
-					}
-					else {
+					} else {
 						this.snapToGrid = true;
 						network.setSnapToGrid(true);
 					}
 				}
 			}
-    		default -> {}
-    	}
+			default -> {
+			}
+		}
 		event.consume();
-    }
+	}
 
-	public void handleCloseRequest(WindowEvent event)
-	{
+	public void handleCloseRequest(WindowEvent event) {
 		audioPlayer.terminatePlayback();
 		System.out.println("Exiting");
 	}
@@ -898,4 +898,3 @@ public class MainController implements PropertyChangeListener {
 	}
 
 }
-

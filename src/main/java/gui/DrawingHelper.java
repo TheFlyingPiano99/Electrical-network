@@ -20,6 +20,7 @@ import network.Network;
 /**
  * Auxiliary methods for drawing components.
  * HUN: Segéd metódsok komponensek rajzolásához.
+ * 
  * @author simon
  *
  */
@@ -31,7 +32,7 @@ public class DrawingHelper {
 	private static final double LINE_WIDTH_NORMAL = 2.0;
 	private static final double LINE_WIDTH_SELECT = 0.6;
 	private static final double DASHES_NORMAL = 0.0;
-	private static final double[] DASHES_SELECT = new double[] {10.0, 3.0};
+	private static final double[] DASHES_SELECT = new double[] { 10.0, 3.0 };
 	private static final double DASH_OFFSET_SELECT = 5.0;
 	private static ArrayList<Double> scopeVoltageBuffer = new ArrayList<>();
 	private static ArrayList<Double> scopeCurrentBuffer = new ArrayList<>();
@@ -46,8 +47,11 @@ public class DrawingHelper {
 	private static final Object accessMutexObj = new Object();
 
 	/**
-	 * Sets drawing attributes for normal drawing. (Uses the predefined, static variables.)
-	 * HUN: Beállítja a rajzolás paramétereit normál rajzoláshoz. (Statikus adattagokat használ.)
+	 * Sets drawing attributes for normal drawing. (Uses the predefined, static
+	 * variables.)
+	 * HUN: Beállítja a rajzolás paramétereit normál rajzoláshoz. (Statikus
+	 * adattagokat használ.)
+	 * 
 	 * @param ctx
 	 */
 	public static void setNormalDrawingAttributes(GraphicsContext ctx) {
@@ -59,8 +63,11 @@ public class DrawingHelper {
 	}
 
 	/**
-	 * Sets drawing attributes for selection drawing. (Uses the predefined, static variables.)
-	 * HUN: Beállítja a rajzolás paramétereit szelekció rajzoláshoz. (Statikus adattagokat használ.)
+	 * Sets drawing attributes for selection drawing. (Uses the predefined, static
+	 * variables.)
+	 * HUN: Beállítja a rajzolás paramétereit szelekció rajzoláshoz. (Statikus
+	 * adattagokat használ.)
+	 * 
 	 * @param ctx
 	 */
 	public static void setSelDrawingAttributes(GraphicsContext ctx) {
@@ -69,46 +76,47 @@ public class DrawingHelper {
 		ctx.setLineWidth(LINE_WIDTH_SELECT);
 		ctx.setLineCap(LINE_CAP_NORMAL);
 		ctx.setLineDashes(DASHES_SELECT);
-		ctx.setLineDashOffset(DASH_OFFSET_SELECT);		
+		ctx.setLineDashOffset(DASH_OFFSET_SELECT);
 	}
 
 	/**
 	 * Draws end nodes of components.
 	 * HUN: A komponens végpontjait jeleníti meg.
-	 * @param ctx {@link GraphicsContext}
-	 * @param inputPos {@link Coordinate}
+	 * 
+	 * @param ctx       {@link GraphicsContext}
+	 * @param inputPos  {@link Coordinate}
 	 * @param outputPos {@link Coordinate}
 	 */
 	private static void drawEndNodes(GraphicsContext ctx, Coordinate inputPos, Coordinate outputPos) {
-		ctx.fillOval(inputPos.x-3, inputPos.y-3, 6, 6);
-		ctx.fillOval(outputPos.x-3, outputPos.y-3, 6, 6);
+		ctx.fillOval(inputPos.x - 3, inputPos.y - 3, 6, 6);
+		ctx.fillOval(outputPos.x - 3, outputPos.y - 3, 6, 6);
 	}
-	
+
 	/**
 	 * Updates the image visible on canvas.
 	 * HUN: Frissíti a "vásznon" megjelelített képet.
-	 * @param canvas to draw on
+	 * 
+	 * @param canvas  to draw on
 	 * @param network {@link Network} that provides objects to visualise.
 	 */
-	protected static void updateCanvasContent(Canvas canvas, Network network, double totalTimeSec, double deltaTimeSec) {
+	protected static void updateCanvasContent(Canvas canvas, Network network, double totalTimeSec,
+			double deltaTimeSec) {
 		GraphicsContext ctx;
 		if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 			ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			
+
 			drawGrid(canvas, network.getGridSize());
 			network.draw(ctx, totalTimeSec, deltaTimeSec);
 		}
 	}
 
 	protected static void resetScope() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				scopeTimeXStart = 0;
 				scopeTimeXSampleStep = 1.0 / maxScopeDataPoints;
 				scopeTimeYScale = 0.5;
-			}
-			else {
+			} else {
 				scopeFrequencyXStart = 0;
 				scopeFrequencyXInterval = 200 * Math.PI;
 				scopeFrequencyYScale = 0.5;
@@ -116,18 +124,17 @@ public class DrawingHelper {
 		}
 	}
 
-	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, ArrayList<Double> angularFrequencies, Vector voltage, double W, double H)
-	{
+	private static void drawFrequencyDomainVoltage(GraphicsContext ctx, ArrayList<Double> angularFrequencies,
+			Vector voltage, double W, double H) {
 		ctx.setStroke(Color.GREEN);
 		ctx.setLineWidth(0.8);
-		ctx.strokeText("U(omega) [V]", 10,20);
+		ctx.strokeText("U(omega) [V]", 10, 20);
 		ctx.setLineWidth(2.0);
 
 		double valOffset = H * 0.8;
 		double valScale = H * 0.7 * scopeFrequencyYScale;
 
-		if (angularFrequencies.isEmpty())
-		{
+		if (angularFrequencies.isEmpty()) {
 			return;
 		}
 		double minFrequency = scopeFrequencyXStart - 1;
@@ -138,26 +145,24 @@ public class DrawingHelper {
 				break;
 			}
 			ctx.strokeLine(
-					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
+					W * (angularFrequencies.get(k) - minFrequency) / (double) (maxFrequency - minFrequency),
 					valOffset,
-					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
-					valOffset - valScale * voltage.at(k).getAbs()
-			);
+					W * (angularFrequencies.get(k) - minFrequency) / (double) (maxFrequency - minFrequency),
+					valOffset - valScale * voltage.at(k).getAbs());
 		}
 	}
 
-	private static void drawFrequencyDomainCurrent(GraphicsContext ctx, ArrayList<Double> angularFrequencies, Vector current, double W, double H)
-	{
+	private static void drawFrequencyDomainCurrent(GraphicsContext ctx, ArrayList<Double> angularFrequencies,
+			Vector current, double W, double H) {
 		ctx.setStroke(Color.YELLOW);
 		ctx.setLineWidth(0.8);
-		ctx.strokeText("I(omega) [A]", 10,40);
+		ctx.strokeText("I(omega) [A]", 10, 40);
 		ctx.setLineWidth(2.0);
 
 		double valOffset = H * 0.8;
 		double valScale = H * 0.7 * scopeFrequencyYScale;
 
-		if (angularFrequencies.isEmpty())
-		{
+		if (angularFrequencies.isEmpty()) {
 			return;
 		}
 		double minFrequency = scopeFrequencyXStart - 1;
@@ -168,16 +173,14 @@ public class DrawingHelper {
 				break;
 			}
 			ctx.strokeLine(
-					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
+					W * (angularFrequencies.get(k) - minFrequency) / (double) (maxFrequency - minFrequency),
 					valOffset,
-					W * (angularFrequencies.get(k) - minFrequency) / (double)(maxFrequency - minFrequency),
-					valOffset - valScale * current.at(k).getAbs()
-			);
+					W * (angularFrequencies.get(k) - minFrequency) / (double) (maxFrequency - minFrequency),
+					valOffset - valScale * current.at(k).getAbs());
 		}
 	}
 
-	private static void drawFrequencyDomainLabels(GraphicsContext ctx, double W, double H)
-	{
+	private static void drawFrequencyDomainLabels(GraphicsContext ctx, double W, double H) {
 		double minFrequency = scopeFrequencyXStart;
 
 		double valOffset = H * 0.8;
@@ -185,26 +188,24 @@ public class DrawingHelper {
 		ctx.setStroke(Color.BLACK);
 		ctx.setLineWidth(0.5);
 		int labelCount = 5;
-		double piStep = scopeFrequencyXInterval / Math.PI / (double)labelCount;
+		double piStep = scopeFrequencyXInterval / Math.PI / (double) labelCount;
 		for (int k = 0; k < labelCount; k++) {
 			ctx.strokeLine(
 					W * (k * piStep * Math.PI) / scopeFrequencyXInterval,
 					valOffset,
 					W * (k * piStep * Math.PI) / scopeFrequencyXInterval,
-					valOffset + 5
-			);
+					valOffset + 5);
 			ctx.strokeText(
-				Integer.toString((int)(k * piStep + minFrequency / Math.PI)).concat("Pi"),
-				W * (k * piStep * Math.PI) / scopeFrequencyXInterval,
-				valOffset + 15
-			);
+					Integer.toString((int) (k * piStep + minFrequency / Math.PI)).concat("Pi"),
+					W * (k * piStep * Math.PI) / scopeFrequencyXInterval,
+					valOffset + 15);
 		}
 	}
 
 	private static void drawTimeDomainVoltage(GraphicsContext ctx, double U, double W, double H) {
 		ctx.setStroke(Color.GREEN);
 		ctx.setLineWidth(0.8);
-		ctx.strokeText("U = " + String.format("%,.5f", U) + " V", 10,20);
+		ctx.strokeText("U = " + String.format("%,.5f", U) + " V", 10, 20);
 		ctx.setLineWidth(2.0);
 		double prevVal = 0;
 		double valOffset = H / 2.0;
@@ -215,14 +216,12 @@ public class DrawingHelper {
 		for (Double u : scopeVoltageBuffer) {
 			if (firstElement) {
 				firstElement = false;
-			}
-			else {
+			} else {
 				ctx.strokeLine(
 						(t - 1) * stepSize,
 						Math.min(Math.max(0.0, valOffset - valScale * prevVal), H),
 						t * stepSize,
-						Math.min(Math.max(0.0, valOffset - valScale * u), H)
-				);
+						Math.min(Math.max(0.0, valOffset - valScale * u), H));
 			}
 			prevVal = u;
 			t++;
@@ -232,7 +231,7 @@ public class DrawingHelper {
 	private static void drawTimeDomainCurrent(GraphicsContext ctx, double I, double W, double H) {
 		ctx.setStroke(Color.YELLOW);
 		ctx.setLineWidth(0.8);
-		ctx.strokeText("I = " + String.format("%,.5f", I) + " A", 10,40);
+		ctx.strokeText("I = " + String.format("%,.5f", I) + " A", 10, 40);
 		ctx.setLineWidth(2.0);
 
 		double prevVal = 0;
@@ -244,24 +243,20 @@ public class DrawingHelper {
 		for (Double i : scopeCurrentBuffer) {
 			if (firstElement) {
 				firstElement = false;
-			}
-			else {
+			} else {
 				ctx.strokeLine(
 						(t - 1) * stepSize,
 						Math.min(Math.max(0.0, valOffset - valScale * prevVal), H),
 						t * stepSize,
-						Math.min(Math.max(0.0, valOffset - valScale * i), H)
-				);
+						Math.min(Math.max(0.0, valOffset - valScale * i), H));
 			}
 			prevVal = i;
 			t++;
 		}
 	}
 
-	public static void updateScopeSamples(Component component)
-	{
-		synchronized (accessMutexObj)
-		{
+	public static void updateScopeSamples(Component component) {
+		synchronized (accessMutexObj) {
 			scopeCurrentBuffer.clear();
 			scopeVoltageBuffer.clear();
 			if (null == component) {
@@ -275,9 +270,9 @@ public class DrawingHelper {
 			}
 
 			double virtualTimeSec = scopeTimeXStart;
-			for (int i = 0; i < maxScopeDataPoints; i++)
-			{
-				component.updateTimeDomainParameters(virtualTimeSec, component.getParent().getSimulatedAngularFrequencies());
+			for (int i = 0; i < maxScopeDataPoints; i++) {
+				component.updateTimeDomainParameters(virtualTimeSec,
+						component.getParent().getSimulatedAngularFrequencies());
 				scopeCurrentBuffer.add(component.getTimeDomainCurrent());
 				scopeVoltageBuffer.add(component.getTimeDomainVoltageDrop());
 				virtualTimeSec += scopeTimeXSampleStep;
@@ -285,87 +280,68 @@ public class DrawingHelper {
 		}
 	}
 
-	public static void setScopeXInterval(double interval)
-	{
-		synchronized (accessMutexObj)
-		{
+	public static void setScopeXInterval(double interval) {
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				scopeTimeXSampleStep = interval / maxScopeDataPoints;
-			}
-			else {
+			} else {
 				scopeFrequencyXInterval = interval;
 			}
 		}
 	}
 
-	public static double getScopeXInterval()
-	{
-		synchronized (accessMutexObj)
-		{
+	public static double getScopeXInterval() {
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				return scopeTimeXSampleStep * maxScopeDataPoints;
-			}
-			else {
+			} else {
 				return scopeFrequencyXInterval;
 			}
 		}
 	}
 
-	public static void setScopeXStart(double start)
-	{
-		synchronized (accessMutexObj)
-		{
+	public static void setScopeXStart(double start) {
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				scopeTimeXStart = start;
-			}
-			else {
+			} else {
 				scopeFrequencyXStart = start;
 			}
 		}
 	}
 
-	public static double getScopeXStart()
-	{
-		synchronized (accessMutexObj)
-		{
+	public static double getScopeXStart() {
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				return scopeTimeXStart;
-			}
-			else {
+			} else {
 				return scopeFrequencyXStart;
 			}
 		}
 	}
 
-	public static void setScopeYScale(double scale)
-	{
-		synchronized (accessMutexObj)
-		{
+	public static void setScopeYScale(double scale) {
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				scopeTimeYScale = scale;
-			}
-			else {
+			} else {
 				scopeFrequencyYScale = scale;
 			}
 		}
 	}
 
-	public static double getScopeYScale()
-	{
-		synchronized (accessMutexObj)
-		{
+	public static double getScopeYScale() {
+		synchronized (accessMutexObj) {
 			if (scopeInTimeDomain) {
 				return scopeTimeYScale;
-			}
-			else {
+			} else {
 				return scopeFrequencyYScale;
 			}
 		}
 	}
 
 	public static void updateScopeImage(Canvas canvas, Network network, double totalTimeSec, boolean running) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			GraphicsContext ctx;
 			if (canvas != null && (ctx = canvas.getGraphicsContext2D()) != null) {
 				double W = canvas.getWidth();
@@ -380,18 +356,22 @@ public class DrawingHelper {
 						double U = selected.getTimeDomainVoltageDrop();
 
 						if (running) {
-							if (scopeCurrentBuffer.size() > maxScopeDataPoints) {	// Pop first element
+							if (scopeCurrentBuffer.size() > maxScopeDataPoints) { // Pop first element
 								scopeCurrentBuffer.remove(0);
 							}
-							if (scopeVoltageBuffer.size() > maxScopeDataPoints) {	// Pop first element
+							if (scopeVoltageBuffer.size() > maxScopeDataPoints) { // Pop first element
 								scopeVoltageBuffer.remove(0);
 							}
 						}
 
 						setNormalDrawingAttributes(ctx);
 						ctx.setLineWidth(0.8);
-						ctx.strokeText(LanguageManager.getInstance().get("scope.start") + " = " + String.format("%,.2f", scopeTimeXStart) + " s", 10,H - 25);
-												ctx.strokeText(LanguageManager.getInstance().get("scope.length") + " = " + String.format("%,.2f", maxScopeDataPoints * scopeTimeXSampleStep) + " s", 10,H - 10);
+						ctx.strokeText(LanguageManager.getInstance().get("scope.start") + " = "
+								+ String.format("%,.2f", scopeTimeXStart) + " s", 10, H - 25);
+						ctx.strokeText(
+								LanguageManager.getInstance().get("scope.length") + " = "
+										+ String.format("%,.2f", maxScopeDataPoints * scopeTimeXSampleStep) + " s",
+								10, H - 10);
 
 						double valOffset = H / 2.0;
 						double valScale = H / 2.0 * scopeTimeYScale;
@@ -404,16 +384,17 @@ public class DrawingHelper {
 						}
 						drawTimeDomainVoltage(ctx, U, W, H);
 						drawTimeDomainCurrent(ctx, I, W, H);
-					}
-					else {	// scope mode == frequency domain
+					} else { // scope mode == frequency domain
 						ArrayList<Double> angularFrequency = network.getSimulatedAngularFrequencies();
 						Vector voltage = selected.getFrequencyDomainVoltageDrop();
 						Vector current = selected.getFrequencyDomainCurrent();
 
 						setNormalDrawingAttributes(ctx);
 						ctx.setLineWidth(0.8);
-						ctx.strokeText(LanguageManager.getInstance().get("scope.start") + " = " + String.format("%,.2f", scopeFrequencyXStart) + " rad/s", 5,H - 25);
-												ctx.strokeText(LanguageManager.getInstance().get("scope.length") + " = " + String.format("%,.2f", scopeFrequencyXInterval) + " rad/s", 5,H - 10);
+						ctx.strokeText(LanguageManager.getInstance().get("scope.start") + " = "
+								+ String.format("%,.2f", scopeFrequencyXStart) + " rad/s", 5, H - 25);
+						ctx.strokeText(LanguageManager.getInstance().get("scope.length") + " = "
+								+ String.format("%,.2f", scopeFrequencyXInterval) + " rad/s", 5, H - 10);
 
 						double valOffset = H * 0.8;
 						double valScale = H / 0.7 * scopeFrequencyYScale;
@@ -428,8 +409,7 @@ public class DrawingHelper {
 						drawFrequencyDomainCurrent(ctx, angularFrequency, current, W, H);
 						drawFrequencyDomainLabels(ctx, W, H);
 					}
-				}
-				else {
+				} else {
 					scopeCurrentBuffer.clear();
 					scopeVoltageBuffer.clear();
 				}
@@ -437,33 +417,37 @@ public class DrawingHelper {
 		}
 	}
 
-	public static void toggleScopeMode()
-	{
-		synchronized (accessMutexObj)
-		{
+	public static void toggleScopeMode() {
+		synchronized (accessMutexObj) {
 			scopeInTimeDomain = !scopeInTimeDomain;
 		}
 	}
-	
+
 	private static Color getInterpolatedColor(Color color1, Color color2, float t) {
-		//t = MyMath.max(MyMath.min(t, 1.0f), 0.0f);	//Trust domain of t.
-		double r= color1.getRed() * t + color2.getRed() * (1 - t);
-		double g= color1.getGreen() * t + color2.getGreen() * (1 - t);
-		double b= color1.getBlue() * t + color2.getBlue() * (1 - t);
+		// t = MyMath.max(MyMath.min(t, 1.0f), 0.0f); //Trust domain of t.
+		double r = color1.getRed() * t + color2.getRed() * (1 - t);
+		double g = color1.getGreen() * t + color2.getGreen() * (1 - t);
+		double b = color1.getBlue() * t + color2.getBlue() * (1 - t);
 		return new Color(r, g, b, 1.0);
 	}
-	
+
 	/**
 	 * Draw shape of a component. Called by components.
 	 * HUN: Komponens alakzatának kirajzolása. A komponensek hívják.
-	 * @param ctx	{@link GraphicsContext}	
-	 * @param inputPos	Position of the input node of the component.
-	 * @param outputPos	Position of the output node of the component.
-	 * @param lines		List of lines describing the shape of the component.
-	 * @param default_length	The default / normal length of the component. Used to calculate scaling of the drawing.
-	 * @param selected		Whether the component is selected or not.
+	 * 
+	 * @param ctx                        {@link GraphicsContext}
+	 * @param inputPos                   Position of the input node of the
+	 *                                   component.
+	 * @param outputPos                  Position of the output node of the
+	 *                                   component.
+	 * @param lines                      List of lines describing the shape of the
+	 *                                   component.
+	 * @param default_length             The default / normal length of the
+	 *                                   component. Used to calculate scaling of the
+	 *                                   drawing.
+	 * @param selected                   Whether the component is selected or not.
 	 * @param currentVisualisationOffset TODO
-	 * @param visualiseCurrent TODO
+	 * @param visualiseCurrent           TODO
 	 */
 	public static void drawShape(GraphicsContext ctx,
 			Coordinate inputPos,
@@ -476,18 +460,16 @@ public class DrawingHelper {
 			float inputNormalizedPotential,
 			float outputNormalizedPotential) {
 
-		Vector vInput  = MyMath.coordToVector(inputPos); 
+		Vector vInput = MyMath.coordToVector(inputPos);
 		Vector vOutput = MyMath.coordToVector(outputPos);
-		
-		
+
 		Vector orientation = MyMath.subtract(vOutput, vInput);
-		float scale = (float)MyMath.magnitude(orientation) / default_length;
-		float angle = (float)Math.atan2(orientation.at(1).getRe(), orientation.at(0).getRe());
-		
-		//------------------------------------------------------
+		float scale = (float) MyMath.magnitude(orientation) / default_length;
+		float angle = (float) Math.atan2(orientation.at(1).getRe(), orientation.at(0).getRe());
+
+		// ------------------------------------------------------
 		if (lines != null && !lines.isEmpty()) {
 
-		
 			Float minX = null;
 			Float maxX = null;
 			Float minY = null;
@@ -498,11 +480,11 @@ public class DrawingHelper {
 			for (Line line : lines) {
 				Line.transform(line, scale, angle, vInput);
 
-				float aX = (float)line.a.at(0).getRe();
-				float aY = (float)line.a.at(1).getRe();
-				float bX = (float)line.b.at(0).getRe();
-				float bY = (float)line.b.at(1).getRe();
-				
+				float aX = (float) line.a.at(0).getRe();
+				float aY = (float) line.a.at(1).getRe();
+				float bX = (float) line.b.at(0).getRe();
+				float bY = (float) line.b.at(1).getRe();
+
 				minX = getNewMin(minX, aX, bX);
 				minY = getNewMin(minY, aY, bY);
 				maxX = getNewMax(maxX, aX, bX);
@@ -510,24 +492,25 @@ public class DrawingHelper {
 
 				ctx.strokeLine(aX, aY, bX, bY);
 			}
-			
+
 			if (visualiseCurrent) {
-		        Stop[] stops = new Stop[] {
-		        			new Stop(0, getInterpolatedColor(Color.RED, Color.BLUE, inputNormalizedPotential)), new Stop(1,
-		        						getInterpolatedColor(Color.RED, Color.BLUE, outputNormalizedPotential))};
-		        LinearGradient lgt = new LinearGradient(
-		        		(inputPos.x <= outputPos.x)? 0 : 1,
-        				(inputPos.y <= outputPos.y)? 0 : 1,
-		        		(inputPos.x < outputPos.x)? 1 : 0,
-        				(inputPos.y < outputPos.y)? 1 : 0,
-        				true,
-        				CycleMethod.NO_CYCLE,
-        				stops);
+				Stop[] stops = new Stop[] {
+						new Stop(0, getInterpolatedColor(Color.RED, Color.BLUE, inputNormalizedPotential)), new Stop(1,
+								getInterpolatedColor(Color.RED, Color.BLUE, outputNormalizedPotential)) };
+				LinearGradient lgt = new LinearGradient(
+						(inputPos.x <= outputPos.x) ? 0 : 1,
+						(inputPos.y <= outputPos.y) ? 0 : 1,
+						(inputPos.x < outputPos.x) ? 1 : 0,
+						(inputPos.y < outputPos.y) ? 1 : 0,
+						true,
+						CycleMethod.NO_CYCLE,
+						stops);
 				ctx.setStroke(lgt);
 				ctx.setLineWidth(5);
-				ctx.setLineDashes(default_length*0.2, default_length*0.8);
+				ctx.setLineDashes(default_length * 0.2, default_length * 0.8);
 				ctx.setLineDashOffset(-currentVisualisationOffset);
-				ctx.strokeLine(vInput.at(0).getRe(), vInput.at(1).getRe(), vOutput.at(0).getRe(), vOutput.at(1).getRe());
+				ctx.strokeLine(vInput.at(0).getRe(), vInput.at(1).getRe(), vOutput.at(0).getRe(),
+						vOutput.at(1).getRe());
 				ctx.setLineDashOffset(0);
 			}
 
@@ -538,19 +521,19 @@ public class DrawingHelper {
 				ctx.strokeRect(
 						minX - 10.0f, minY - 10.0f,
 						maxX - minX + 20.0f, maxY - minY + 20.0f);
-				
-				
+
 			}
 		}
 
 	}
-	
+
 	/**
 	 * Returns the greatest value among args.
 	 * HUN: Visszaadja a legnagyobb értéket a paraméterek közül.
-	 * @param prevMax	Previous max value.
-	 * @param a			New	max candidate no1
-	 * @param b			New max candidate no2
+	 * 
+	 * @param prevMax Previous max value.
+	 * @param a       New max candidate no1
+	 * @param b       New max candidate no2
 	 * @return
 	 */
 	private static Float getNewMax(Float prevMax, float a, float b) {
@@ -561,29 +544,29 @@ public class DrawingHelper {
 	/**
 	 * Returns the smallest value among args.
 	 * HUN: Visszaadja a legkisebb értéket a paraméterek közül.
-	 * @param prevMin	Previous min value.
-	 * @param a			New min candidate no1
-	 * @param b 		New min candidate no2
+	 * 
+	 * @param prevMin Previous min value.
+	 * @param a       New min candidate no1
+	 * @param b       New min candidate no2
 	 * @return
 	 */
 	private static Float getNewMin(Float prevMin, float a, float b) {
 		float temp = Math.min(a, b);
 		return (prevMin == null || prevMin > temp) ? temp : prevMin;
 	}
-	
+
 	private static void drawGrid(Canvas canvas, int gridSize) {
 		GraphicsContext ctx = canvas.getGraphicsContext2D();
 		ctx.setStroke(Color.GREY);
 		ctx.setLineWidth(0.3);
 		ctx.setLineDashes(null);
-		
-		for (int x = 0; x < canvas.getWidth(); x += gridSize) {	// Vertical lines
+
+		for (int x = 0; x < canvas.getWidth(); x += gridSize) { // Vertical lines
 			ctx.strokeLine(x, 0, x, canvas.getHeight());
 		}
 		for (int y = 0; y < canvas.getHeight(); y += gridSize) { // Horizontal lines
 			ctx.strokeLine(0, y, canvas.getWidth(), y);
-		}	
+		}
 	}
-	
-}
 
+}

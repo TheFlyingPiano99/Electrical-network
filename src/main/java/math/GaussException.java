@@ -1,10 +1,10 @@
 package math;
 
-
 /**
  * {@link Exception} type thrown by Gaussian elimination.
  * HUN: Gauss-elimináció álltal dobott kivételtípus.
- * @author Simon Zoltán
+ * 
+ * @author Zoltán Simon
  *
  */
 public class GaussException extends RuntimeException {
@@ -13,7 +13,7 @@ public class GaussException extends RuntimeException {
 	 * 
 	 */
 	private static final long serialVersionUID = 8704961831467105853L;
-	
+
 	/**
 	 * Constructs a new GaussException with no detail message.
 	 */
@@ -34,11 +34,9 @@ public class GaussException extends RuntimeException {
 	 * Constructs a new GaussException with the specified detail message and cause.
 	 *
 	 * @param message the detail message
-	 * @param cause the cause
+	 * @param cause   the cause
 	 */
 	public GaussException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }
-
-

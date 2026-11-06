@@ -5,23 +5,24 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import math.*;
 
 /**
  * Amper meter.
  * 
- * @author Simon Zoltán
+ * @author Zoltán Simon
  *
  */
 public class AnalogeAmmeter extends Component {
 
 	private Edge e;
 	private double resistance = 0.000000001;
-	
+
 	private double scale = 1;
 	private double needlePrevAngle = 1.57;
-	
+
 	// Constructors:---------------------------------------------------------------------------------------
 
 	public AnalogeAmmeter() {
@@ -53,7 +54,9 @@ public class AnalogeAmmeter extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
 	public double getTimeDomainVoltageDrop() {
@@ -173,7 +176,8 @@ public class AnalogeAmmeter extends Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -203,71 +207,66 @@ public class AnalogeAmmeter extends Component {
 
 		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		
+
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.06f, 0.0f));
 		lines.add(new Line(defaultSize * 0.06f, +defaultSize / 3.0f, defaultSize * 0.06f, -defaultSize / 3.0f));
-		
+
 		lines.add(new Line(defaultSize * 0.06f, +defaultSize / 3.0f, defaultSize * 0.94f, +defaultSize / 3.0f));
 		lines.add(new Line(defaultSize * 0.06f, -defaultSize / 3.0f, defaultSize * 0.94f, -defaultSize / 3.0f));
 
-		lines.add(new Line(defaultSize* 0.94f, +defaultSize / 3.0f, defaultSize* 0.94f, -defaultSize / 3.0f));
-		lines.add(new Line(defaultSize* 0.94f, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(defaultSize * 0.94f, +defaultSize / 3.0f, defaultSize * 0.94f, -defaultSize / 3.0f));
+		lines.add(new Line(defaultSize * 0.94f, 0.0f, defaultSize, 0.0f));
 
-		//Letter "A":
+		// Letter "A":
 		lines.add(new Line(
 				defaultSize * 0.2f,
 				-defaultSize * 0.05f,
 				defaultSize * 0.25f,
-				-defaultSize * 0.2f
-				));
+				-defaultSize * 0.2f));
 		lines.add(new Line(
 				defaultSize * 0.25f,
 				-defaultSize * 0.2f,
 				defaultSize * 0.3f,
-				-defaultSize * 0.05f
-				));
+				-defaultSize * 0.05f));
 		lines.add(new Line(
 				defaultSize * 0.219f,
 				-defaultSize * 0.1f,
 				defaultSize * 0.281f,
-				-defaultSize * 0.1f
-				));
-		
-		//Dial:
+				-defaultSize * 0.1f));
+
+		// Dial:
 		double angle = 0.3927;
-		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
-		
+		lines.add(new Line(defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.45f));
+
 		angle = 1.5708;
-		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+		lines.add(new Line(defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.45f));
 
 		angle = 2.7489;
-		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+		lines.add(new Line(defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.45f));
 
 		angle = 1.5708 + (float) e.getTimeDomainCurrent() * scale * 0.017453;
 		angle = (angle + needlePrevAngle) / 2.0;
 		if (2.7489 < angle) {
 			angle = 2.7489;
-		}
-		else if (0.3927 > angle) {
+		} else if (0.3927 > angle) {
 			angle = 0.3927;
 		}
 		needlePrevAngle = angle;
-		
-		//Needle:
-		lines.add(new Line(defaultSize* 0.5f, defaultSize / 3.0f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.38f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.38f));
 
-		
+		// Needle:
+		lines.add(new Line(defaultSize * 0.5f, defaultSize / 3.0f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.38f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.38f));
+
 		// call drawShape
 		DrawingHelper.drawShape(ctx,
 				getInput().getPos(),
@@ -277,8 +276,8 @@ public class AnalogeAmmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -301,8 +300,7 @@ public class AnalogeAmmeter extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		synchronized (getParent().getMutexObj())
-		{
+		synchronized (getParent().getMutexObj()) {
 			String str = getProperties().get("resistance").value;
 			if (str != null && str.length() > 0) {
 				try {
@@ -334,7 +332,7 @@ public class AnalogeAmmeter extends Component {
 		if (updateEditable) {
 			setProperty("resistance", this::getTimeDomainResistance);
 			setProperty("scale", this::getScale);
-		}		
+		}
 	}
 
 	public double getScale() {
@@ -345,20 +343,17 @@ public class AnalogeAmmeter extends Component {
 		this.scale = scale;
 	}
 
-
-    @Override
-    public AnalogeAmmeter clone() {
-        try {
-            AnalogeAmmeter clone = (AnalogeAmmeter) super.clone();
+	@Override
+	public AnalogeAmmeter clone() {
+		try {
+			AnalogeAmmeter clone = (AnalogeAmmeter) super.clone();
 			clone.e = this.e.clone();
 			clone.resistance = this.resistance;
 			clone.scale = this.scale;
 			clone.needlePrevAngle = this.needlePrevAngle;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }
-
-

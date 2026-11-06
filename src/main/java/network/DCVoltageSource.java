@@ -1,6 +1,7 @@
 package network;
 
 import javafx.scene.canvas.GraphicsContext;
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import math.*;
 
@@ -10,15 +11,16 @@ import java.util.List;
 
 /**
  * Ideal voltage source, with adjustable value and zero resistance.
- * @author Simon Zoltán
+ * 
+ * @author Zoltán Simon
  *
  */
 public class DCVoltageSource extends network.Component {
 	private network.Edge e;
 	private double sourceVoltage = 1.0;
 
-	//Constructors:---------------------------------------------------------------------------------------
-	
+	// Constructors:---------------------------------------------------------------------------------------
+
 	public DCVoltageSource() {
 	}
 
@@ -32,7 +34,12 @@ public class DCVoltageSource extends network.Component {
 		e.setImpedance(impedance);
 		Vector sourceVoltageVector = new Vector(simulatedAngularFrequencies.size());
 		sourceVoltageVector.fill(new Complex(0, 0));
-		sourceVoltageVector.setAt(getParent().getAngularFrequencyIndex(0.0), new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
+		sourceVoltageVector.setAt(getParent().getAngularFrequencyIndex(0.0), new Complex(this.sourceVoltage, 0)); // At
+																													// zero
+																													// frequency
+																													// --
+																													// DC
+																													// source
 		e.setSourceVoltage(sourceVoltageVector);
 
 		Vector inputCurrentVector = new Vector(simulatedAngularFrequencies.size());
@@ -41,30 +48,40 @@ public class DCVoltageSource extends network.Component {
 		e.getOutput().setInputCurrent(inputCurrentVector);
 	}
 
-
 	public DCVoltageSource(double u) {
 		sourceVoltage = u;
 	}
-		
-	//Getters/Setters:------------------------------------------------------------------------------------
-	
+
+	// Getters/Setters:------------------------------------------------------------------------------------
+
 	public double getSourceVoltage() {
 		return sourceVoltage;
 	}
 
 	public void setSourceVoltage(double sourceVoltage) {
 		this.sourceVoltage = sourceVoltage;
-		e.getSourceVoltage().setAt(getParent().getAngularFrequencyIndex(0.0), new Complex(this.sourceVoltage, 0)); // At zero frequency -- DC source
+		e.getSourceVoltage().setAt(getParent().getAngularFrequencyIndex(0.0), new Complex(this.sourceVoltage, 0)); // At
+																													// zero
+																													// frequency
+																													// --
+																													// DC
+																													// source
 	}
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return sourceVoltage; }
+	public double getTimeDomainVoltageDrop() {
+		return sourceVoltage;
+	}
 
 	@Override
-	public double getTimeDomainResistance() { return 0; }
+	public double getTimeDomainResistance() {
+		return 0;
+	}
 
 	@Override
 	public Vector getFrequencyDomainCurrent() {
@@ -76,23 +93,21 @@ public class DCVoltageSource extends network.Component {
 		return e.getVoltageDrop();
 	}
 
-	//Build/Destroy:------------------------------------------------------------------------------------
-	
+	// Build/Destroy:------------------------------------------------------------------------------------
+
 	@Override
 	public void build() {
 		super.generateEndNodes();
-		
+
 		e = new Edge();
 		super.getParent().addEdge(e);
 
 		this.updateFrequencyDependentParameters(getParent().getSimulatedAngularFrequencies());
-		
+
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
-		
 
-				
-		//Properties:
+		// Properties:
 		setProperties(new HashMap<String, ComponentProperty>());
 
 		ComponentProperty prop = new ComponentProperty();
@@ -116,19 +131,19 @@ public class DCVoltageSource extends network.Component {
 		prop.value = String.valueOf(0.0);
 		getProperties().put("resistance", prop);
 	}
-	
+
 	@Override
-	public void destroy() {		
+	public void destroy() {
 		super.removeEndNodes();
-		
+
 		super.getParent().removeEdge(e);
 	}
 
-	//Persistence:-----------------------------------------------------------------------------------
-	
+	// Persistence:-----------------------------------------------------------------------------------
+
 	@Override
 	public void save(StringBuilder writer) {
-		writer.append("class: ");				
+		writer.append("class: ");
 		writer.append(this.getClass().getCanonicalName());
 		writer.append("; voltage: ");
 		writer.append(sourceVoltage);
@@ -145,14 +160,13 @@ public class DCVoltageSource extends network.Component {
 	@Override
 	public void load(String[] pairs) {
 		setSourceVoltage(Double.valueOf(pairs[1].split(":")[1]));
-		
+
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
-		
-		
+
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
-		
+
 		updatePropertyView(true);
 	}
 
@@ -162,7 +176,8 @@ public class DCVoltageSource extends network.Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -174,52 +189,50 @@ public class DCVoltageSource extends network.Component {
 		builder.append(sourceVoltage);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
-		builder.append(",");		
+		builder.append(",");
 		builder.append(getInput().getPos().y);
-		builder.append("]");		
+		builder.append("]");
 		builder.append(", outputPos= [");
 		builder.append(getOutput().getPos().x);
-		builder.append(",");		
+		builder.append(",");
 		builder.append(getOutput().getPos().y);
-		builder.append("]");		
+		builder.append("]");
 		builder.append("]");
 		return builder.toString();
 	}
-
 
 	@Override
 	public void draw(GraphicsContext ctx) {
 		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
-		//Construction:
+		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.4f, 0.0f));
 		lines.add(new Line(defaultSize * 0.4f, -defaultSize * 0.08f, defaultSize * 0.4f, +defaultSize * 0.08f));
-		lines.add(new Line(defaultSize * 0.6f, -defaultSize* 0.2f, defaultSize * 0.6f, +defaultSize * 0.2f));
+		lines.add(new Line(defaultSize * 0.6f, -defaultSize * 0.2f, defaultSize * 0.6f, +defaultSize * 0.2f));
 		lines.add(new Line(defaultSize * 0.6f, 0.0f, defaultSize, 0.0f));
 
 		// [+] sign
 		lines.add(new Line(
-				(5.0f/6.0f * defaultSize) - (1.0f/15.0f * defaultSize),  
-				-1.0f/4.0f * defaultSize,
-				(5.0f/6.0f * defaultSize) + (1.0f/15.0f * defaultSize),
-				-1.0f/4.0f * defaultSize));
+				(5.0f / 6.0f * defaultSize) - (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize,
+				(5.0f / 6.0f * defaultSize) + (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize));
 		lines.add(new Line(
-				(5.0f/6.0f * defaultSize),  
-				-1.0f/4.0f * defaultSize - (1.0f/15.0f * defaultSize),
-				(5.0f/6.0f * defaultSize),
-				-1.0f/4.0f * defaultSize + (1.0f/15.0f * defaultSize)));
+				(5.0f / 6.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize - (1.0f / 15.0f * defaultSize),
+				(5.0f / 6.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize + (1.0f / 15.0f * defaultSize)));
 
 		// [-] sign
 		lines.add(new Line(
-				(1.0f/6.0f * defaultSize) - (1.0f/15.0f * defaultSize),  
-				-1.0f/4.0f * defaultSize,
-				(1.0f/6.0f * defaultSize) + (1.0f/15.0f * defaultSize),
-				-1.0f/4.0f * defaultSize));
+				(1.0f / 6.0f * defaultSize) - (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize,
+				(1.0f / 6.0f * defaultSize) + (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize));
 
-
-		//call drawShape
+		// call drawShape
 		DrawingHelper.drawShape(ctx,
 				getInput().getPos(),
 				getOutput().getPos(),
@@ -228,21 +241,19 @@ public class DCVoltageSource extends network.Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				getParent().isValid(),
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 	}
-
 
 	@Override
 	public void disconnectGraphRepresentation() {
-		
+
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
-		
+
 		getParent().disconnectEndOfEdge(e, e.getOutput());
 		getOutput().setVertexBinding(e.getOutput());
 	}
-
 
 	@Override
 	public void reset() {
@@ -250,11 +261,9 @@ public class DCVoltageSource extends network.Component {
 		updatePropertyView(false);
 	}
 
-
 	@Override
 	public void updatePropertyModel() {
-		synchronized (getParent().getMutexObj())
-		{
+		synchronized (getParent().getMutexObj()) {
 			String str = getProperties().get("voltage").value;
 			if (str != null && str.length() > 0) {
 				try {
@@ -263,16 +272,15 @@ public class DCVoltageSource extends network.Component {
 
 				} catch (Exception e) {
 				}
-				//System.out.println("Updated value:" + getSourceVoltage());
+				// System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("voltage").value = String.valueOf(getSourceVoltage());
 			}
 		}
 	}
 
-
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
-		
+
 		if (updateEditable) {
 			setProperty("voltage", this::getSourceVoltage);
 		}
@@ -280,18 +288,15 @@ public class DCVoltageSource extends network.Component {
 		setProperty("resistance", this::getTimeDomainResistance);
 	}
 
-
-    @Override
-    public DCVoltageSource clone() {
-        try {
-            DCVoltageSource clone = (DCVoltageSource) super.clone();
+	@Override
+	public DCVoltageSource clone() {
+		try {
+			DCVoltageSource clone = (DCVoltageSource) super.clone();
 			clone.e = this.e.clone();
 			clone.sourceVoltage = this.sourceVoltage;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }
-
-

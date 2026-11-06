@@ -6,45 +6,46 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LanguageManager {
-    
+
     public enum Language {
         HUNGARIAN("hu"),
         ENGLISH("en");
-        
+
         private String code;
+
         Language(String code) {
             this.code = code;
         }
-        
+
         public String getCode() {
             return code;
         }
     }
-    
+
     private static LanguageManager instance = null;
     private Language currentLanguage;
     private Map<String, Map<String, String>> translations;
     private PropertyChangeSupport pcs;
-    
+
     private LanguageManager() {
         currentLanguage = Language.ENGLISH;
         translations = new HashMap<>();
         pcs = new PropertyChangeSupport(this);
         loadTranslations();
     }
-    
+
     public static LanguageManager getInstance() {
         if (instance == null) {
             instance = new LanguageManager();
         }
         return instance;
     }
-    
+
     private void loadTranslations() {
         // Hungarian translations
         Map<String, String> hungarianMap = new HashMap<>();
         hungarianMap.put("app.title", "Áramkör szimulátor");
-        hungarianMap.put("app.author", "Simon Zoltán (2025)");
+        hungarianMap.put("app.author", "Zoltán Simon (2025)");
         hungarianMap.put("file.open", "Fájl megnyitás...");
         hungarianMap.put("file.save", "Fájl mentés...");
         hungarianMap.put("file.all", "Az összes fájl");
@@ -90,13 +91,13 @@ public class LanguageManager {
         hungarianMap.put("scope.reset", "Visszaállítás");
         hungarianMap.put("scope.start", "Intervallum kezdete");
         hungarianMap.put("scope.length", "Intervallum hossza");
-        
+
         translations.put(Language.HUNGARIAN.getCode(), hungarianMap);
-        
+
         // English translations
         Map<String, String> englishMap = new HashMap<>();
         englishMap.put("app.title", "Electrical Network Simulator");
-        englishMap.put("app.author", "Simon Zoltán (2025)");
+        englishMap.put("app.author", "Zoltán Simon (2025)");
         englishMap.put("file.open", "Open File...");
         englishMap.put("file.save", "Save File...");
         englishMap.put("file.all", "All files");
@@ -142,15 +143,15 @@ public class LanguageManager {
         englishMap.put("scope.reset", "Reset");
         englishMap.put("scope.start", "Interval start");
         englishMap.put("scope.length", "Interval length");
-        
+
         translations.put(Language.ENGLISH.getCode(), englishMap);
     }
-    
+
     public String get(String key) {
         Map<String, String> languageMap = translations.get(currentLanguage.getCode());
         return languageMap.getOrDefault(key, key);
     }
-    
+
     public void setLanguage(Language language) {
         if (currentLanguage != language) {
             Language oldLanguage = currentLanguage;
@@ -158,15 +159,15 @@ public class LanguageManager {
             pcs.firePropertyChange("language", oldLanguage, language);
         }
     }
-    
+
     public Language getCurrentLanguage() {
         return currentLanguage;
     }
-    
+
     public void addLanguageListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener("language", listener);
     }
-    
+
     public void removeLanguageListener(PropertyChangeListener listener) {
         pcs.removePropertyChangeListener("language", listener);
     }

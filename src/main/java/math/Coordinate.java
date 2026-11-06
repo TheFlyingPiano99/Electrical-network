@@ -4,7 +4,7 @@ package math;
  * int coordinates of 2D point.
  * HUN: int koordináta 2D-ós pont leírására.
  * 
- * @author Simon Zoltán
+ * @author Zoltán Simon
  *
  */
 public class Coordinate {

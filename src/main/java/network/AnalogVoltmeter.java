@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
@@ -14,17 +15,17 @@ import math.Vector;
 /**
  * Voltage meter.
  * 
- * @author Simon Zoltán
+ * @author Zoltán Simon
  *
  */
 public class AnalogVoltmeter extends Component {
 
 	private Edge e;
 	private double resistance = 1000000000;
-	
+
 	private double scale = 1;
 	private float needlePrevAngle = 1.57f;
-	
+
 	// Constructors:---------------------------------------------------------------------------------------
 
 	public AnalogVoltmeter() {
@@ -37,13 +38,19 @@ public class AnalogVoltmeter extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+	public double getTimeDomainVoltageDrop() {
+		return e.getTimeDomainVoltageDrop();
+	}
 
 	@Override
-	public double getTimeDomainResistance() { return resistance; }
+	public double getTimeDomainResistance() {
+		return resistance;
+	}
 
 	public void setResistance(double r) {
 		this.resistance = r;
@@ -77,7 +84,6 @@ public class AnalogVoltmeter extends Component {
 		e.getInput().setInputCurrent(inputCurrentVector);
 		e.getOutput().setInputCurrent(inputCurrentVector);
 	}
-
 
 	// Build/Destroy:------------------------------------------------------------------------------------
 
@@ -172,7 +178,8 @@ public class AnalogVoltmeter extends Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -201,65 +208,61 @@ public class AnalogVoltmeter extends Component {
 
 		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
-		
+
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.06f, 0.0f));
 		lines.add(new Line(defaultSize * 0.06f, +defaultSize / 3.0f, defaultSize * 0.06f, -defaultSize / 3.0f));
-		
+
 		lines.add(new Line(defaultSize * 0.06f, +defaultSize / 3.0f, defaultSize * 0.94f, +defaultSize / 3.0f));
 		lines.add(new Line(defaultSize * 0.06f, -defaultSize / 3.0f, defaultSize * 0.94f, -defaultSize / 3.0f));
 
-		lines.add(new Line(defaultSize* 0.94f, +defaultSize / 3.0f, defaultSize* 0.94f, -defaultSize / 3.0f));
-		lines.add(new Line(defaultSize* 0.94f, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(defaultSize * 0.94f, +defaultSize / 3.0f, defaultSize * 0.94f, -defaultSize / 3.0f));
+		lines.add(new Line(defaultSize * 0.94f, 0.0f, defaultSize, 0.0f));
 
-		//Letter "V":
+		// Letter "V":
 		lines.add(new Line(
 				defaultSize * 0.2f,
 				-defaultSize * 0.2f,
 				defaultSize * 0.25f,
-				-defaultSize * 0.05f
-				));
+				-defaultSize * 0.05f));
 		lines.add(new Line(
 				defaultSize * 0.25f,
 				-defaultSize * 0.05f,
 				defaultSize * 0.3f,
-				-defaultSize * 0.2f
-				));
-		
-		//Dial:
+				-defaultSize * 0.2f));
+
+		// Dial:
 		float angle = 0.3927f;
-		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
-		
+		lines.add(new Line(defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.45f));
+
 		angle = 1.5708f;
-		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+		lines.add(new Line(defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.45f));
 
 		angle = 2.7489f;
-		lines.add(new Line(defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.4f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.4f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.45f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.45f));
+		lines.add(new Line(defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.4f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.4f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.45f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.45f));
 
-		angle = 1.5708f + (float)(getTimeDomainVoltageDrop() * scale) * 0.017453f;
+		angle = 1.5708f + (float) (getTimeDomainVoltageDrop() * scale) * 0.017453f;
 		angle = (angle + needlePrevAngle) / 2.0f;
 		if (2.7489f < angle) {
-			angle = 2.7489f; 
-		}
-		else if (0.3927f > angle) {
+			angle = 2.7489f;
+		} else if (0.3927f > angle) {
 			angle = 0.3927f;
 		}
 		needlePrevAngle = angle;
-		
-		//Needle:
-		lines.add(new Line(defaultSize* 0.5f, defaultSize / 3.0f,
-				defaultSize* 0.5f - (float)Math.cos(angle) * defaultSize * 0.38f,
-				defaultSize / 3.0f - (float)Math.sin(angle) * defaultSize * 0.38f));
 
-		
+		// Needle:
+		lines.add(new Line(defaultSize * 0.5f, defaultSize / 3.0f,
+				defaultSize * 0.5f - (float) Math.cos(angle) * defaultSize * 0.38f,
+				defaultSize / 3.0f - (float) Math.sin(angle) * defaultSize * 0.38f));
+
 		// call drawShape
 		DrawingHelper.drawShape(ctx,
 				getInput().getPos(),
@@ -269,8 +272,8 @@ public class AnalogVoltmeter extends Component {
 				getParent().isThisSelected(this),
 				0,
 				false,
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -293,8 +296,7 @@ public class AnalogVoltmeter extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		synchronized (getParent().getMutexObj())
-		{
+		synchronized (getParent().getMutexObj()) {
 			String str = getProperties().get("resistance").value;
 			if (str != null && str.length() > 0) {
 				try {
@@ -352,5 +354,3 @@ public class AnalogVoltmeter extends Component {
 	}
 
 }
-
-

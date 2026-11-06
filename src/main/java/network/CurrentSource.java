@@ -1,11 +1,11 @@
 package network;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
@@ -14,18 +14,17 @@ import math.Vector;
 
 /**
  * Current input, with adjustable value.
- * @author Simon Zoltán
+ * 
+ * @author Zoltán Simon
  *
  */
-
-
 
 public class CurrentSource extends Component {
 	private Edge e;
 	private double inputCurrent = 1.0;
-	
-	//Constructors:---------------------------------------------------------------------------------------
-	
+
+	// Constructors:---------------------------------------------------------------------------------------
+
 	public CurrentSource() {
 	}
 
@@ -47,12 +46,11 @@ public class CurrentSource extends Component {
 		e.getOutput().setInputCurrent(Vector.Zeros(simulatedAngularFrequencies.size()));
 	}
 
-
 	public CurrentSource(double i) {
 		inputCurrent = i;
 	}
-		
-	//Getters/Setters:------------------------------------------------------------------------------------
+
+	// Getters/Setters:------------------------------------------------------------------------------------
 
 	public double getInputCurrent() {
 		return inputCurrent;
@@ -66,13 +64,19 @@ public class CurrentSource extends Component {
 	}
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return 0; }
+	public double getTimeDomainVoltageDrop() {
+		return 0;
+	}
 
 	@Override
-	public double getTimeDomainResistance() { return 0; }
+	public double getTimeDomainResistance() {
+		return 0;
+	}
 
 	@Override
 	public Vector getFrequencyDomainCurrent() {
@@ -84,19 +88,19 @@ public class CurrentSource extends Component {
 		return e.getVoltageDrop();
 	}
 
-	//Build/Destroy:------------------------------------------------------------------------------------
-	
+	// Build/Destroy:------------------------------------------------------------------------------------
+
 	@Override
 	public void build() {
 		super.generateEndNodes();
-		
+
 		e = new Edge();
 		super.getParent().addEdge(e);
-		
+
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
-				
-		//Properties:
+
+		// Properties:
 		setProperties(new HashMap<String, ComponentProperty>());
 
 		ComponentProperty prop = new ComponentProperty();
@@ -106,20 +110,19 @@ public class CurrentSource extends Component {
 		prop.value = String.valueOf(getInputCurrent());
 		getProperties().put("current", prop);
 	}
-	
+
 	@Override
-	public void destroy() {		
+	public void destroy() {
 		super.removeEndNodes();
-		
+
 		super.getParent().removeEdge(e);
 	}
 
+	// Persistence:-----------------------------------------------------------------------------------
 
-	//Persistence:-----------------------------------------------------------------------------------
-	
 	@Override
 	public void save(StringBuilder writer) {
-		writer.append("class: ");				
+		writer.append("class: ");
 		writer.append(this.getClass().getCanonicalName());
 		writer.append("; current: ");
 		writer.append(getInputCurrent());
@@ -136,14 +139,13 @@ public class CurrentSource extends Component {
 	@Override
 	public void load(String[] pairs) {
 		setInputCurrent(Double.valueOf(pairs[1].split(":")[1]));
-		
+
 		String coordIn[] = pairs[2].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
-		
-		
+
 		String coordOut[] = pairs[3].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
-		
+
 		updatePropertyView(true);
 	}
 
@@ -153,7 +155,8 @@ public class CurrentSource extends Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -165,32 +168,30 @@ public class CurrentSource extends Component {
 		builder.append(inputCurrent);
 		builder.append(", inputPos= [");
 		builder.append(getInput().getPos().x);
-		builder.append(",");		
+		builder.append(",");
 		builder.append(getInput().getPos().y);
-		builder.append("]");		
+		builder.append("]");
 		builder.append(", outputPos= [");
 		builder.append(getOutput().getPos().x);
-		builder.append(",");		
+		builder.append(",");
 		builder.append(getOutput().getPos().y);
-		builder.append("]");		
+		builder.append("]");
 		builder.append("]");
 		return builder.toString();
 	}
-
 
 	@Override
 	public void draw(GraphicsContext ctx) {
 		List<Line> lines = new ArrayList<Line>();
 
-		//Construction:
+		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize, 0.0f));
-		
+
 		lines.add(new Line(defaultSize * 0.4f, defaultSize * 0.1f, defaultSize * 0.6f, +defaultSize * 0.0f));
-		lines.add(new Line(defaultSize * 0.4f, -defaultSize* 0.1f, defaultSize * 0.6f, +defaultSize * 0.0f));
+		lines.add(new Line(defaultSize * 0.4f, -defaultSize * 0.1f, defaultSize * 0.6f, +defaultSize * 0.0f));
 
-
-		//call drawShape
+		// call drawShape
 		DrawingHelper.drawShape(ctx,
 				getInput().getPos(),
 				getOutput().getPos(),
@@ -199,21 +200,19 @@ public class CurrentSource extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				getParent().isValid(),
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 	}
-
 
 	@Override
 	public void disconnectGraphRepresentation() {
-		
+
 		getParent().disconnectEndOfEdge(e, e.getInput());
 		getInput().setVertexBinding(e.getInput());
-		
+
 		getParent().disconnectEndOfEdge(e, e.getOutput());
 		getOutput().setVertexBinding(e.getOutput());
 	}
-
 
 	@Override
 	public void reset() {
@@ -221,11 +220,9 @@ public class CurrentSource extends Component {
 		updatePropertyView(false);
 	}
 
-
 	@Override
 	public void updatePropertyModel() {
-		synchronized (getParent().getMutexObj())
-		{
+		synchronized (getParent().getMutexObj()) {
 			String str = getProperties().get("current").value;
 			if (str != null && str.length() > 0) {
 				try {
@@ -239,25 +236,22 @@ public class CurrentSource extends Component {
 		}
 	}
 
-
 	@Override
-	public void updatePropertyView(boolean updateEditable) {		
+	public void updatePropertyView(boolean updateEditable) {
 		if (updateEditable) {
 			setProperty("current", e.getInput()::getTimeDomainInputCurrent);
 		}
 	}
 
-    @Override
-    public CurrentSource clone() {
-        try {
-            CurrentSource clone = (CurrentSource) super.clone();
+	@Override
+	public CurrentSource clone() {
+		try {
+			CurrentSource clone = (CurrentSource) super.clone();
 			clone.e = this.e.clone();
 			clone.inputCurrent = this.inputCurrent;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }
-
-

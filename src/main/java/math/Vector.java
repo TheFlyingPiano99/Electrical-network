@@ -1,21 +1,20 @@
 package math;
 
-
 /**
  * Vector of double values.
  * HUN: Vektor lebegőpontos értékek tárolására.
- * @author Simon Zoltán
+ * 
+ * @author Zoltán Simon
  *
  */
 public class Vector implements Cloneable {
-	private Complex n[];
+    private Complex n[];
     public int dimension;
 
+    // Constructors:-------------------------------------------------
 
-	//Constructors:-------------------------------------------------
-	
     public Vector(int d) {
-    	dimension = d;
+        dimension = d;
         n = new Complex[dimension];
     }
 
@@ -28,77 +27,82 @@ public class Vector implements Cloneable {
     }
 
     public Vector(Vector v) {
-    	dimension = v.dimension; 
+        dimension = v.dimension;
         n = new Complex[dimension];
         for (int i = 0; i < dimension; i++) {
             n[i] = v.at(i).copy();
         }
     }
 
-    //Override of default hashCode and equals:---------------------------------------
-    
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + dimension;
-		return result;
-	}
+    // Override of default hashCode and
+    // equals:---------------------------------------
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Vector other = (Vector) obj;
-		if (dimension != other.dimension)
-			return false;
-		for (int i = 0; i < n.length; i++) {
-			if (!n[i].equals(other.at(i))) {
-				return false;
-			}			
-		}
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + dimension;
+        return result;
+    }
 
-	//Indexing-methods:-----------------------------------------------------
-	
-	/**
-     * Indexing. Returns the value stored at position i. 
-	 * @param i index
-	 * @return value
-	 */
-	public Complex at(int i) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Vector other = (Vector) obj;
+        if (dimension != other.dimension)
+            return false;
+        for (int i = 0; i < n.length; i++) {
+            if (!n[i].equals(other.at(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Indexing-methods:-----------------------------------------------------
+
+    /**
+     * Indexing. Returns the value stored at position i.
+     * 
+     * @param i index
+     * @return value
+     */
+    public Complex at(int i) {
         return n[i];
     }
-    
-	/**
-     * Writing. Sets the value at position i to the given value. 
-	 * @param i index
-	 * @param val new value
-	 */
-	public void setAt(int i, Complex val) {
-		n[i] = val.copy();
-	}
-	
-	/**
+
+    /**
+     * Writing. Sets the value at position i to the given value.
+     * 
+     * @param i   index
+     * @param val new value
+     */
+    public void setAt(int i, Complex val) {
+        n[i] = val.copy();
+    }
+
+    /**
      * Fills up vector with given parameter.
      * HUN: Vektor feltöltése a kapott értékkel.
-	 * @param val value
-	 */
-    public void fill (Complex val) {
+     * 
+     * @param val value
+     */
+    public void fill(Complex val) {
         for (int i = 0; i < dimension; i++) {
             n[i] = val.copy();
         }
     }
 
-    //Operations:------------------------------------------------------
+    // Operations:------------------------------------------------------
 
     /**
-     *  Multiply this vector by scalar s.
+     * Multiply this vector by scalar s.
+     * 
      * @param s complex value to multiply with.
      */
     public void multiply(Complex s) {
@@ -108,7 +112,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Multiply this vector by scalar s.
+     * Multiply this vector by scalar s.
+     * 
      * @param v vector value to multiply with.
      */
     public void multiply(Vector v) {
@@ -118,7 +123,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Divide this vector by scalar s.
+     * Divide this vector by scalar s.
+     * 
      * @param s scalar double value to divide by.
      */
     public void divide(Complex s) {
@@ -128,7 +134,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Add vector v to this vector.
+     * Add vector v to this vector.
+     * 
      * @param v vector to add.
      */
     public void add(Vector v) {
@@ -136,9 +143,10 @@ public class Vector implements Cloneable {
             n[i].add(v.at(i));
         }
     }
-    
+
     /**
-     *  Subtract vector v from this vector.
+     * Subtract vector v from this vector.
+     * 
      * @param v vector to subtract.
      */
     public void subtract(Vector v) {
@@ -146,9 +154,10 @@ public class Vector implements Cloneable {
             n[i].subtract(v.at(i));
         }
     }
-    
+
     /**
      * Copy content from vector v to this vector.
+     * 
      * @param v source vector.
      * @return a copy of this vector
      */
@@ -156,19 +165,20 @@ public class Vector implements Cloneable {
         if (!this.equals(v)) {
             if (this.dimension != v.dimension) {
                 dimension = v.dimension;
-                n = new Complex [dimension];
+                n = new Complex[dimension];
             }
             for (int i = 0; i < dimension; i++) {
                 n[i] = v.at(i);
             }
         }
-        return this;    	
+        return this;
     }
 
     // Static functions ------------------------------------------------------
 
     /**
-     *  Multiply this vector by scalar s.
+     * Multiply this vector by scalar s.
+     * 
      * @param v vector value to multiply.
      * @param s complex value to multiply with.
      */
@@ -181,7 +191,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Multiply this vector by scalar s.
+     * Multiply this vector by scalar s.
+     * 
      * @param v vector value to multiply.
      * @param u vector value to multiply.
      */
@@ -194,7 +205,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Divide vector v by scalar s.
+     * Divide vector v by scalar s.
+     * 
      * @param v vector to divide.
      * @param s complex value to divide by.
      */
@@ -207,7 +219,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Add vector u to vector v.
+     * Add vector u to vector v.
+     * 
      * @param u vector to add.
      * @param v vector to add.
      */
@@ -220,7 +233,8 @@ public class Vector implements Cloneable {
     }
 
     /**
-     *  Subtract vector v from vector u.
+     * Subtract vector v from vector u.
+     * 
      * @param u vector to subtract from.
      * @param v vector to subtract.
      */

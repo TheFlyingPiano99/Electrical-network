@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import math.*;
 
@@ -12,7 +13,7 @@ import math.*;
  * Ideal wire, with zero resistance.
  * HUN: Ideális vezeték, nulla ellenállással.
  * 
- * @author Simon Zoltán
+ * @author Zoltán Simon
  * 
  */
 public class Wire extends Component {

@@ -1,5 +1,6 @@
 package network;
 
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import javafx.scene.canvas.GraphicsContext;
 import math.Complex;
@@ -12,8 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Ideal triangle voltage source, with adjustable amplitude and frequency zero resistance.
- * @author Simon Zoltán
+ * Ideal triangle voltage source, with adjustable amplitude and frequency zero
+ * resistance.
+ * 
+ * @author Zoltán Simon
  *
  */
 public class TriangleVoltageSource extends Component {
@@ -23,7 +26,7 @@ public class TriangleVoltageSource extends Component {
 	private double sourceVoltagePhaseRad = 0.0;
 	private static final int maxN = 2000;
 
-	//Constructors:---------------------------------------------------------------------------------------
+	// Constructors:---------------------------------------------------------------------------------------
 
 	public TriangleVoltageSource() {
 	}
@@ -37,13 +40,14 @@ public class TriangleVoltageSource extends Component {
 		impedance.fill(new Complex(0, 0));
 		e.setImpedance(impedance);
 
-		math.Vector source =  Vector.Zeros(simulatedAngularFrequencies.size());
+		math.Vector source = Vector.Zeros(simulatedAngularFrequencies.size());
 		source.fill(new Complex(0, 0));
 		for (int n = 1; n <= maxN; n += 2) {
 			int idx = getParent().getAngularFrequencyIndex(n * this.sourceVoltageAngularFrequency);
 			source.setAt(idx,
 					Complex.euler(
-							8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+							8.0 * sourceVoltageAmplitude / Math.pow((double) n * Math.PI, 2)
+									* Math.pow(-1, (n - 1) / 2.0),
 							sourceVoltagePhaseRad * n - Math.PI / 2));
 		}
 		e.setSourceVoltage(source);
@@ -54,19 +58,20 @@ public class TriangleVoltageSource extends Component {
 		e.getOutput().setInputCurrent(inputCurrentVector);
 	}
 
-
 	public TriangleVoltageSource(double u, double omega) {
 		sourceVoltageAmplitude = u;
 		sourceVoltageAngularFrequency = omega;
 	}
 
-	//Getters/Setters:------------------------------------------------------------------------------------
+	// Getters/Setters:------------------------------------------------------------------------------------
 
 	public double getSourceVoltageAmplitude() {
 		return sourceVoltageAmplitude;
 	}
 
-	public double getSourceVoltageAngularFrequency() { return sourceVoltageAngularFrequency; }
+	public double getSourceVoltageAngularFrequency() {
+		return sourceVoltageAngularFrequency;
+	}
 
 	public void setSourceVoltageAmplitude(double sourceVoltageAmplitude) {
 		this.sourceVoltageAmplitude = sourceVoltageAmplitude;
@@ -74,7 +79,8 @@ public class TriangleVoltageSource extends Component {
 			int idx = getParent().getAngularFrequencyIndex(n * this.sourceVoltageAngularFrequency);
 			e.getSourceVoltage().setAt(idx,
 					Complex.euler(
-							8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+							8.0 * sourceVoltageAmplitude / Math.pow((double) n * Math.PI, 2)
+									* Math.pow(-1, (n - 1) / 2.0),
 							sourceVoltagePhaseRad * n - Math.PI / 2));
 		}
 	}
@@ -84,55 +90,61 @@ public class TriangleVoltageSource extends Component {
 			return;
 		}
 
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 1; n <= maxN; n += 2) { // Request all the required angular frequencies
 			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
 		}
 
 		this.sourceVoltageAngularFrequency = omega;
 
 		ArrayList<Integer> fourierSeriesFrequencyIndices = new ArrayList<Integer>();
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 1; n <= maxN; n += 2) { // Request all the required angular frequencies
 			fourierSeriesFrequencyIndices.add(getParent().requestAngularFrequency(omega * n));
 		}
 
-		math.Vector source =  Vector.Zeros(getParent().getSimulatedAngularFrequencies().size());
+		math.Vector source = Vector.Zeros(getParent().getSimulatedAngularFrequencies().size());
 		source.fill(new Complex(0, 0));
 		int i = 0;
 		for (int n = 1; n <= maxN; n += 2) {
 			source.setAt(fourierSeriesFrequencyIndices.get(i),
-				Complex.euler(
-				8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
-				sourceVoltagePhaseRad * n - Math.PI / 2));
+					Complex.euler(
+							8.0 * sourceVoltageAmplitude / Math.pow((double) n * Math.PI, 2)
+									* Math.pow(-1, (n - 1) / 2.0),
+							sourceVoltagePhaseRad * n - Math.PI / 2));
 			i++;
 		}
 		e.setSourceVoltage(source);
 	}
 
-	public double getSourceVoltagePhaseRad()
-	{
+	public double getSourceVoltagePhaseRad() {
 		return sourceVoltagePhaseRad;
 	}
 
-	public void setSourceVoltagePhaseRad(double phase)
-	{
+	public void setSourceVoltagePhaseRad(double phase) {
 		this.sourceVoltagePhaseRad = phase;
 		for (int n = 1; n <= maxN; n += 2) {
 			int idx = getParent().getAngularFrequencyIndex(n * this.sourceVoltageAngularFrequency);
 			e.getSourceVoltage().setAt(idx,
 					Complex.euler(
-							8.0 * sourceVoltageAmplitude / Math.pow((double)n * Math.PI, 2) * Math.pow(-1, (n - 1) / 2.0),
+							8.0 * sourceVoltageAmplitude / Math.pow((double) n * Math.PI, 2)
+									* Math.pow(-1, (n - 1) / 2.0),
 							sourceVoltagePhaseRad * n - Math.PI / 2));
 		}
 	}
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return e.getTimeDomainSourceVoltage(); }
+	public double getTimeDomainVoltageDrop() {
+		return e.getTimeDomainSourceVoltage();
+	}
 
 	@Override
-	public double getTimeDomainResistance() { return 0; }
+	public double getTimeDomainResistance() {
+		return 0;
+	}
 
 	@Override
 	public Vector getFrequencyDomainCurrent() {
@@ -144,7 +156,7 @@ public class TriangleVoltageSource extends Component {
 		return e.getVoltageDrop();
 	}
 
-	//Build/Destroy:------------------------------------------------------------------------------------
+	// Build/Destroy:------------------------------------------------------------------------------------
 
 	@Override
 	public void build() {
@@ -153,7 +165,7 @@ public class TriangleVoltageSource extends Component {
 		e = new Edge();
 		super.getParent().addEdge(e);
 
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 1; n <= maxN; n += 2) { // Request all the required angular frequencies
 			getParent().requestAngularFrequency(this.sourceVoltageAngularFrequency * n);
 		}
 
@@ -162,9 +174,7 @@ public class TriangleVoltageSource extends Component {
 		getInput().setVertexBinding(e.getInput());
 		getOutput().setVertexBinding(e.getOutput());
 
-
-
-		//Properties:
+		// Properties:
 		setProperties(new HashMap<String, ComponentProperty>());
 
 		ComponentProperty prop = new ComponentProperty();
@@ -207,12 +217,12 @@ public class TriangleVoltageSource extends Component {
 	public void destroy() {
 		super.removeEndNodes();
 		super.getParent().removeEdge(e);
-		for (int n = 1; n <= maxN; n += 2) {		// Request all the required angular frequencies
+		for (int n = 1; n <= maxN; n += 2) { // Request all the required angular frequencies
 			getParent().releaseAngularFrequency(this.sourceVoltageAngularFrequency * n);
 		}
 	}
 
-	//Persistence:-----------------------------------------------------------------------------------
+	// Persistence:-----------------------------------------------------------------------------------
 
 	@Override
 	public void save(StringBuilder writer) {
@@ -245,7 +255,6 @@ public class TriangleVoltageSource extends Component {
 		String coordIn[] = pairs[4].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getInput().setPos(new Coordinate(Integer.valueOf(coordIn[0]), Integer.valueOf(coordIn[1])));
 
-
 		String coordOut[] = pairs[5].replaceAll("[\\[\\]]+", "").split(":")[1].split(",");
 		getOutput().setPos(new Coordinate(Integer.valueOf(coordOut[0]), Integer.valueOf(coordOut[1])));
 
@@ -258,7 +267,8 @@ public class TriangleVoltageSource extends Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -286,25 +296,24 @@ public class TriangleVoltageSource extends Component {
 		return builder.toString();
 	}
 
-
 	@Override
 	public void draw(GraphicsContext ctx) {
 		updatePropertyView(false);
 		List<Line> lines = new ArrayList<Line>();
 
-		//Construction:
+		// Construction:
 		float defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.2f, 0.0f));
 
 		// Circle:
 		int resolution = 32;
 		for (int i = 0; i < resolution; i++) {
-			double angle0 = i / (double)resolution * 2 * Math.PI;
-			double angle1 = (i + 1) / (double)resolution * 2 * Math.PI;
-			float x0 = (float)Math.cos(angle0) * 0.3f + 0.5f;
-			float y0 = (float)Math.sin(angle0) * 0.3f;
-			float x1 = (float)Math.cos(angle1) * 0.3f + 0.5f;
-			float y1 = (float)Math.sin(angle1) * 0.3f;
+			double angle0 = i / (double) resolution * 2 * Math.PI;
+			double angle1 = (i + 1) / (double) resolution * 2 * Math.PI;
+			float x0 = (float) Math.cos(angle0) * 0.3f + 0.5f;
+			float y0 = (float) Math.sin(angle0) * 0.3f;
+			float x1 = (float) Math.cos(angle1) * 0.3f + 0.5f;
+			float y1 = (float) Math.sin(angle1) * 0.3f;
 			lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
 		}
 
@@ -313,30 +322,28 @@ public class TriangleVoltageSource extends Component {
 		lines.add(new Line(defaultSize * 0.35f, -defaultSize * 0.1f, defaultSize * 0.65f, defaultSize * 0.1f));
 		lines.add(new Line(defaultSize * 0.65f, defaultSize * 0.1f, defaultSize * 0.8f, 0.0f));
 
-
 		lines.add(new Line(defaultSize * 0.8f, 0.0f, defaultSize, 0.0f));
 
 		// [+] sign
 		lines.add(new Line(
-				(5.0f/6.0f * defaultSize) - (1.0f/15.0f * defaultSize),
-				-1.0f/4.0f * defaultSize,
-				(5.0f/6.0f * defaultSize) + (1.0f/15.0f * defaultSize),
-				-1.0f/4.0f * defaultSize));
+				(5.0f / 6.0f * defaultSize) - (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize,
+				(5.0f / 6.0f * defaultSize) + (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize));
 		lines.add(new Line(
-				(5.0f/6.0f * defaultSize),
-				-1.0f/4.0f * defaultSize - (1.0f/15.0f * defaultSize),
-				(5.0f/6.0f * defaultSize),
-				-1.0f/4.0f * defaultSize + (1.0f/15.0f * defaultSize)));
+				(5.0f / 6.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize - (1.0f / 15.0f * defaultSize),
+				(5.0f / 6.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize + (1.0f / 15.0f * defaultSize)));
 
 		// [-] sign
 		lines.add(new Line(
-				(1.0f/6.0f * defaultSize) - (1.0f/15.0f * defaultSize),
-				-1.0f/4.0f * defaultSize,
-				(1.0f/6.0f * defaultSize) + (1.0f/15.0f * defaultSize),
-				-1.0f/4.0f * defaultSize));
+				(1.0f / 6.0f * defaultSize) - (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize,
+				(1.0f / 6.0f * defaultSize) + (1.0f / 15.0f * defaultSize),
+				-1.0f / 4.0f * defaultSize));
 
-
-		//call drawShape
+		// call drawShape
 		DrawingHelper.drawShape(ctx,
 				getInput().getPos(),
 				getOutput().getPos(),
@@ -345,10 +352,9 @@ public class TriangleVoltageSource extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				getParent().isValid(),
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 	}
-
 
 	@Override
 	public void disconnectGraphRepresentation() {
@@ -360,18 +366,15 @@ public class TriangleVoltageSource extends Component {
 		getOutput().setVertexBinding(e.getOutput());
 	}
 
-
 	@Override
 	public void reset() {
 		e.getCurrent().fill(new Complex(0, 0));
 		updatePropertyView(false);
 	}
 
-
 	@Override
 	public void updatePropertyModel() {
-		synchronized (getParent().getMutexObj())
-		{
+		synchronized (getParent().getMutexObj()) {
 			String str = getProperties().get("amplitude").value;
 			if (str != null && str.length() > 0) {
 				try {
@@ -380,7 +383,7 @@ public class TriangleVoltageSource extends Component {
 
 				} catch (RuntimeException e) {
 				}
-				//System.out.println("Updated value:" + getSourceVoltage());
+				// System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("amplitude").value = String.valueOf(getSourceVoltageAmplitude());
 			}
 
@@ -392,7 +395,7 @@ public class TriangleVoltageSource extends Component {
 
 				} catch (RuntimeException e) {
 				}
-				//System.out.println("Updated value:" + getSourceVoltage());
+				// System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("angularFrequency").value = String.valueOf(getSourceVoltageAngularFrequency());
 			}
 
@@ -404,12 +407,11 @@ public class TriangleVoltageSource extends Component {
 
 				} catch (RuntimeException e) {
 				}
-				//System.out.println("Updated value:" + getSourceVoltage());
+				// System.out.println("Updated value:" + getSourceVoltage());
 				getProperties().get("phase").value = String.valueOf(getSourceVoltagePhaseRad());
 			}
 		}
 	}
-
 
 	@Override
 	public void updatePropertyView(boolean updateEditable) {
@@ -427,7 +429,7 @@ public class TriangleVoltageSource extends Component {
 	public TriangleVoltageSource clone() {
 		try {
 			TriangleVoltageSource clone = (TriangleVoltageSource) super.clone();
-			clone.e =  this.e.clone();
+			clone.e = this.e.clone();
 			clone.sourceVoltageAmplitude = this.sourceVoltageAmplitude;
 			clone.sourceVoltageAngularFrequency = this.sourceVoltageAngularFrequency;
 			clone.sourceVoltagePhaseRad = this.sourceVoltagePhaseRad;
@@ -437,5 +439,3 @@ public class TriangleVoltageSource extends Component {
 		}
 	}
 }
-
-

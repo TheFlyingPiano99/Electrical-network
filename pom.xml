@@ -19,17 +19,17 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>23</version>
+            <version>27</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>23</version>
+            <version>27</version>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-            <version>23</version>
+            <version>27</version>
         </dependency>
         <dependency>
             <groupId>org.controlsfx</groupId>
@@ -62,7 +62,7 @@
 
     <build>
         <plugins>
-            <!-- C++ Build Plugin - Compile C++23 modules before Java -->
+            <!-- C++ Build Plugin - Compile C++ modules before Java -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -80,6 +80,9 @@
                             <arguments>
                                 <argument>..</argument>
                                 <argument>-DCMAKE_BUILD_TYPE=Release</argument>
+                                <argument>-DJava_JAVA_EXECUTABLE=${env.JAVA_HOME}/bin/java.exe</argument>
+                                <argument>-UJAVA_*</argument>
+                                <argument>-UJava_*</argument>
                             </arguments>
                             <workingDirectory>${project.basedir}/build</workingDirectory>
                             <skip>${skipCppBuild}</skip>
@@ -96,7 +99,7 @@
                             <executable>cmd</executable>
                             <arguments>
                                 <argument>/c</argument>
-                                <argument>set "jvmConfig=" &amp; set "JVMCONFIG=" &amp; cmake --build . --config Release</argument>
+                                <argument>set "PYCHARM=" &amp; set "SYSTEMROOT=%SystemRoot%" &amp; cmake --build . --config Release</argument>
                             </arguments>
                             <workingDirectory>${project.basedir}/build</workingDirectory>
                             <skip>${skipCppBuild}</skip>
@@ -136,8 +139,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <source>23</source>
-                    <target>23</target>
+                    <source>27</source>
+                    <target>27</target>
                 </configuration>
             </plugin>
             <plugin>

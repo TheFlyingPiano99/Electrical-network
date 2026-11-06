@@ -11,46 +11,40 @@ import java.util.Map;
 import javafx.scene.canvas.GraphicsContext;
 import math.*;
 
-
 /**
  * The model of the electric network.
  * HUN: Az elektromos hálózat modellje.
- * @author Simon Zoltán
+ * 
+ * @author Zoltán Simon
  *
  */
 public class Network {
-	
+
 	/**
 	 * Vertices of the graph representation.
 	 * HUN: A gráf-reprezentáció csúcsai.
 	 */
 	private ArrayList<Vertex> vertices;
-	
+
 	/**
 	 * Edges of the grapf representation.
 	 * HUN: A gráf-reprezentáció élei.
 	 */
 	private ArrayList<Edge> edges;
-	
+
 	/**
 	 * Nodes of the network.
 	 * HUN: A hálózat csomópontjai.
 	 */
 	private ArrayList<ComponentNode> componentNodes;
-	
+
 	/**
 	 * Components of the network.
 	 * HUN: A hálózat komponensei.
 	 */
 	private ArrayList<Component> components;
-	
-	/**
-	 * Matrix representation of the network.
-	 * A hálózat mátrix reprezentációja.
-	 */
-	private LinearSystemForCurrent linSystem;
-	
-	//Flags:
+
+	// Flags:
 	private Component selected = null;
 	private boolean snapToGrid = true;
 	private boolean validNetwork = false;
@@ -59,10 +53,9 @@ public class Network {
 	private int gridSize = 30;
 	private final Object accessMutexObj = new Object();
 	private final double angularFrequencyComparisonEpsilon = 0.001;
-	//--------------------------------------------------
+	// --------------------------------------------------
 
-	public Object getMutexObj()
-	{
+	public Object getMutexObj() {
 		return accessMutexObj;
 	}
 
@@ -70,60 +63,57 @@ public class Network {
 	 * Distance of merging and grabbing.
 	 * HUN: Az összeolvasztás és megfogás távolsága.
 	 */
-	int closeProximity = (int)(gridSize * 0.4);
+	int closeProximity = (int) (gridSize * 0.4);
 
 	private final ArrayList<Double> simulatedAngularFrequencies = new ArrayList<Double>();
 	private final ArrayList<Integer> angularFrequencyReferenceCounter = new ArrayList<Integer>();
 
-	public ArrayList<Double> getSimulatedAngularFrequencies()
-	{
-		synchronized (accessMutexObj)
-		{
+	public ArrayList<Double> getSimulatedAngularFrequencies() {
+		synchronized (accessMutexObj) {
 			return simulatedAngularFrequencies;
 		}
 	}
-	
-	//Constructor:------------------------------------------------------
-	
+
+	// Constructor:------------------------------------------------------
+
 	public Network() {
 		vertices = new ArrayList<Vertex>();
 		edges = new ArrayList<Edge>();
-		
+
 		componentNodes = new ArrayList<ComponentNode>();
 		components = new ArrayList<Component>();
 
-		linSystem = null;
-		
-		//Create ground-node (index 0):
+		// Create ground-node (index 0):
 		vertices.add(new Vertex());
 
-		simulatedAngularFrequencies.add(0.0);	// DC component is always simulated
-		angularFrequencyReferenceCounter.add(1);	// Reference to the DC component
+		simulatedAngularFrequencies.add(0.0); // DC component is always simulated
+		angularFrequencyReferenceCounter.add(1); // Reference to the DC component
 	}
 
 	/**
-	 * Adds the requested frequency to the simulated frequencies if not already there.
+	 * Adds the requested frequency to the simulated frequencies if not already
+	 * there.
+	 * 
 	 * @return The index of the new frequency
 	 */
-	public int requestAngularFrequency(double omega)
-	{
-		synchronized (accessMutexObj)
-		{
+	public int requestAngularFrequency(double omega) {
+		synchronized (accessMutexObj) {
 			for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-				if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) {	// Already among simulated frequencies
+				if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) { // Already
+																												// among
+																												// simulated
+																												// frequencies
 					angularFrequencyReferenceCounter.set(i, angularFrequencyReferenceCounter.get(i) + 1);
 					return i;
-				}
-				else if (simulatedAngularFrequencies.get(i) > omega)
-				{
-					simulatedAngularFrequencies.add(i, omega);	// Insert before the first larger frequency
+				} else if (simulatedAngularFrequencies.get(i) > omega) {
+					simulatedAngularFrequencies.add(i, omega); // Insert before the first larger frequency
 					angularFrequencyReferenceCounter.add(i, 1);
 					changedSetOfAngularFrequencies = true;
 					needRecalculation = true;
 					return i;
 				}
 			}
-			simulatedAngularFrequencies.add(omega);		// Append to the end
+			simulatedAngularFrequencies.add(omega); // Append to the end
 			angularFrequencyReferenceCounter.add(1);
 			changedSetOfAngularFrequencies = true;
 			needRecalculation = true;
@@ -131,17 +121,16 @@ public class Network {
 		}
 	}
 
-	public void releaseAngularFrequency(double omega)
-	{
-		synchronized (accessMutexObj)
-		{
+	public void releaseAngularFrequency(double omega) {
+		synchronized (accessMutexObj) {
 			for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
-				if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) {	//  Among simulated frequencies
+				if (Math.abs(simulatedAngularFrequencies.get(i) - omega) < angularFrequencyComparisonEpsilon) { // Among
+																												// simulated
+																												// frequencies
 					int refCount = angularFrequencyReferenceCounter.get(i);
-					if (refCount > 1) {		// Other components also require the same frequency
+					if (refCount > 1) { // Other components also require the same frequency
 						angularFrequencyReferenceCounter.set(i, refCount - 1);
-					}
-					else {					// No other components require this frequency
+					} else { // No other components require this frequency
 						angularFrequencyReferenceCounter.remove(i);
 						simulatedAngularFrequencies.remove(i);
 						changedSetOfAngularFrequencies = true;
@@ -153,70 +142,80 @@ public class Network {
 		}
 	}
 
-	//--------------------------------------------------------------------
-	
+	// --------------------------------------------------------------------
+
 	/**
 	 * Returns the impedance of all the edges.
-	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt ellenállás értékei vannak felsorolva
-	 * az élek, "edges" listában szereplő sorrendje szerint. 
-	 * @return	Vector of resistances. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
+	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt ellenállás
+	 * értékei vannak felsorolva
+	 * az élek, "edges" listában szereplő sorrendje szerint.
+	 * 
+	 * @return Vector of resistances. The order of elements of the vector is the
+	 *         same as the order of the edges in private ArrayList&lt;Edge&gt;
+	 *         edges.
 	 */
 	private Vector gatherImpedance(int k) {
-    	Vector impedances = new Vector(edges.size());
-    	for (int i = 0; i < edges.size(); i++) {
+		Vector impedances = new Vector(edges.size());
+		for (int i = 0; i < edges.size(); i++) {
 			impedances.setAt(i, edges.get(i).getImpedance().at(k));
-    	}		
-    	return impedances;
+		}
+		return impedances;
 	}
-	
+
 	/**
 	 * Returns the source voltages of all the edges.
-	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt feszültségforrás értékei vannak felsorolva
-	 * az élek, "edges" listában szereplő sorrendje szerint. 
-	 * @return Vector of source voltages. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
+	 * HUN: Visszaad egy vektort amiben az összes gráf-élhez rendelt
+	 * feszültségforrás értékei vannak felsorolva
+	 * az élek, "edges" listában szereplő sorrendje szerint.
+	 * 
+	 * @return Vector of source voltages. The order of elements of the vector is the
+	 *         same as the order of the edges in private ArrayList&lt;Edge&gt;
+	 *         edges.
 	 */
 	private Vector gatherSourceVoltages(int k) {
-    	Vector sourceVoltages = new Vector(edges.size());
-    	for (int i = 0; i < edges.size(); i++) {
-    		sourceVoltages.setAt(i, edges.get(i).getSourceVoltage().at(k));
-    	}
-    	return sourceVoltages;
+		Vector sourceVoltages = new Vector(edges.size());
+		for (int i = 0; i < edges.size(); i++) {
+			sourceVoltages.setAt(i, edges.get(i).getSourceVoltage().at(k));
+		}
+		return sourceVoltages;
 	}
-	
+
 	/**
 	 * 
-	 * @return	Vector of currents inputed to individual vertices.
+	 * @return Vector of currents inputed to individual vertices.
 	 */
 	private Vector gatherInputCurrent(int k) {
-    	Vector inputCurrents = new Vector(vertices.size());
-    	for (int i = 0; i < vertices.size(); i++) {
-    		inputCurrents.setAt(i, vertices.get(i).getInputCurrent().at(k));
-    	}
-    	return inputCurrents;
+		Vector inputCurrents = new Vector(vertices.size());
+		for (int i = 0; i < vertices.size(); i++) {
+			inputCurrents.setAt(i, vertices.get(i).getInputCurrent().at(k));
+		}
+		return inputCurrents;
 	}
 
 	/**
 	 * Uses C++23 Gaussian elimination to calculate current in all edges.
-	 * HUN: C++23 Gauss-elimináció segítségével kiszámolja a gráf-élekhez tartozó áramot. 
-	 * Visszaad egy vektort amiben az összes gráf-élhez rendelt áram értékei vannak felsorolva
-	 * az élek, "edges" listában szereplő sorrendje szerint. 
+	 * HUN: C++23 Gauss-elimináció segítségével kiszámolja a gráf-élekhez tartozó
+	 * áramot.
+	 * Visszaad egy vektort amiben az összes gráf-élhez rendelt áram értékei vannak
+	 * felsorolva
+	 * az élek, "edges" listában szereplő sorrendje szerint.
 	 * Uses native C++23 implementation for 10-20x performance improvement.
-	 * @return Vector of currents. The order of elements of the vector is the same as the order of the edges in private ArrayList&lt;Edge&gt; edges.
+	 * 
+	 * @return Vector of currents. The order of elements of the vector is the same
+	 *         as the order of the edges in private ArrayList&lt;Edge&gt; edges.
 	 * @throws RuntimeException if native library not available
 	 */
-	private Vector CalculateCurrent() {
+	private Vector CalculateCurrent(LinearSystemForCurrent linSystem) {
 		try {
 			// Use native C++23 implementation for high performance
 			if (!NativeNetworkInterface.isNativeLibraryLoaded()) {
 				throw new RuntimeException("Native C++23 library not loaded. Cannot solve linear system.");
 			}
 			return CalculateCurrentNative(linSystem);
-		}
-		catch (GaussException e) {
+		} catch (GaussException e) {
 			System.err.println("GaussException during solving: " + e.getMessage());
 			return null;
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			// Catch exceptions from JNI (singular matrix, invalid input, etc.)
 			if (e.getMessage() != null && e.getMessage().contains("Singular matrix")) {
 				System.err.println("Singular matrix detected: " + e.getMessage());
@@ -233,7 +232,7 @@ public class Network {
 	 * 
 	 * @param system The LinearSystemForCurrent to solve
 	 * @return Solution vector containing currents
-	 * @throws GaussException if no solution or infinite solutions
+	 * @throws GaussException   if no solution or infinite solutions
 	 * @throws RuntimeException if JNI call fails
 	 */
 	private Vector CalculateCurrentNative(LinearSystemForCurrent system) throws GaussException {
@@ -248,19 +247,18 @@ public class Network {
 				matrixData[idx++] = val.getIm();
 			}
 		}
-		
+
 		// Call native solver
 		double[] solutionData = NativeNetworkInterface.solveLinearSystem(
-			system.row, 
-			system.column, 
-			matrixData
-		);
-		
+				system.row,
+				system.column,
+				matrixData);
+
 		// Check for null result (shouldn't happen if JNI properly throws exceptions)
 		if (solutionData == null) {
 			throw new RuntimeException("Native solver returned null (JNI error)");
 		}
-		
+
 		// Convert result back to Vector<Complex>
 		Vector result = new Vector(solutionData.length / 2);
 		for (int i = 0; i < solutionData.length; i += 2) {
@@ -272,8 +270,9 @@ public class Network {
 	/**
 	 *
 	 * @param omega the angular frequency to search for
-	 * @return The index of the angularFrequency or -1 if the specific angular frequency
-	 * is not among simulated frequencies
+	 * @return The index of the angularFrequency or -1 if the specific angular
+	 *         frequency
+	 *         is not among simulated frequencies
 	 */
 	public int getAngularFrequencyIndex(double omega) {
 		for (int i = 0; i < simulatedAngularFrequencies.size(); i++) {
@@ -285,12 +284,12 @@ public class Network {
 	}
 
 	/**
-	 * Implements the physical behavior of the network. Calculates current resistance and voltage levels.
-	 * HUN: A hálózat fizikai viselkedését valósítja meg. Kiszámolja az áram, ellenállás és feszültség szinteket.  
+	 * Implements the physical behavior of the network. Calculates current
+	 * resistance and voltage levels.
 	 */
 	public void evaluate(boolean forceEval) {
 		synchronized (accessMutexObj) {
-			if (!needRecalculation && !forceEval) {		// Early termination
+			if (!needRecalculation && !forceEval) { // Early termination
 				return;
 			}
 			needRecalculation = false;
@@ -303,33 +302,35 @@ public class Network {
 					c.updateFrequencyDependentParameters(simulatedAngularFrequencies);
 				}
 			}
-			
+
 			// Check network validity
 			if (components.isEmpty()) {
 				System.out.println("  Network is empty - no components");
 				validNetwork = false;
 				return;
 			}
-			
-			for (int k = 0; k < simulatedAngularFrequencies.size(); k++) {	// Finer time resolution
+
+			for (int k = 0; k < simulatedAngularFrequencies.size(); k++) { // Finer time resolution
 
 				if (!edges.isEmpty()) {
-					//Graph representations:
-					Matrix incidence = new Matrix(0,0);
-					Matrix cycle = new Matrix(0,0);
+					// Graph representations:
+					Matrix incidence = new Matrix(0, 0);
+					Matrix cycle = new Matrix(0, 0);
 					DFS(incidence, cycle);
 
-					//Parameters:
+					// Parameters:
 					Vector impedance = gatherImpedance(k);
 					Vector sourceVoltage = gatherSourceVoltages(k);
 					Vector inputCurrent = gatherInputCurrent(k);
 
-					//Create system:
-					linSystem = new LinearSystemForCurrent(incidence, cycle, impedance, sourceVoltage, inputCurrent);
+					// Create system:
+					LinearSystemForCurrent linSystem = new LinearSystemForCurrent(incidence, cycle, impedance,
+							sourceVoltage, inputCurrent);
 
-					//Calculate-current:
-					Vector current = CalculateCurrent();
-					// A floating network is only meaningful if it contains a closed loop; otherwise it has no ground reference.
+					// Calculate-current:
+					Vector current = CalculateCurrent(linSystem);
+					// A floating network is only meaningful if it contains a closed loop; otherwise
+					// it has no ground reference.
 					boolean hasGround = vertices.get(0).getNoOfIncoming() + vertices.get(0).getNoOfOutgoing() > 0;
 					boolean hasLoop = cycle.column > 0;
 					if (current != null && (hasGround || hasLoop)) {
@@ -337,195 +338,191 @@ public class Network {
 						for (int i = 0; i < edges.size(); i++) {
 							edges.get(i).getCurrent().setAt(k, current.at(i));
 						}
-					}
-					else {
+					} else {
 						validNetwork = false;
 						for (int i = 0; i < edges.size(); i++) {
 							edges.get(i).getCurrent().setAt(k, new Complex(0, 0));
 						}
 					}
-				}
-				else {		// If no edges in the system
+				} else { // If no edges in the system
 					System.out.println("  Network has no edges - cannot solve");
 					validNetwork = false;
 				}
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Depth First Search algorithm.
 	 * HUN: Mélységi keresés.
-	 * A kapott mátrixokat feltölti a gráf-reprezentáció illeszkedési és alapkör mátrixával.
-	 * @param incidence	Incidence matrix to fill up. Will be filled with incidence matrix of the network as a graph.
-	 * @param cycle	Cycle matrix to fill up. Will be filled with base cycle matrix  of the network as a graph.
+	 * A kapott mátrixokat feltölti a gráf-reprezentáció illeszkedési és alapkör
+	 * mátrixával.
+	 * 
+	 * @param incidence Incidence matrix to fill up. Will be filled with incidence
+	 *                  matrix of the network as a graph.
+	 * @param cycle     Cycle matrix to fill up. Will be filled with base cycle
+	 *                  matrix of the network as a graph.
 	 */
-	private void DFS (Matrix incidence, Matrix cycle) {
+	private void DFS(Matrix incidence, Matrix cycle) {
 		if (vertices.isEmpty()) {
 			throw new RuntimeException("No nodes to work with.");
 		}
-		
-	    Vertex s = vertices.iterator().next();  //Starting vertex
 
-	    Map<Vertex, Integer> depth = new HashMap<Vertex, Integer>();
-	    Map<Vertex, Integer> finish = new HashMap<Vertex, Integer>();
-	    Map<Vertex, Vertex> previous = new HashMap<Vertex, Vertex>();
-	    Vertex current;
-	    int GreatestDepth;
-	    int GreatestFinish;
+		Vertex s = vertices.iterator().next(); // Starting vertex
 
-	    ///Initialization:
-	    depth.put(s, 1);
-        previous.put(s, null);
-        finish.put(s, -1);
+		Map<Vertex, Integer> depth = new HashMap<Vertex, Integer>();
+		Map<Vertex, Integer> finish = new HashMap<Vertex, Integer>();
+		Map<Vertex, Vertex> previous = new HashMap<Vertex, Vertex>();
+		Vertex current;
+		int GreatestDepth;
+		int GreatestFinish;
 
-	    ///Using -1 as undefined value:
-	    previous.put(s, null);
-	    for (Vertex iter : vertices) {
-	        if (iter != s) {
-	            depth.put(iter, -1);
-		        previous.put(iter, null);
-		        finish.put(iter, -1);
-	        }
-	    }
+		///Initialization:
+		depth.put(s, 1);
+		previous.put(s, null);
+		finish.put(s, -1);
 
-	    GreatestDepth = 1;
-	    GreatestFinish = 0;
-	    current = s;
-
-	    ///Cycle:
-	    boolean run = true;
-	    while (run) {
-	        ///Finding adjacent vertex with (*) depth:
-	        Vertex v = current;	 
-	        for (Vertex iter : current.getOutgoing().keySet()) {
-	            if (depth.get(iter) != null && -1 == depth.get(iter)) {
-	                v = iter;
-	        		break;
-	            }
-	        }
-			if (current == v) {
-				//Also search in reversed edges:
-		        for (Vertex iter : current.getIncoming().keySet()) {
-		            if (depth.get(iter) != null && -1 == depth.get(iter)) {
-		                v = iter;
-		        		break;
-		            }
-		        }
+		/// Using -1 as undefined value:
+		previous.put(s, null);
+		for (Vertex iter : vertices) {
+			if (iter != s) {
+				depth.put(iter, -1);
+				previous.put(iter, null);
+				finish.put(iter, -1);
 			}
-	        if (current != v) {		//Found adjacent vertex with (*) depth
-	            GreatestDepth++;
-	            depth.put(v, GreatestDepth);
-	            previous.put(v, current);	            		            	
-	            current = v;
-	        } else {
-	            GreatestFinish++;
-	            finish.put(current, GreatestFinish);
-	            if (null != previous.get(current)) {	//Backtracking
-	                current = previous.get(current);
-	            } else {
-	                ///Finding vertex with (*) depth:
-	                v = current;
-	                for (Vertex iter : vertices) {
-	                    if (-1 == depth.get(iter)) {
-	                        v = iter;
-	                        break;
-	                    }
-	                }
-	                if (current != v) { //Found adjacent vertex with (*) depth
-                        GreatestDepth = 1;
-                        depth.put(v, GreatestDepth);
-	                    current = v;
-	                } else {
-	                    run = false;
-	                }
-	            }
-	        }
-	    }
-	    
-	    incidence.copyWithResize(new Matrix(edges.size(), vertices.size()));
-	    incidence.fill(new Complex(0, 0));
-	    int noOfCycles = 0;             //First count the cycles:
-	    for (int i = 0; i < edges.size(); i++) {
-	    	Edge edge = edges.get(i);
-            incidence.setAt(i, vertices.indexOf(edge.getInput()), new Complex(1, 0));
-            incidence.setAt(i, vertices.indexOf(edge.getOutput()), new Complex(-1, 0));
-	        if (edge.getOutput() != previous.get(edge.getInput()) &&
-	        		edge.getInput() != previous.get(edge.getOutput())) {
-            	noOfCycles++;       	
-	        }
-	    }
-	    
-	    
-	    cycle.copyWithResize(new Matrix(edges.size(), noOfCycles));
-	    cycle.fill(new Complex(0, 0));
-	    int currentCycle = 0;
-	    for (int i = 0; i < edges.size() && currentCycle < noOfCycles; i++) {
+		}
 
-	    	Edge edge = edges.get(i);
-	        if (edge.getOutput() != previous.get(edge.getInput()) &&
-	        		edge.getInput() != previous.get(edge.getOutput())) {
-            	Vertex in = edge.getInput();
-            	Vertex out = edge.getOutput();
-            	int dIn = depth.get(in);
-	        	int dOut = depth.get(out);
-	        	if (dIn > dOut) {
-	        		//Backward edge
-        			cycle.setAt(i, currentCycle, new Complex(1, 0));
-	        		Vertex step = in;
-	        		while (step != out) {
-	        			if (previous.get(step) == null) {
-	        				//System.out.println("Null.");
-	        			}
-	        			Edge e = step.getIncoming().get(previous.get(step));
-	        			if (e != null) {
-		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(1, 0));
-	        			}
-	        			else {
-	        				e = step.getOutgoing().get(previous.get(step));
-		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(-1, 0));
-	        			}
-	        				        			
-        				step = previous.get(step);
-	        		}
-	        	}
-	        	else if (dIn < dOut) {
-	        		//Forward edge
-        			cycle.setAt(i, currentCycle, new Complex(-1, 0));
-	        		Vertex step = out;
-	        		while (step != in) {
-	        			Edge e = step.getIncoming().get(previous.get(step));
-	        			if (e != null) {
-		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(1, 0));
-	        			}
-	        			else {
-	        				e = step.getOutgoing().get(previous.get(step));
-		        			cycle.setAt(edges.indexOf(e), currentCycle, new Complex(-1, 0));
-	        			}
+		GreatestDepth = 1;
+		GreatestFinish = 0;
+		current = s;
 
-	        			step = previous.get(step);
-	        		}
-	        	}
-	        	else {
-	        		//Cross edge
-	        		throw new RuntimeException("Cross found despite of DFS on undirected graph!");
-	        		
-	        		/*
-	        		cycle.setAt(i, currentCycle, 1);
-	        		Vertex step1 = in;
-	        		Vertex step2 = out;
-	        		while (step1 != step2) {
-	        			cycle.setAt(edges.indexOf(previous.get(step1)), currentCycle, 1);
-	        			cycle.setAt(edges.indexOf(previous.get(step2)), currentCycle, -1);
-        				step1 = previous.get(step1);
-        				step2 = previous.get(step2);
-	        		}
-	        		*/	        		
-	        	}
-	        	currentCycle++;
-	        }
-	    }     	    
+		///Cycle:
+		boolean run = true;
+		while (run) {
+			/// Finding adjacent vertex with (*) depth:
+			Vertex v = current;
+			for (Vertex iter : current.getOutgoing().keySet()) {
+				if (depth.get(iter) != null && -1 == depth.get(iter)) {
+					v = iter;
+					break;
+				}
+			}
+			if (current == v) {
+				// Also search in reversed edges:
+				for (Vertex iter : current.getIncoming().keySet()) {
+					if (depth.get(iter) != null && -1 == depth.get(iter)) {
+						v = iter;
+						break;
+					}
+				}
+			}
+			if (current != v) { // Found adjacent vertex with (*) depth
+				GreatestDepth++;
+				depth.put(v, GreatestDepth);
+				previous.put(v, current);
+				current = v;
+			} else {
+				GreatestFinish++;
+				finish.put(current, GreatestFinish);
+				if (null != previous.get(current)) { // Backtracking
+					current = previous.get(current);
+				} else {
+					/// Finding vertex with (*) depth:
+					v = current;
+					for (Vertex iter : vertices) {
+						if (-1 == depth.get(iter)) {
+							v = iter;
+							break;
+						}
+					}
+					if (current != v) { // Found adjacent vertex with (*) depth
+						GreatestDepth = 1;
+						depth.put(v, GreatestDepth);
+						current = v;
+					} else {
+						run = false;
+					}
+				}
+			}
+		}
+
+		incidence.copyWithResize(new Matrix(edges.size(), vertices.size()));
+		incidence.fill(new Complex(0, 0));
+		int noOfCycles = 0; // First count the cycles:
+		for (int i = 0; i < edges.size(); i++) {
+			Edge edge = edges.get(i);
+			incidence.setAt(i, vertices.indexOf(edge.getInput()), new Complex(1, 0));
+			incidence.setAt(i, vertices.indexOf(edge.getOutput()), new Complex(-1, 0));
+			if (edge.getOutput() != previous.get(edge.getInput()) &&
+					edge.getInput() != previous.get(edge.getOutput())) {
+				noOfCycles++;
+			}
+		}
+
+		cycle.copyWithResize(new Matrix(edges.size(), noOfCycles));
+		cycle.fill(new Complex(0, 0));
+		int currentCycle = 0;
+		for (int i = 0; i < edges.size() && currentCycle < noOfCycles; i++) {
+
+			Edge edge = edges.get(i);
+			if (edge.getOutput() != previous.get(edge.getInput()) &&
+					edge.getInput() != previous.get(edge.getOutput())) {
+				Vertex in = edge.getInput();
+				Vertex out = edge.getOutput();
+				int dIn = depth.get(in);
+				int dOut = depth.get(out);
+				if (dIn > dOut) {
+					// Backward edge
+					cycle.setAt(i, currentCycle, new Complex(1, 0));
+					Vertex step = in;
+					while (step != out) {
+						if (previous.get(step) == null) {
+							// System.out.println("Null.");
+						}
+						Edge e = step.getIncoming().get(previous.get(step));
+						if (e != null) {
+							cycle.setAt(edges.indexOf(e), currentCycle, new Complex(1, 0));
+						} else {
+							e = step.getOutgoing().get(previous.get(step));
+							cycle.setAt(edges.indexOf(e), currentCycle, new Complex(-1, 0));
+						}
+
+						step = previous.get(step);
+					}
+				} else if (dIn < dOut) {
+					// Forward edge
+					cycle.setAt(i, currentCycle, new Complex(-1, 0));
+					Vertex step = out;
+					while (step != in) {
+						Edge e = step.getIncoming().get(previous.get(step));
+						if (e != null) {
+							cycle.setAt(edges.indexOf(e), currentCycle, new Complex(1, 0));
+						} else {
+							e = step.getOutgoing().get(previous.get(step));
+							cycle.setAt(edges.indexOf(e), currentCycle, new Complex(-1, 0));
+						}
+
+						step = previous.get(step);
+					}
+				} else {
+					// Cross edge
+					throw new RuntimeException("Cross found despite of DFS on undirected graph!");
+
+					/*
+					 * cycle.setAt(i, currentCycle, 1);
+					 * Vertex step1 = in;
+					 * Vertex step2 = out;
+					 * while (step1 != step2) {
+					 * cycle.setAt(edges.indexOf(previous.get(step1)), currentCycle, 1);
+					 * cycle.setAt(edges.indexOf(previous.get(step2)), currentCycle, -1);
+					 * step1 = previous.get(step1);
+					 * step2 = previous.get(step2);
+					 * }
+					 */
+				}
+				currentCycle++;
+			}
+		}
 	}
 
 	private void offsetAndNormalizePotentialsToZeroMinimum(ArrayList<Double> potentials, List<List<Vertex>> islands) {
@@ -549,135 +546,133 @@ public class Network {
 			}
 		}
 	}
-		
+
 	/*
-	 * Return vector of potentials of vertices 
+	 * Return vector of potentials of vertices
 	 */
 	private ArrayList<Double> discoverPotential_BFS() {
 		if (vertices.isEmpty()) {
 			throw new RuntimeException("No nodes to work with.");
 		}
 		ArrayList<Double> potentials = new ArrayList<>(vertices.size());
-		for (int i = 0; i < vertices.size(); i++)
-		{
+		for (int i = 0; i < vertices.size(); i++) {
 			potentials.add(0.5);
 		}
 
-	    Vertex s = vertices.iterator().next();  //Starting vertex
+		Vertex s = vertices.iterator().next(); // Starting vertex
 
-	    Map<Vertex, Boolean> finished = new HashMap<Vertex, Boolean>();
-	    Map<Vertex, Vertex> previous = new HashMap<Vertex, Vertex>();
-	    List<Vertex> traversed = new ArrayList<Vertex>();
-	    Vertex current;
+		Map<Vertex, Boolean> finished = new HashMap<Vertex, Boolean>();
+		Map<Vertex, Vertex> previous = new HashMap<Vertex, Vertex>();
+		List<Vertex> traversed = new ArrayList<Vertex>();
+		Vertex current;
 
-	    List<List<Vertex>> islands = new ArrayList<>();
-	    islands.add(new ArrayList<Vertex>());
-	    
-	    ///Initialization:
-        previous.put(s, null);
-        finished.put(s, false);        
-        traversed.add(s);
+		List<List<Vertex>> islands = new ArrayList<>();
+		islands.add(new ArrayList<Vertex>());
+
+		///Initialization:
+		previous.put(s, null);
+		finished.put(s, false);
+		traversed.add(s);
 		islands.get(0).add(s);
 
-        for (Vertex iter : vertices) {
-	        if (iter != s) {
-		        previous.put(iter, null);
-		        finished.put(iter, false);
-	        }
-	    }
-
-	    current = s;
-
-	    ///Cycle:
-	    boolean run = true;
-	    while (run) {
-	    	//System.out.println("Begin BFS loop.");
-	        ///Finding undiscovered adjacent vertex:
-	    	boolean foundChild = false;
-	        for (Vertex child : current.getOutgoing().keySet()) {
-	            if (!traversed.contains(child)) {
-	    	    	//System.out.println("Found outgoing: " + vertices.indexOf(child));
-	    	    	traversed.add(child);
-	            	previous.put(child, current);
-	                current = child;
-	                foundChild = true;
-					break;
-	            }
-	        }
-			if (!foundChild) {
-				//Also search in reversed edges:
-		        for (Vertex child : current.getIncoming().keySet()) {
-		            if (!traversed.contains(child)) {
-		    	    	//System.out.println("Found incoming: " + vertices.indexOf(child));
-		            	traversed.add(child);
-		            	previous.put(child, current);
-		                current = child;
-		                foundChild = true;
-						break;
-		            }
-		        }
+		for (Vertex iter : vertices) {
+			if (iter != s) {
+				previous.put(iter, null);
+				finished.put(iter, false);
 			}
-	        if (!foundChild) {
-				//System.out.println("Vertex finished: " + vertices.indexOf(current));
-    	    	finished.put(current, true);	// No untraversed children left.
-	            if (null != previous.get(current)) {	//Backtracking
-	    	    	//System.out.println("Backtracking from " + vertices.indexOf(current));
-	                current = previous.get(current);
+		}
+
+		current = s;
+
+		///Cycle:
+		boolean run = true;
+		while (run) {
+			// System.out.println("Begin BFS loop.");
+			/// Finding undiscovered adjacent vertex:
+			boolean foundChild = false;
+			for (Vertex child : current.getOutgoing().keySet()) {
+				if (!traversed.contains(child)) {
+					// System.out.println("Found outgoing: " + vertices.indexOf(child));
+					traversed.add(child);
+					previous.put(child, current);
+					current = child;
+					foundChild = true;
+					break;
+				}
+			}
+			if (!foundChild) {
+				// Also search in reversed edges:
+				for (Vertex child : current.getIncoming().keySet()) {
+					if (!traversed.contains(child)) {
+						// System.out.println("Found incoming: " + vertices.indexOf(child));
+						traversed.add(child);
+						previous.put(child, current);
+						current = child;
+						foundChild = true;
+						break;
+					}
+				}
+			}
+			if (!foundChild) {
+				// System.out.println("Vertex finished: " + vertices.indexOf(current));
+				finished.put(current, true); // No untraversed children left.
+				if (null != previous.get(current)) { // Backtracking
+					// System.out.println("Backtracking from " + vertices.indexOf(current));
+					current = previous.get(current);
 				} else {
-					//System.out.println("No edges from vertex: " + vertices.indexOf(current));
-	                ///Finding untraversed vertex:
-	                boolean foundUntraversed = false;
-	                for (Vertex iter : vertices) {
-	                    if (!traversed.contains(iter)) {
-	                    	foundUntraversed = true;
-			            	traversed.add(iter);
-	                        current = iter;
-							islands.add(new ArrayList<>());	// New island
+					// System.out.println("No edges from vertex: " + vertices.indexOf(current));
+					/// Finding untraversed vertex:
+					boolean foundUntraversed = false;
+					for (Vertex iter : vertices) {
+						if (!traversed.contains(iter)) {
+							foundUntraversed = true;
+							traversed.add(iter);
+							current = iter;
+							islands.add(new ArrayList<>()); // New island
 							islands.get(islands.size() - 1).add(current);
 							break;
-	                    }
-	                }
-	                if (!foundUntraversed) {
-	                    run = false;
-	                }
-	            }
-	        }
-	        else {
+						}
+					}
+					if (!foundUntraversed) {
+						run = false;
+					}
+				}
+			} else {
 				islands.get(islands.size() - 1).add(current);
 				double voltageDrop = 0;
 				if (current.getIncoming().containsKey(previous.get(current))) {
 					voltageDrop = current.getIncoming().get(previous.get(current)).getTimeDomainVoltageDrop();
-				}
-				else if (current.getOutgoing().containsKey(previous.get(current))) {
+				} else if (current.getOutgoing().containsKey(previous.get(current))) {
 					voltageDrop = -current.getOutgoing().get(previous.get(current)).getTimeDomainVoltageDrop();
-				}
-				else {
+				} else {
 					throw new RuntimeException("Wrong previous vertex!");
 				}
 				double potential = potentials.get(vertices.indexOf(previous.get(current))) - voltageDrop;
-				//System.out.println("Potential: " + potential);
+				// System.out.println("Potential: " + potential);
 				potentials.set(vertices.indexOf(current), potential);
-	        }
-	    }
-		
-		offsetAndNormalizePotentialsToZeroMinimum(potentials, islands);
+			}
+		}
 
+		offsetAndNormalizePotentialsToZeroMinimum(potentials, islands);
 
 		return potentials;
 	}
 
-	
-	//Access edges and nodes:-----------------------------------------------------------------------------------
-	//No other method allowed to manipulate edges nor nodes from outside the network. 
-	
+	// Access edges and
+	// nodes:-----------------------------------------------------------------------------------
+	// No other method allowed to manipulate edges nor nodes from outside the
+	// network.
+
 	/**
-	 * Adds a new Edge to the network's graph representation. Generates two vertices to the new edge.
-	 * HUN: Hozzáad egy élet a hálózat gráf-reprezentációjához. Létrehozza az él végpontjait is. 
-	 * @param edge	Edge to be added.
+	 * Adds a new Edge to the network's graph representation. Generates two vertices
+	 * to the new edge.
+	 * HUN: Hozzáad egy élet a hálózat gráf-reprezentációjához. Létrehozza az él
+	 * végpontjait is.
+	 * 
+	 * @param edge Edge to be added.
 	 */
 	public void addEdge(Edge edge) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			Vertex input = new Vertex();
 			Vertex output = new Vertex();
 
@@ -694,10 +689,8 @@ public class Network {
 		}
 	}
 
-	
 	public void addEdgeWithGroundedOutput(Edge edge) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			Vertex input = new Vertex();
 			edge.setInput(input);
 			edge.setOutput(this.vertices.get(0));
@@ -710,25 +703,27 @@ public class Network {
 			needRecalculation = true;
 		}
 	}
-	
+
 	/**
-	 * Removes an edge from the network's graph representation. Removes two vertices of this edge, if the vertices connect only to the removed edge.
-	 * HUN: Kitöröl egy élet a hálózat gráf-reprezentációjából. Az él két végpontját is törli, ha azokra nem illeszkedik más él.
-	 * @param edge	Edge to be removed.
+	 * Removes an edge from the network's graph representation. Removes two vertices
+	 * of this edge, if the vertices connect only to the removed edge.
+	 * HUN: Kitöröl egy élet a hálózat gráf-reprezentációjából. Az él két végpontját
+	 * is törli, ha azokra nem illeszkedik más él.
+	 * 
+	 * @param edge Edge to be removed.
 	 */
 	public void removeEdge(Edge edge) {
-		synchronized (accessMutexObj)
-		{
-			if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1 && vertices.indexOf(edge.getInput()) != 0) {
+		synchronized (accessMutexObj) {
+			if (edge.getInput().getNoOfIncoming() == 0 && edge.getInput().getNoOfOutgoing() == 1
+					&& vertices.indexOf(edge.getInput()) != 0) {
 				vertices.remove(edge.getInput());
-			}
-			else {
+			} else {
 				edge.getInput().removeOutgoing(edge.getOutput());
 			}
-			if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0 && vertices.indexOf(edge.getOutput()) != 0) {
+			if (edge.getOutput().getNoOfIncoming() == 1 && edge.getOutput().getNoOfOutgoing() == 0
+					&& vertices.indexOf(edge.getOutput()) != 0) {
 				vertices.remove(edge.getOutput());
-			}
-			else {
+			} else {
 				edge.getOutput().removeIncoming(edge.getInput());
 			}
 
@@ -736,93 +731,98 @@ public class Network {
 			needRecalculation = true;
 		}
 	}
-	
-	
+
 	/**
 	 * Disconnects an edge's particular end point.
 	 * HUN: Szétkapcsol egy élet egy adott végpontja szerint.
-	 * @param edge		The edge to be disconnected by end point.
-	 * @param vertex	The end point to disconnect by.
+	 * 
+	 * @param edge   The edge to be disconnected by end point.
+	 * @param vertex The end point to disconnect by.
 	 */
 	protected void disconnectEndOfEdge(Edge edge, Vertex vertex) {
 		if (vertex.equals(edge.getInput())) {
-			if (vertices.indexOf(vertex) != 0 && (edge.getInput().getNoOfOutgoing() > 1 || edge.getInput().getNoOfIncoming() > 0)) {
-				//Clone input vertex:
+			if (vertices.indexOf(vertex) != 0
+					&& (edge.getInput().getNoOfOutgoing() > 1 || edge.getInput().getNoOfIncoming() > 0)) {
+				// Clone input vertex:
 				Vertex prevIn = edge.getInput();
 				Vertex prevOut = edge.getOutput();
-				
+
 				Vertex newIn = new Vertex();
 				getVertices().add(newIn);
-				
+
 				newIn.addOutgoing(prevOut, edge);
 				edge.setInput(newIn);
 				prevOut.removeIncoming(prevIn);
 				prevOut.addIncoming(newIn, edge);
-				
+
 				prevIn.removeOutgoing(prevOut);
 				edge.setInput(newIn);
 			}
 		}
-		
+
 		else if (vertex.equals(edge.getOutput())) {
 			if (edge.getOutput().getNoOfOutgoing() > 0 || edge.getOutput().getNoOfIncoming() > 1) {
-				//Clone output vertex:
+				// Clone output vertex:
 				Vertex prevIn = edge.getInput();
 				Vertex prevOut = edge.getOutput();
-				
+
 				Vertex newOut = new Vertex();
 				getVertices().add(newOut);
-				
+
 				newOut.addIncoming(prevIn, edge);
 				edge.setOutput(newOut);
 				prevIn.removeOutgoing(prevOut);
 				prevIn.addOutgoing(newOut, edge);
-				
-				prevOut.removeIncoming(prevIn);			
+
+				prevOut.removeIncoming(prevIn);
 				edge.setOutput(newOut);
 			}
 		}
-		
+
 	}
-	
+
 	/**
-	 * Merges two vertices. After this only one vertex will remain. This, persistent vertex obtains the information held in the now obsolete vertex, such as the incoming and outgoing edges.
-	 * HUN: Összeolvaszt két gráf-csúcsot. A perzisztens csúcs megkapja a beolvadó csúcs kapcsolatait.
-	 * @param persistent	The vertex, which obtains the other's role.
-	 * @param merge			The vertex, which is merged into the other. 
+	 * Merges two vertices. After this only one vertex will remain. This, persistent
+	 * vertex obtains the information held in the now obsolete vertex, such as the
+	 * incoming and outgoing edges.
+	 * HUN: Összeolvaszt két gráf-csúcsot. A perzisztens csúcs megkapja a beolvadó
+	 * csúcs kapcsolatait.
+	 * 
+	 * @param persistent The vertex, which obtains the other's role.
+	 * @param merge      The vertex, which is merged into the other.
 	 */
-	protected void mergeVertices(Vertex persistent, Vertex merge)  {
-		//System.out.println("Merged vertices.");
+	protected void mergeVertices(Vertex persistent, Vertex merge) {
+		// System.out.println("Merged vertices.");
 		if (persistent != merge) {
 			for (Map.Entry<Vertex, Edge> incoming : merge.getIncoming().entrySet()) {
 				incoming.getKey().removeOutgoing(merge);
-				incoming.getKey().addOutgoing(persistent, incoming.getValue());				
-				
+				incoming.getKey().addOutgoing(persistent, incoming.getValue());
+
 				incoming.getValue().setOutput(persistent);
 				persistent.addIncoming(incoming.getKey(), incoming.getValue());
 			}
 			for (Map.Entry<Vertex, Edge> outgoing : merge.getOutgoing().entrySet()) {
 				outgoing.getKey().removeIncoming(merge);
 				outgoing.getKey().addIncoming(persistent, outgoing.getValue());
-				
+
 				outgoing.getValue().setInput(persistent);
 				persistent.addOutgoing(outgoing.getKey(), outgoing.getValue());
 			}
 			vertices.remove(merge);
 		}
 	}
-	
-	//-------------------------------------------------------------------------------------------------
-	//Manipulating components:---------------------------------------
+
+	// -------------------------------------------------------------------------------------------------
+	// Manipulating components:---------------------------------------
 
 	/**
 	 * Adds a new component to the network.
 	 * HUN: Új komponenst ad a gráfhoz.
+	 * 
 	 * @param component The component to be added.
 	 */
-	public void addComponent (Component component) {
-		synchronized (accessMutexObj)
-		{
+	public void addComponent(Component component) {
+		synchronized (accessMutexObj) {
 			component.setParent(this);
 			component.build();
 			components.add(component);
@@ -832,29 +832,30 @@ public class Network {
 
 	/**
 	 * Removes a component from the network.
-	 * HUN: 
-	 * @param component	The component to be removed.
+	 * HUN:
+	 * 
+	 * @param component The component to be removed.
 	 */
-	public void removeComponent (Component component) {
-		synchronized (accessMutexObj)
-		{
+	public void removeComponent(Component component) {
+		synchronized (accessMutexObj) {
 			component.destroy();
 			components.remove(component);
 			needRecalculation = true;
 		}
 	}
-	
-	//Move ComponentNode:--------------------------------------------------------------
-	
+
+	// Move
+	// ComponentNode:--------------------------------------------------------------
+
 	/**
 	 * Grab a component's end node to move it.
-	 * HUN: Megfog egy adott komponenst. 
-	 * @param componentNode	The node to grab.
- 	 * @param cursorPos The position of the cursor;
+	 * HUN: Megfog egy adott komponenst.
+	 * 
+	 * @param componentNode The node to grab.
+	 * @param cursorPos     The position of the cursor;
 	 */
 	public void grabComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (!componentNodes.contains(componentNode)) {
 				throw new RuntimeException("Invalid node grabbed.");
 			}
@@ -862,31 +863,31 @@ public class Network {
 			needRecalculation = true;
 		}
 	}
-	
+
 	/**
 	 * Move a component's end node.
 	 * HUN: Mozgat egy adott komponenst.
-	 * @param componentNode	The node to be moved.
- 	 * @param cursorPos The new position of the cursor;
-	 */	
+	 * 
+	 * @param componentNode The node to be moved.
+	 * @param cursorPos     The new position of the cursor;
+	 */
 	public void dragComponentNode(ComponentNode componentNode, Coordinate cursorPos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (!componentNodes.contains(componentNode)) {
 				throw new RuntimeException("Invalid node moved.");
 			}
 			componentNode.drag(cursorPos);
 		}
 	}
-	
+
 	/**
 	 * Release a component's end node. (When the node is already grabbed.)
 	 * HUN: Elenged egy adott komponenst.
+	 * 
 	 * @param componentNode The node to release.
 	 */
 	public void releaseComponentNode(ComponentNode componentNode) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (!componentNodes.contains(componentNode)) {
 				throw new RuntimeException("Invalid node released.");
 			}
@@ -895,25 +896,27 @@ public class Network {
 		}
 	}
 
-	//---------------------------------------------------------------
-	//Move Component:
-	
+	// ---------------------------------------------------------------
+	// Move Component:
+
 	/**
 	 * Drops in a new component at the given position in network.
 	 * HUN: Bedob egy új komponenst az adott pozícióra a hálózatban.
-	 * @param component	The new component.
-	 * @param cursorPos	The position to be dropped at. Input node is going to have x =-30 and output x = +30 offset on position.
+	 * 
+	 * @param component The new component.
+	 * @param cursorPos The position to be dropped at. Input node is going to have x
+	 *                  =-30 and output x = +30 offset on position.
 	 */
 	public void dropComponent(Component component, Coordinate cursorPos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			addComponent(component);
 			selected = component;
 			if (snapToGrid) {
-				component.getInput().setPos(Coordinate.snapToGrid(MyMath.subtract(cursorPos, new Coordinate(30, 0)), gridSize));
-				component.getOutput().setPos(Coordinate.snapToGrid(MyMath.add(cursorPos, new Coordinate(30, 0)), gridSize));
-			}
-			else {
+				component.getInput()
+						.setPos(Coordinate.snapToGrid(MyMath.subtract(cursorPos, new Coordinate(30, 0)), gridSize));
+				component.getOutput()
+						.setPos(Coordinate.snapToGrid(MyMath.add(cursorPos, new Coordinate(30, 0)), gridSize));
+			} else {
 				component.getInput().setPos(MyMath.subtract(cursorPos, new Coordinate(30, 0)));
 				component.getOutput().setPos(MyMath.add(cursorPos, new Coordinate(30, 0)));
 			}
@@ -921,16 +924,16 @@ public class Network {
 			needRecalculation = true;
 		}
 	}
-	
+
 	/**
 	 * Grab a component.
 	 * HUN: Megfog egy adott komponenst.
+	 * 
 	 * @param component The component to be grabbed.
 	 * @param cursorPos The position of the cursor;
 	 */
 	public void grabComponent(Component component, Coordinate cursorPos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (!components.contains(component)) {
 				throw new RuntimeException("Invalid node grabbed.");
 			}
@@ -938,26 +941,25 @@ public class Network {
 			component.grab(cursorPos);
 		}
 	}
-	
+
 	/**
 	 * Move a component.
 	 * HUN: Mozgat egy adott komponenst.
-	 * @param component	The component to be moved.
+	 * 
+	 * @param component The component to be moved.
 	 * @param cursorPos The new position of the cursor;
-	 */	
+	 */
 	public void dragComponent(Component component, Coordinate cursorPos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (!components.contains(component)) {
 				throw new RuntimeException("Invalid component moved.");
 			}
 			component.drag(cursorPos);
 		}
 	}
-	
+
 	public boolean isSnapToGrid() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			return snapToGrid;
 		}
 	}
@@ -973,7 +975,7 @@ public class Network {
 	public void setGridSize(int gridSize) {
 		this.gridSize = gridSize;
 	}
-	
+
 	public int getCloseProximity() {
 		return closeProximity;
 	}
@@ -981,11 +983,11 @@ public class Network {
 	/**
 	 * Release a component. (When the component is already grabbed.)
 	 * HUN: Elenged egy adott komponenst.
+	 * 
 	 * @param component The component to release.
 	 */
 	public void releaseComponent(Component component) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (!components.contains(component)) {
 				return;
 			}
@@ -995,51 +997,57 @@ public class Network {
 	}
 
 	/**
-	 * Disconnects a the given component from the network. This means, that the end nodes of the component will be disconnected from other components.
-	 * HUN: Letkapcsol egy komponenst a többi komponensről. Ez a komponenst két végpontjának lecsatlakoztatásával valósul meg.
+	 * Disconnects a the given component from the network. This means, that the end
+	 * nodes of the component will be disconnected from other components.
+	 * HUN: Letkapcsol egy komponenst a többi komponensről. Ez a komponenst két
+	 * végpontjának lecsatlakoztatásával valósul meg.
+	 * 
 	 * @param component {@link Component} to be cut out.
 	 */
 	protected void disconnectComponent(Component component) {
 		if (component.getInput().getNoOfOutgoing() > 1 || component.getInput().getNoOfIncoming() > 0) {
-			//Clone input:
+			// Clone input:
 			ComponentNode prevInput = component.getInput();
 			ComponentNode newInput = new ComponentNode(prevInput.getParent());
 			componentNodes.add(newInput);
-			
+
 			newInput.setPos(prevInput.getPos());
 			newInput.setMerge(true);
 			newInput.setVertexBinding(prevInput.getVertexBinding());
-			
+
 			prevInput.removeOutgoing(component);
 			newInput.addOutgoing(component);
-			component.setInput(newInput);			
+			component.setInput(newInput);
 		}
 		if (component.getOutput().getNoOfIncoming() > 1 || component.getOutput().getNoOfOutgoing() > 0) {
-			//Clone output:
+			// Clone output:
 			ComponentNode prevOutput = component.getOutput();
 			ComponentNode newOutput = new ComponentNode(prevOutput.getParent());
 			componentNodes.add(newOutput);
-			
+
 			newOutput.setPos(prevOutput.getPos());
 			newOutput.setMerge(true);
 			newOutput.setVertexBinding(prevOutput.getVertexBinding());
-			
+
 			prevOutput.removeIncoming(component);
 			newOutput.addIncoming(component);
-			component.setOutput(newOutput);			
+			component.setOutput(newOutput);
 		}
 	}
-	
+
 	/**
 	 * Tries to merge a given node to any of the other nodes.
-	 * Conditions of a successful merge are, that the other node must be in the close proximity of this node and
+	 * Conditions of a successful merge are, that the other node must be in the
+	 * close proximity of this node and
 	 * they can not be neighbor of each other.
-	 * HUN: Megpróbál találni egy adott csomóponthoz egy másik csomópontot, amellyel összeolvaszthatja az adott csomópontot.
-	 * Az összeolvasztás feltételei, hogy a másik csomópontnak "közel kell lennie" ( closeProximity )
+	 * HUN: Megpróbál találni egy adott csomóponthoz egy másik csomópontot, amellyel
+	 * összeolvaszthatja az adott csomópontot.
+	 * Az összeolvasztás feltételei, hogy a másik csomópontnak "közel kell lennie" (
+	 * closeProximity )
 	 * és nem lehetnek szomszédosak.
 	 * 
-	 * @param componentNode	The node, that is tried to be merged with other nodes.
-	 * @return	True, when the merging attempt was successful.
+	 * @param componentNode The node, that is tried to be merged with other nodes.
+	 * @return True, when the merging attempt was successful.
 	 */
 	protected boolean tryToMergeComponentNode(ComponentNode componentNode) {
 		for (ComponentNode iter : componentNodes) {
@@ -1047,7 +1055,7 @@ public class Network {
 				double distance = MyMath.magnitude(MyMath.subtract(componentNode.getPos(), iter.getPos()));
 				if (closeProximity > distance) {
 					if (!componentNode.isNeighbouring(iter)) {
-						//Merge needed:
+						// Merge needed:
 						for (Component incoming : componentNode.getIncoming()) {
 							incoming.setOutput(iter);
 							iter.addIncoming(incoming);
@@ -1056,19 +1064,17 @@ public class Network {
 							outgoing.setInput(iter);
 							iter.addOutgoing(outgoing);
 						}
-						
+
 						if (componentNode.getVertexBinding() != null && iter.getVertexBinding() != null) {
 							mergeVertices(iter.getVertexBinding(), componentNode.getVertexBinding());
-						}
-						else {
+						} else {
 							throw new RuntimeException("ComponentNode does not contain reference to actual node.");
 						}
 
 						componentNodes.remove(componentNode);
 
-						return true;						
-					}
-					else {
+						return true;
+					} else {
 						throw new RuntimeException("Neighbours!");
 					}
 				}
@@ -1078,28 +1084,28 @@ public class Network {
 	}
 
 	public ArrayList<Component> getComponents() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			return components;
 		}
 	}
-	
+
 	public ArrayList<ComponentNode> getComponentNodes() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			return componentNodes;
 		}
 	}
-	
+
 	/**
 	 * Gives a ComponentNode, in close proximity to the given Coordinate.
-	 * HUN: Visszaad egy csomópontot, ami "közel van" (closeProximity) az adott pozícióhoz.
-	 * @param pos	The position.
-	 * @return	ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
+	 * HUN: Visszaad egy csomópontot, ami "közel van" (closeProximity) az adott
+	 * pozícióhoz.
+	 * 
+	 * @param pos The position.
+	 * @return ComponentNode, in close proximity to the given Coordinate or null, if
+	 *         there is no ComponentNode in close proximity.
 	 */
 	public ComponentNode getNodeAtPos(Coordinate pos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			for (ComponentNode iter : componentNodes) {
 				if (MyMath.magnitude(MyMath.subtract(iter.getPos(), pos)) < 10) {
 					return iter;
@@ -1108,16 +1114,18 @@ public class Network {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Gives a Component, in close proximity to the given Coordinate.
-	 * HUN: Visszaad egy komponenst, ami "közel van" (closeProximity) az adott pozícióhoz.
+	 * HUN: Visszaad egy komponenst, ami "közel van" (closeProximity) az adott
+	 * pozícióhoz.
+	 * 
 	 * @param cursorPos The position.
-	 * @return ComponentNode, in close proximity to the given Coordinate or null, if there is no ComponentNode in close proximity.
+	 * @return ComponentNode, in close proximity to the given Coordinate or null, if
+	 *         there is no ComponentNode in close proximity.
 	 */
 	public Component getComponentAtPos(Coordinate cursorPos) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			for (Component component : components) {
 				Vector inPos = MyMath.coordToVector(component.getInput().getPos());
 				Vector outPos = MyMath.coordToVector(component.getOutput().getPos());
@@ -1138,15 +1146,17 @@ public class Network {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * Saves the current layout of the network. The method overwrites content of the file!
+	 * Saves the current layout of the network. The method overwrites content of the
+	 * file!
 	 * HUN: Elmenti a hálózatot.
-	 * @param fileName	The name of file, where the persistent information gets saved. 
+	 * 
+	 * @param fileName The name of file, where the persistent information gets
+	 *                 saved.
 	 */
 	public void save(String fileName) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			try {
 
 				StringBuilder builder = new StringBuilder();
@@ -1164,15 +1174,16 @@ public class Network {
 			}
 		}
 	}
-	
+
 	/**
 	 * Loads network layout from the given file. Discards previous layout.
 	 * HUN: Betölti a hálózatot.
-	 * @param fileName {@link String} The name of file, from which the persistent information gets loaded.
+	 * 
+	 * @param fileName {@link String} The name of file, from which the persistent
+	 *                 information gets loaded.
 	 */
 	public void load(String fileName) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			try {
 				FileReader input = new FileReader(fileName);
 
@@ -1203,21 +1214,19 @@ public class Network {
 				}
 				reader.close();
 			} catch (Exception e) {
-					throw new RuntimeException("Load error!", e);
-			}
-			finally {
+				throw new RuntimeException("Load error!", e);
+			} finally {
 				needRecalculation = true;
 			}
 		}
 	}
-	
+
 	/**
 	 * Clears network layout. The model will be lost!
-	 * HUN: Kötörli a hálózat tartalmát. A hálózat mentetlen állása el fog veszni! 
+	 * HUN: Kötörli a hálózat tartalmát. A hálózat mentetlen állása el fog veszni!
 	 */
 	public void clear() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			components.clear();
 			componentNodes.clear();
 			edges.clear();
@@ -1236,11 +1245,11 @@ public class Network {
 	/**
 	 * Calls the draw method on each component.
 	 * HUN: Minden komponensen meghívja a draw metódust.
-	 * @param ctx	{@link GraphicsContext}, where the network should be drawn.
+	 * 
+	 * @param ctx {@link GraphicsContext}, where the network should be drawn.
 	 */
 	public void draw(GraphicsContext ctx, double totalTimeSec, double deltaTimeSec) {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			if (isValid()) {
 				for (Edge e : edges) {
 					e.updateTimeDomainParameters(simulatedAngularFrequencies, totalTimeSec);
@@ -1262,76 +1271,69 @@ public class Network {
 			}
 		}
 	}
-	
+
 	public ArrayList<Vertex> getVertices() {
 		return vertices;
 	}
-	
+
 	public ArrayList<Edge> getEdges() {
 		return edges;
 	}
-	
+
 	/**
 	 * Resets all components to initial state.
 	 * HUN: Minden komponenst visszaállít a kiindulási állapotába.
 	 */
 	public void reset() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			for (Component component : components) {
 				component.reset();
 			}
 			needRecalculation = true;
 		}
 	}
-	
+
 	/**
 	 * There can be only one selected component at a time.
 	 * HUN: Csak egyetlen kiválasztott komponens lehet.
+	 * 
 	 * @param component The component in question.
-	 * @return	Whether the given component is selected or not.
+	 * @return Whether the given component is selected or not.
 	 */
 	public boolean isThisSelected(Component component) {
 		return selected != null && component == selected;
 	}
-	
+
 	/**
 	 * 
-	 * @return The selected component. 
+	 * @return The selected component.
 	 */
 	public Component getSelected() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			return selected;
 		}
 	}
-	
+
 	/**
 	 * Disable selection of component.
 	 * HUN: Megszünteti egy komponens kiválasztását.
 	 */
 	public void cancelSelection() {
-		synchronized (accessMutexObj)
-		{
+		synchronized (accessMutexObj) {
 			selected = null;
 		}
 	}
-	
+
 	/**
 	 * Whether the network is valid or not.
 	 * HUN: Helyes-e a hálózat?
+	 * 
 	 * @return boolean
 	 */
-	public boolean isValid () {
-		synchronized (accessMutexObj)
-		{
+	public boolean isValid() {
+		synchronized (accessMutexObj) {
 			return validNetwork;
 		}
 	}
-	
+
 }
-
-
-
-
-

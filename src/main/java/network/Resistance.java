@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javafx.scene.canvas.GraphicsContext;
+import network.ComponentProperty;
 import gui.DrawingHelper;
 import math.Complex;
 import math.Coordinate;
@@ -14,7 +15,7 @@ import math.Vector;
 /**
  * Resistance with adjustable value.
  * 
- * @author Simon Zoltán
+ * @author Zoltán Simon
  *
  */
 public class Resistance extends Component {
@@ -52,13 +53,19 @@ public class Resistance extends Component {
 	// Getters/Setters:------------------------------------------------------------------------------------
 
 	@Override
-	public double getTimeDomainCurrent() { return e.getTimeDomainCurrent(); }
+	public double getTimeDomainCurrent() {
+		return e.getTimeDomainCurrent();
+	}
 
 	@Override
-	public double getTimeDomainVoltageDrop() { return e.getTimeDomainVoltageDrop(); }
+	public double getTimeDomainVoltageDrop() {
+		return e.getTimeDomainVoltageDrop();
+	}
 
 	@Override
-	public double getTimeDomainResistance() { return resistance; }
+	public double getTimeDomainResistance() {
+		return resistance;
+	}
 
 	public void setResistance(double resistance) {
 		this.resistance = resistance;
@@ -161,7 +168,8 @@ public class Resistance extends Component {
 	}
 
 	@Override
-	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas, ArrayList<Integer> frequencyIndices) {
+	public void updateTimeDomainParametersUsingSpecificFrequencies(double totalTimeSec, ArrayList<Double> omegas,
+			ArrayList<Integer> frequencyIndices) {
 		e.updateTimeDomainParametersUsingSpecificFrequencies(omegas, frequencyIndices, totalTimeSec);
 	}
 
@@ -193,12 +201,12 @@ public class Resistance extends Component {
 		float defaultSize = getDEFAULT_SIZE();
 		lines.add(new Line(0.0f, 0.0f, defaultSize * 0.25f, 0.0f));
 		lines.add(new Line(defaultSize * 0.25f, +defaultSize * 0.1f, defaultSize * 0.25f, -defaultSize * 0.1f));
-		
+
 		lines.add(new Line(defaultSize * 0.25f, +defaultSize * 0.1f, defaultSize * 0.75f, +defaultSize * 0.1f));
 		lines.add(new Line(defaultSize * 0.25f, -defaultSize * 0.1f, defaultSize * 0.75f, -defaultSize * 0.1f));
 
-		lines.add(new Line(defaultSize* 0.75f, +defaultSize * 0.1f, defaultSize* 0.75f, -defaultSize * 0.1f));
-		lines.add(new Line(defaultSize* 0.75f, 0.0f, defaultSize, 0.0f));
+		lines.add(new Line(defaultSize * 0.75f, +defaultSize * 0.1f, defaultSize * 0.75f, -defaultSize * 0.1f));
+		lines.add(new Line(defaultSize * 0.75f, 0.0f, defaultSize, 0.0f));
 
 		// call drawShape
 		DrawingHelper.drawShape(ctx,
@@ -209,8 +217,8 @@ public class Resistance extends Component {
 				getParent().isThisSelected(this),
 				getCurrentVisualisationOffset(),
 				getParent().isValid(),
-				(float)e.getInput().getTimeDomainPotential(),
-				(float)e.getOutput().getTimeDomainPotential());
+				(float) e.getInput().getTimeDomainPotential(),
+				(float) e.getOutput().getTimeDomainPotential());
 
 		// System.out.println("Resistance draw!");
 	}
@@ -232,8 +240,7 @@ public class Resistance extends Component {
 
 	@Override
 	public void updatePropertyModel() {
-		synchronized (getParent().getMutexObj())
-		{
+		synchronized (getParent().getMutexObj()) {
 			String str = getProperties().get("resistance").value;
 			if (str != null && str.length() > 0) {
 				try {
@@ -256,17 +263,15 @@ public class Resistance extends Component {
 		}
 	}
 
-
-    @Override
-    public Resistance clone() {
-        try {
-            Resistance clone = (Resistance) super.clone();
-            clone.e = this.e.clone();
+	@Override
+	public Resistance clone() {
+		try {
+			Resistance clone = (Resistance) super.clone();
+			clone.e = this.e.clone();
 			clone.resistance = this.resistance;
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError();
+		}
+	}
 }
-
