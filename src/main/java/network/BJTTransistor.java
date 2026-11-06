@@ -2,7 +2,10 @@ package network;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import gui.DrawingHelper;
 import javafx.scene.canvas.GraphicsContext;
 import network.ComponentProperty;
 import math.Complex;
@@ -361,13 +364,61 @@ public class BJTTransistor extends Component implements NonlinearDevice {
     @Override
     public void draw(GraphicsContext ctx) {
         updatePropertyView(false);
+        List<Line> lines = new ArrayList<Line>();
 
-        // Draw a simple NPN transistor symbol (triangle for collector/base and emitter)
-        float size = getDEFAULT_SIZE();
+        // Construction:
+        float defaultSize = getDEFAULT_SIZE();
+        lines.add(new Line(0.0f, 0.0f, defaultSize * 0.2f, 0.0f));
 
-        // Draw using node positions directly
-        // This is a placeholder - proper drawing would follow component convention
-        updatePropertyView(false);
+        // Circle:
+        int resolution = 32;
+        for (int i = 0; i < resolution; i++) {
+            double angle0 = i / (double) resolution * 2 * Math.PI;
+            double angle1 = (i + 1) / (double) resolution * 2 * Math.PI;
+            float x0 = (float) Math.cos(angle0) * 0.3f + 0.5f;
+            float y0 = (float) Math.sin(angle0) * 0.3f;
+            float x1 = (float) Math.cos(angle1) * 0.3f + 0.5f;
+            float y1 = (float) Math.sin(angle1) * 0.3f;
+            lines.add(new Line(defaultSize * x0, defaultSize * y0, defaultSize * x1, defaultSize * y1));
+        }
+
+        // waveform:
+        lines.add(new Line(defaultSize * 0.2f, 0.0f, defaultSize * 0.65f, -defaultSize * 0.1f));
+        lines.add(new Line(defaultSize * 0.65f, -defaultSize * 0.1f, defaultSize * 0.65f, 0.0f));
+        lines.add(new Line(defaultSize * 0.65f, 0.f, defaultSize * 0.8f, 0.0f));
+
+        lines.add(new Line(defaultSize * 0.8f, 0.0f, defaultSize, 0.0f));
+
+        // [+] sign
+        lines.add(new Line(
+                (5.0f / 6.0f * defaultSize) - (1.0f / 15.0f * defaultSize),
+                -1.0f / 4.0f * defaultSize,
+                (5.0f / 6.0f * defaultSize) + (1.0f / 15.0f * defaultSize),
+                -1.0f / 4.0f * defaultSize));
+        lines.add(new Line(
+                (5.0f / 6.0f * defaultSize),
+                -1.0f / 4.0f * defaultSize - (1.0f / 15.0f * defaultSize),
+                (5.0f / 6.0f * defaultSize),
+                -1.0f / 4.0f * defaultSize + (1.0f / 15.0f * defaultSize)));
+
+        // [-] sign
+        lines.add(new Line(
+                (1.0f / 6.0f * defaultSize) - (1.0f / 15.0f * defaultSize),
+                -1.0f / 4.0f * defaultSize,
+                (1.0f / 6.0f * defaultSize) + (1.0f / 15.0f * defaultSize),
+                -1.0f / 4.0f * defaultSize));
+
+        // call drawShape
+        DrawingHelper.drawShape(ctx,
+                getInput().getPos(),
+                getOutput().getPos(),
+                lines,
+                defaultSize,
+                getParent().isThisSelected(this),
+                getCurrentVisualisationOffset(),
+                getParent().isValid(),
+                (float) 0,
+                (float) 0);
     }
 
     @Override
